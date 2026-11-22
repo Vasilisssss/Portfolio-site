@@ -8,7 +8,8 @@ export const site = {
   founded: "[YEAR]",
   email: "hello@example.com",
   address: ["[Office address]", "[City, Country]"],
-  url: "https://example.com",
+  /** Public URL, used for SEO metadata, sitemap and robots. Override with SITE_URL at build time. */
+  url: process.env.SITE_URL || "https://vasilisssss.github.io/Portfolio-site",
   currency: "USD" as const,
   socials: [
     { label: "LinkedIn", href: "https://www.linkedin.com" },
