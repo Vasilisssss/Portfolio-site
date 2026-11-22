@@ -4,14 +4,15 @@ import type { WorldData, LabelOut } from "./engine";
 
 export interface WorldLabel { id: string; title: string; lines: string[]; holdingId?: string; assetClass?: string }
 
-export const SCENES = ["The Portal", "The Capital Engine", "The Investment District", "The Observatory", "The Future"];
+export const SCENES = ["The Reveal", "The Capital Engine", "The Investment City", "The Performance Gallery", "The Final Reveal"];
 const ROMAN = ["I", "II", "III", "IV", "V"];
 
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
 
 /**
  * Fixed full-screen WebGL world behind the home page. Scroll position drives the camera:
- * while chapter i (a 100vh title card, [data-chapter=i]) scrolls into view, the camera flies from scene i-1 to scene i.
+ * while chapter i (a full-height title card, [data-chapter=i]) scrolls into view, the camera travels from scene i-1 to scene i
+ * (from 0 to 1 the case unlocks, opens and its model rises).
  * While the content of a scene is read, the camera drifts gently around it.
  */
 export default function World({ data, labels }: { data: WorldData; labels: WorldLabel[] }) {
@@ -61,11 +62,20 @@ export default function World({ data, labels }: { data: WorldData; labels: World
       try {
         world = createWorld(el, data, { low, reduce }, {
           onLabels: (list: LabelOut[]) => {
+            // collision avoidance: larger holdings first; a label that would overlap one already placed steps aside
+            const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
+            const vw = window.innerWidth;
+            const maxX = vw >= 1024 ? vw - 270 : vw - 16; // desktop: stay clear of the scene rail
             for (const l of list) {
               const node = labelEls.current.get(l.id);
               if (!node) continue;
-              node.style.transform = `translate3d(${l.x.toFixed(1)}px, ${l.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
-              const o = l.opacity * gate;
+              const w = node.offsetWidth || 140, h = node.offsetHeight || 48;
+              const x = Math.min(maxX - w / 2, Math.max(16 + w / 2, l.x));
+              const box = { x0: x - w / 2, x1: x + w / 2, y0: l.y - h, y1: l.y };
+              const clash = l.opacity > 0.02 && placed.some((p) => box.x0 < p.x1 + 6 && p.x0 < box.x1 + 6 && box.y0 < p.y1 + 4 && p.y0 < box.y1 + 4);
+              if (l.opacity > 0.02 && !clash) placed.push(box);
+              node.style.transform = `translate3d(${x.toFixed(1)}px, ${l.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+              const o = clash ? 0 : l.opacity * gate;
               node.style.opacity = o.toFixed(3);
               node.style.visibility = o > 0.02 ? "visible" : "hidden";
             }
@@ -81,7 +91,8 @@ export default function World({ data, labels }: { data: WorldData; labels: World
         });
         el.querySelector("canvas")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: reduce ? 0 : 1600, easing: "ease-out" });
         progress();
-      } catch {
+      } catch (e) {
+        console.error("3D world failed to start; showing the static fallback.", e);
         setOk(false);
       }
     });

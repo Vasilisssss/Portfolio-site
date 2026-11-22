@@ -1,19 +1,23 @@
-# Personal investment portfolio: The Capital Universe
+# Personal investment portfolio: The World Inside a Briefcase
 
 My own investments: what I own, how my capital is allocated, how it has performed, and how I think about investing.
-The site is a scroll-driven flight through one continuous 3D world. Each environment carries real portfolio data:
+The site is a scroll-driven product film: a real-scale (46 × 34 cm) luxury attaché case in a dark photographic studio
+opens, and the miniature architectural model inside it is built from my real portfolio data.
 
-| Chapter | Environment | Real content |
+| Chapter | What you see | Real content |
 |---|---|---|
-| I · The Portal | Black-chrome iris over a mirror floor; the camera flies through it | Headline, portfolio value |
-| II · The Capital Engine | Optical crystal core; white stream = deposits in, lime streams = capital out per holding (∝ allocation) | Invested capital, value, P/L, overview |
-| III · The Investment District | One tower per holding (height from value), foot ring lime/coral by return, in a decorative city | Holdings, allocation; click a tower to open it |
-| IV · The Observatory | Terrace under a lattice dome facing a ribbon of the real month-end index (rebased to 100) | Performance, journal |
-| V · The Future | Horizon ring rising out of the mirror floor, monolith | Strategy, about, closing |
+| I · The Reveal | The closed case; locks release (slider → spring flap → lamp), the lid lifts to its 100° hinge stop, the model platform rises and the towers telescope up | Headline, portfolio value |
+| II · The Capital Engine | A turned reservoir of steel bearings feeding a distribution ring. **Each holding's arc is exactly its weight**; its bearings roll out on its own rail channel; a thin anodised inlay is lime (above cost), coral (below) or steel (unknown/flat) | Invested capital, value, P/L, overview |
+| III · The Investment City | A treemap of plots: **plot area ∝ weight**, building height ∝ √weight, building type by asset class (tower / pavilion / colonnade / cash vault), performance band around each plot | Holdings, allocation; select a building to open it |
+| IV · The Performance Gallery | Inside the lid: a polished steel line on standoff pins traces the **real month-end index (rebased to 100)**; month caps lime/coral; missing months break the line (nothing is interpolated) | Performance, journal |
+| V · The Final Reveal | The whole open case in the studio | Strategy, about, closing |
 
-Code: `components/world/engine.ts` (Three.js world and camera path), `components/world/World.tsx` (scroll mapping, labels,
-scene rail), `components/world/Chapter.tsx` (chapter cards). Scroll mapping: while chapter *i* scrolls into view,
-the camera flies from scene *i−1* to *i*; while reading, it drifts. The scene rail (desktop) and the menu jump anywhere.
+Code: `components/world/engine.ts` (renderer, studio, post-processing, camera, labels, picking, QA hooks),
+`components/world/briefcase/` (`case.ts` the briefcase, `world.ts` the data-driven model, `mechanics.ts` spring physics,
+`camera.ts` keyframes, `materials.ts` + `textures.ts` PBR materials with GPU-baked leather/brushed/scratch/fingerprint maps,
+`dims.ts` real dimensions), `components/world/treemap.ts`, `components/world/quality.ts` (adaptive quality).
+Everything is procedural: no model, texture or HDR downloads. The 3D receives percentages only.
+Add `?quality` to the address to see what your device renders; `?qa` exposes deterministic test hooks.
 Live at **https://vasilisssss.github.io/Portfolio-site/**
 
 Next.js 16 (App Router, **static export**) · TypeScript · Tailwind CSS 4 · Three.js · GSAP + ScrollTrigger · Framer Motion · Lenis · Geist / Geist Mono / Instrument Serif
@@ -73,11 +77,11 @@ npm run build:pages    # the exact build CI runs → out/
 - **Native resolution on every device**: the 3D renders at the screen's own pixel density (1× standard screens,
   2× Retina / 4K / 5K, up to 3× phones), and adopts the new density when the window moves to another screen.
 - Adaptive quality (`components/world/quality.ts`): when a device can't hold ~42 fps, effects make way first
-  (mirror floor → half-res glow → lighter anti-aliasing → glow off); resolution only steps down after that, and never
-  below 1× or 75% of native. Effects come back once the device runs smoothly again.
+  (ambient occlusion → depth of field → lighter anti-aliasing and bloom → softer shadow map); resolution only steps down
+  after that, and never below 1× or 75% of native. Effects come back once the device runs smoothly again.
 - Add `?quality` to the address to see what your device actually renders (size, density, fps, quality level).
-- Phones and low-core devices get lighter geometry: no transmission or mirror floor, fewer buildings and particles,
-  and a wider lens.
+- Phones and low-core devices get a lighter tier: no ambient occlusion, depth of field or glass refraction, 2K shadow map,
+  512 px surface maps, fewer bevel segments; the lens widens so the framing holds on narrow screens.
 - `prefers-reduced-motion`: no intro and no smooth scroll; the camera cuts between scenes instead of flying;
   idle animation stops.
 - No WebGL: the full content renders over a static atmospheric background.

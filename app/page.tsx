@@ -58,7 +58,7 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <WorldMount data={worldData} labels={labels} />
 
-      {/* I — THE PORTAL */}
+      {/* I — THE REVEAL */}
       <div data-scene="0" className="relative">
         <Hero name={profile.name} eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
           figure={amounts ? { value: money(s.value!, cur), label: `Portfolio value · ${dateLong(view.asOf)}` } : s.returnPct != null ? { value: pct(s.returnPct, true), label: "Total return" } : undefined}
@@ -71,20 +71,20 @@ export default function Home() {
           stats={amounts
             ? [{ value: money(s.invested!, cur), label: "In — invested capital" }, { value: money(s.value!, cur), label: "Now — portfolio value" }, { value: moneySigned(s.pnl!, cur), label: "Profit / loss", tone: tone(s.pnl) }]
             : s.returnPct != null ? [{ value: pct(s.returnPct, true), label: "Total return", tone: tone(s.returnPct) }] : []}
-          note="The white stream is money deposited; each lime stream leaves the core in proportion to the position it funds." />
+          note="Steel bearings leave the reservoir along one rail channel per holding. Each holding owns an arc of the ring exactly as large as its share of my capital." />
         {tickerRows.length > 0 && <Marquee rows={tickerRows} />}
         {on.overview && <Overview view={view} />}
       </div>
 
-      {/* III — THE INVESTMENT DISTRICT */}
+      {/* III — THE INVESTMENT CITY */}
       <div data-scene="2" className="relative">
-        <Chapter index={2} roman="III" kicker="The Investment District" title={<>A city of <em>positions.</em></>}
+        <Chapter index={2} roman="III" kicker="The Investment City" title={<>A city of <em>positions.</em></>}
           stats={[
             { value: String(s.positions || view.holdings.length), label: "Positions" },
             { value: String(s.classes), label: "Asset classes" },
             ...(largest ? [{ value: `${largest.ticker ?? largest.name} ${pct(largest.weight)}`, label: "Largest position" }] : []),
           ]}
-          note="Each tower is one holding; its height follows its value. The ring at its foot turns coral when the position is below cost. Click a tower to open it." />
+          note="Each plot's area is its share of the portfolio and the building rises with it. The band around a plot is lime above cost, coral below. Select a building to open it." />
         {on.investments && view.holdings.length > 0 && (
           <section id="investments" aria-labelledby="investments-title" className="container-x relative flex flex-col gap-14 py-24">
             <SectionHead index="02" eyebrow="My investments" id="investments-title" aside={<SampleBadge show={view.sample} />}>
@@ -104,14 +104,14 @@ export default function Home() {
         )}
       </div>
 
-      {/* IV — THE OBSERVATORY */}
+      {/* IV — THE PERFORMANCE GALLERY */}
       <div data-scene="3" className="relative">
-        <Chapter index={3} roman="IV" kicker="The Observatory" title={<>Looking back, <em>honestly.</em></>}
+        <Chapter index={3} roman="IV" kicker="The Performance Gallery" title={<>Looking back, <em>honestly.</em></>}
           stats={perf ? [
             { value: pct(perf.twr, true), label: "Time-weighted return", tone: tone(perf.twr) },
             { value: `${monthYear(perf.points[0].date)} → ${monthYear(perf.points[perf.points.length - 1].date)}`, label: "Period" },
           ] : []}
-          note="The lime ribbon on the horizon is my real month-end performance index, rebased to 100. The white line marks where it started." />
+          note="Inside the lid, a steel line traces my real month-end index, rebased to 100. Each month's cap is lime for a gain, coral for a loss; the thin rod marks 100." />
         {on.performance && (
           <section id="performance" aria-labelledby="performance-title" className="container-x relative flex flex-col gap-14 py-24">
             <SectionHead index="04" eyebrow="Performance" id="performance-title" aside={<SampleBadge show={view.sample} />}>
@@ -128,9 +128,9 @@ export default function Home() {
         {on.journal && <Journal entries={journal} />}
       </div>
 
-      {/* V — THE FUTURE */}
+      {/* V — THE FINAL REVEAL */}
       <div data-scene="4" className="relative">
-        <Chapter index={4} roman="V" kicker="The Future" title={<>What I&apos;m <em>building.</em></>}
+        <Chapter index={4} roman="V" kicker="The Final Reveal" title={<>What I&apos;m <em>building.</em></>}
           note="How I think about money, risk and time — and where this portfolio is going next." />
         {on.strategy && <Strategy s={profile.strategy} />}
         {on.about && <About />}

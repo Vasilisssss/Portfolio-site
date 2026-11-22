@@ -8,7 +8,7 @@ import Magnetic from "@/components/ui/Magnetic";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-/** Chapter I — The Portal. The 3D iris sits behind; the copy is the threshold. */
+/** Chapter I — The Reveal. The briefcase sits in the studio to the right (below on phones); the copy stays in its own column. */
 export default function Hero({ name, eyebrow, lines, body, figure, showInvestments }: {
   name: string; eyebrow: string; lines: string[]; body: string; figure?: { value: string; label: string }; showInvestments: boolean;
 }) {
@@ -25,20 +25,22 @@ export default function Hero({ name, eyebrow, lines, body, figure, showInvestmen
 
   return (
     <section id="top" ref={root} aria-label="Introduction" className="relative flex min-h-[100svh] flex-col justify-between overflow-hidden">
-      <div data-hero-copy className="container-x relative z-[2] flex w-full flex-1 flex-col justify-between pb-14 pt-32">
-        <div aria-hidden className="pointer-events-none absolute inset-x-[-50vw] bottom-0 -z-10 h-[60%] bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
-        <div data-hero-fade className="flex flex-wrap items-start justify-between gap-6">
-          <p className="eyebrow flex items-center gap-4 text-graphite-2"><span className="whitespace-nowrap text-lime">Chapter I</span><span className="block h-px w-10 shrink-0 bg-lime/60 md:w-12" />{eyebrow}</p>
-          <p className="eyebrow hidden text-mute sm:block">{name}</p>
-        </div>
-
-        <div className="flex flex-col gap-10">
-          <h1 className="display text-[clamp(64px,12.5vw,228px)] leading-[0.82] [text-shadow:0_6px_80px_rgba(0,0,0,0.7)]">
+      <div data-hero-copy className="container-x relative z-[2] flex w-full flex-1 flex-col justify-between pb-12 pt-28 md:pb-14 md:pt-32">
+        <div aria-hidden className="pointer-events-none absolute inset-y-0 left-[-50vw] -z-10 w-[calc(50vw+min(62%,760px))] bg-gradient-to-r from-black/55 via-black/20 to-transparent max-md:hidden" />
+        <div className="flex flex-col gap-6 md:gap-8">
+          <div data-hero-fade className="flex flex-wrap items-start justify-between gap-6">
+            <p className="eyebrow flex items-center gap-4 text-graphite-2"><span className="whitespace-nowrap text-lime">Chapter I</span><span className="block h-px w-10 shrink-0 bg-lime/60 md:w-12" />{eyebrow}</p>
+            <p className="eyebrow hidden text-mute sm:block">{name}</p>
+          </div>
+          <h1 className="display max-w-[11ch] text-[clamp(48px,7.2vw,148px)] leading-[0.86] [text-shadow:0_6px_60px_rgba(0,0,0,0.6)]">
             {/* CSS-only reveal: starts at first paint, independent of JavaScript (fast LCP) */}
             <span className="block overflow-hidden pb-[0.06em]"><span className="hero-line block" style={{ ["--d" as string]: "0.35s" }}>{lines[0]}</span></span>
             <span className="block overflow-hidden pb-[0.1em]"><span className="hero-line block" style={{ ["--d" as string]: "0.5s" }}><em className="text-lime">{lines[1]}</em></span></span>
           </h1>
-          <div className="flex flex-wrap items-end justify-between gap-10">
+        </div>
+
+        <div className="flex max-w-[640px] flex-col gap-8 md:gap-10">
+          <div className="flex flex-col gap-8">
             <p className="max-w-[420px] text-[16px] leading-[1.7] text-graphite-2">{body}</p>
             {figure && (
               <div data-hero-fade className="flex flex-col gap-2">
