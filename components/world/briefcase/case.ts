@@ -99,7 +99,7 @@ export function buildCase(m: Materials, low: boolean): CaseParts {
     const body = part(lockBody, m.titanium); body.position.set(x, lockY0 + 0.0335 / 2, front + 0.0045); base.add(body);
     // slider (moves outward to release)
     const sl = new THREE.Group(); sl.position.set(x + sx * -0.004, lockY0 + 0.0052, front + 0.0098); base.add(sl);
-    sl.add(part(sliderG, m.steel));
+    sl.add(part(sliderG, m.titanium));
     for (let k = -1; k <= 1; k++) { const gr = new THREE.Mesh(grooveG, m.composite); gr.position.set(k * 0.0022, 0, 0.0021); sl.add(gr); }
     sliders.push({ mesh: sl, x0: sl.position.x, dir: sx });
     // indicator lamp with a polished bezel

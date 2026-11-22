@@ -134,7 +134,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
   }
   const bokeh = low ? null : new BokehPass(scene, camera, { focus: 1, aperture: 0.01, maxblur: 0.0045 });
   if (bokeh) composer.addPass(bokeh);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.25, 3.2); // HDR threshold: only the lock lamps bloom
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.25, 5); // HDR threshold: only the lock lamps bloom
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -210,7 +210,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
   // ---------- simulation state
   let uTarget = 0, uNow = 0, drift = 0, simTime = 0, introT = reduce || QA ? 99 : 0;
   const v3 = new THREE.Vector3(), tgt = new THREE.Vector3();
-  const lampOff = new THREE.Color(0x1a1d12), lampOn = LIME.clone().multiplyScalar(5);
+  const lampOff = new THREE.Color(0x1a1d12), lampOn = LIME.clone().multiplyScalar(7);
 
   const step = (dt: number) => {
     simTime += dt; introT += dt;
