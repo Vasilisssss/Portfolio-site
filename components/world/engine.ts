@@ -2,6 +2,28 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { Reflector } from "three/examples/jsm/objects/Reflector.js";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+
+/** Final cinematic grade: lens fringing towards the edges, soft vignette, fine animated film grain. */
+const CinemaShader = {
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAberration: { value: 0.0022 } },
+  vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+  fragmentShader: `
+    uniform sampler2D tDiffuse; uniform float uTime; uniform float uAberration; varying vec2 vUv;
+    float rand(vec2 c){ return fract(sin(dot(c, vec2(12.9898, 78.233))) * 43758.5453); }
+    void main(){
+      vec2 d = vUv - 0.5; float r2 = dot(d, d);
+      vec2 off = d * r2 * uAberration * 4.0;
+      vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
+      col *= mix(1.0, 0.7, smoothstep(0.1, 0.5, r2));
+      col += (rand(vUv * 1400.0 + fract(uTime) * 61.0) - 0.5) * 0.02;
+      gl_FragColor = vec4(col, 1.0);
+    }`,
+};
 
 /**
  * THE CAPITAL UNIVERSE — one continuous WebGL world, five environments along a camera path.
@@ -73,11 +95,12 @@ interface Flow { at: (t: number, o: THREE.Vector3) => THREE.Vector3; start: numb
 
 export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boolean; reduce: boolean }, cb: WorldCallbacks) {
   const { low, reduce } = opts;
-  const renderer = new THREE.WebGLRenderer({ antialias: !low, alpha: false, powerPreference: low ? "low-power" : "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1 : 1.5));
+  const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: low ? "low-power" : "high-performance" });
+  // up to 2× device pixels on desktop (native sharpness on 4K / Retina), 1.5× on phones; the governor steps down if needed
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1.5 : 2));
   renderer.setClearColor(BG, 1);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.NeutralToneMapping; // keeps the acid lime pure while compressing chrome highlights
+  renderer.toneMappingExposure = 1.12;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
@@ -90,6 +113,16 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
   scene.environmentIntensity = 0.9;
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 600);
+
+  // ---------- post-processing: 4× MSAA HDR target → bloom on light sources → tone map → cinematic grade
+  const composerTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: low ? 2 : 4 });
+  const composer = new EffectComposer(renderer, composerTarget);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), low ? 0.45 : 0.55, 0.42, 0.86);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+  const cinema = new ShaderPass(CinemaShader);
+  composer.addPass(cinema);
   scene.add(new THREE.HemisphereLight(0x9aa09c, 0x050505, 0.35));
   const key = new THREE.DirectionalLight(0xf3f2ed, 1.2);
   key.position.set(20, 40, 30);
@@ -115,7 +148,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     g.fillStyle = r; g.fillRect(0, 0, s, s);
   }));
   const glow = (color: THREE.Color, size: number, opacity = 0.6) => {
-    const m = track(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, fog: true }));
+    const m = track(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, opacity: opacity * 0.35, depthWrite: false, blending: THREE.AdditiveBlending, fog: true }));
     const s = new THREE.Sprite(m); s.scale.setScalar(size); return s;
   };
 
@@ -149,7 +182,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     g.position.set(0, 10, 0);
     groups[0].add(g);
     const FINS = low ? 44 : 84, R = 8.4;
-    const fin = track(new RoundedBoxGeometry(0.3, 3.6, 2.1, 2, 0.06));
+    const fin = track(new RoundedBoxGeometry(0.3, 3.6, 2.1, low ? 2 : 4, 0.07));
     const fins = new THREE.InstancedMesh(fin, blackChrome, FINS);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), sc = new THREE.Vector3(1, 1, 1);
     const ring = new THREE.Group();
@@ -167,11 +200,11 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     };
     placeFins(0);
     ring.add(fins);
-    const outer = new THREE.Mesh(track(new THREE.TorusGeometry(10.9, 0.42, 32, 240)), brushed);
+    const outer = new THREE.Mesh(track(new THREE.TorusGeometry(10.9, 0.42, low ? 32 : 64, low ? 240 : 480)), brushed);
     g.add(outer);
     const outer2 = new THREE.Mesh(track(new THREE.TorusGeometry(11.7, 0.06, 12, 240)), blackChrome);
     g.add(outer2);
-    const aperture = new THREE.Mesh(track(new THREE.TorusGeometry(6.35, 0.028, 8, 320)), limeLight);
+    const aperture = new THREE.Mesh(track(new THREE.TorusGeometry(6.35, 0.03, 12, 640)), limeLight);
     g.add(aperture);
     const halo = glow(LIME, 22, 0.22);
     halo.position.z = -1.5;
@@ -233,7 +266,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     });
     // inflow: what I deposit (from the portal side)
     const inflow = new THREE.CatmullRomCurve3([new THREE.Vector3(-3, 2, -30), new THREE.Vector3(-6, 6, -50), new THREE.Vector3(-3, 10, -66), C2.clone()]);
-    flows.push({ at: lut(inflow), start: 0, count: low ? 160 : 320, speed: 0.12 });
+    flows.push({ at: lut(inflow), start: 0, count: low ? 220 : 560, speed: 0.12 });
     groups[1].add(new THREE.Mesh(track(new THREE.TubeGeometry(inflow, 120, 0.02, 6)), track(new THREE.MeshBasicMaterial({ color: WHITE, transparent: true, opacity: 0.3, toneMapped: false, fog: false }))));
     // outflows to holdings
     const n = Math.max(1, data.holdings.length);
@@ -242,7 +275,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       const end = new THREE.Vector3(Math.cos(a) * 15, 4 + (i % 2) * 5, -80 + Math.sin(a) * -14 - 6);
       const mid = C2.clone().lerp(end, 0.5).add(new THREE.Vector3(0, 5, 0));
       const curve = new THREE.CatmullRomCurve3([C2.clone(), mid, end]);
-      const count = Math.round((low ? 40 : 70) + (low ? 380 : 900) * h.weight);
+      const count = Math.round((low ? 50 : 110) + (low ? 500 : 1500) * h.weight);
       flows.push({ at: lut(curve), start: 0, count, speed: 0.08 + 0.05 * (i % 3) });
       groups[1].add(new THREE.Mesh(track(new THREE.TubeGeometry(curve, 100, 0.018 + 0.05 * Math.sqrt(h.weight), 6)), track(new THREE.MeshBasicMaterial({ color: LIME, transparent: true, opacity: 0.35 + 0.5 * h.weight, toneMapped: false, fog: false }))));
       const node = new THREE.Mesh(track(new THREE.OctahedronGeometry(0.45 + 1.1 * Math.sqrt(h.weight), 0)), graphite);
@@ -285,7 +318,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
   const pGeo = track(new THREE.BufferGeometry());
   pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
   pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 3));
-  const particles = new THREE.Points(pGeo, track(new THREE.PointsMaterial({ fog: false, size: low ? 0.22 : 0.17, map: glowTex, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })));
+  const particles = new THREE.Points(pGeo, track(new THREE.PointsMaterial({ fog: false, size: low ? 0.2 : 0.13, map: glowTex, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })));
   particles.frustumCulled = false;
   groups[1].add(particles);
   const tmp = new THREE.Vector3();
@@ -315,7 +348,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       const off = i === 0 ? 0 : (i % 2 ? -1 : 1) * Math.ceil(i / 2);
       const x = off * 8.5, z = -160 - Math.abs(off) * 3;
       const height = 2.5 + 16 * Math.sqrt(h.weight);
-      const tower = new THREE.Mesh(track(new RoundedBoxGeometry(4.6, height, 4.6, 3, 0.18)), graphite);
+      const tower = new THREE.Mesh(track(new RoundedBoxGeometry(4.6, height, 4.6, low ? 3 : 6, 0.18)), graphite);
       tower.position.set(x, height / 2, z);
       tower.userData.id = h.id;
       groups[2].add(tower);
@@ -335,6 +368,27 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       foot.rotation.x = Math.PI / 2;
       foot.position.set(x, 0.12, z); // clear of the plaza grid (no z-fighting)
       groups[2].add(foot);
+      // architectural mullions on every face + a light pool where the tower meets the plaza
+      if (!low) {
+        const per = 7, ms = new THREE.InstancedMesh(track(new THREE.BoxGeometry(0.05, height - 0.6, 0.14)), brushed, per * 4);
+        const mm = new THREE.Matrix4(), mq = new THREE.Quaternion();
+        let k = 0;
+        for (let f = 0; f < 4; f++) {
+          const ang = (f * Math.PI) / 2;
+          mq.setFromAxisAngle(new THREE.Vector3(0, 1, 0), ang);
+          for (let j = 0; j < per; j++) {
+            const lx = -1.8 + (3.6 * j) / (per - 1);
+            const v = new THREE.Vector3(lx, 0, 2.34).applyQuaternion(mq);
+            mm.compose(new THREE.Vector3(x + v.x, height / 2, z + v.z), mq, new THREE.Vector3(1, 1, 1));
+            ms.setMatrixAt(k++, mm);
+          }
+        }
+        groups[2].add(ms);
+      }
+      const pool = new THREE.Mesh(track(new THREE.PlaneGeometry(12, 12)), track(new THREE.MeshBasicMaterial({ map: glowTex, color: LIME, transparent: true, opacity: 0.08, depthWrite: false, blending: THREE.AdditiveBlending, fog: false })));
+      pool.rotation.x = -Math.PI / 2;
+      pool.position.set(x, 0.08, z);
+      groups[2].add(pool);
       towers.push({ mesh: tower, cap, id: h.id });
       labels.push({ id: `district:${h.id}`, pos: new THREE.Vector3(x, height + 2.6, z), scene: 2 });
     });
@@ -460,10 +514,13 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     monolith = new THREE.Mesh(track(new RoundedBoxGeometry(3.4, 16, 0.9, 3, 0.1)), blackChrome);
     monolith.position.set(0, 9, -322);
     groups[4].add(monolith);
-    const seam = new THREE.Mesh(track(new THREE.BoxGeometry(0.04, 15, 0.04)), limeLight);
-    seam.position.set(0, 9, -321.5);
-    groups[4].add(seam);
-    animated.push((t) => { if (!reduce) { monolith.rotation.y = Math.sin(t * 0.2) * 0.6; seam.rotation.y = monolith.rotation.y; } });
+    // seams on both faces, parented to the monolith so they turn with it
+    for (const side of [1, -1]) {
+      const seam = new THREE.Mesh(track(new THREE.BoxGeometry(0.04, 15, 0.04)), limeLight);
+      seam.position.set(0, 0, side * 0.47);
+      monolith.add(seam);
+    }
+    animated.push((t) => { if (!reduce) monolith.rotation.y = Math.sin(t * 0.2) * 0.6; });
   }
 
   // =====================================================================
@@ -497,7 +554,12 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     camera.aspect = w / Math.max(1, h);
     camera.fov = camera.aspect < 0.8 ? 52 : 38; // phones: wider lens so the architecture still reads
     camera.updateProjectionMatrix();
-    reflector?.getRenderTarget().setSize(Math.round(w * 0.5), Math.round(h * 0.5));
+    const pr = renderer.getPixelRatio();
+    composer.setPixelRatio(pr);
+    composer.setSize(w, h);
+    bloom.resolution.set(w * pr, h * pr);
+    const rs = Math.min(1, 2048 / Math.max(1, w * pr * 0.75));
+    reflector?.getRenderTarget().setSize(Math.round(w * pr * 0.75 * rs), Math.round(h * pr * 0.75 * rs));
   };
   resize();
   const ro = new ResizeObserver(resize);
@@ -514,7 +576,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
   window.addEventListener("pointermove", onMove, { passive: true });
 
   const t0 = performance.now();
-  let raf = 0, stopped = false;
+  let raf = 0, stopped = false, lastFrame = performance.now();
   const v = new THREE.Vector3();
   // adaptive quality: if the GPU can't hold ~30fps, step resolution down and drop the mirror floor
   let dpr = renderer.getPixelRatio(), lastT = performance.now(), acc = 0, n = 0;
@@ -526,6 +588,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       dpr = Math.max(0.6, dpr - 0.25);
       renderer.setPixelRatio(dpr);
       resize();
+      if (dpr <= 0.85) bloom.strength *= 0.85;
       if (reflector) { reflector.visible = false; (floor.material as THREE.MeshStandardMaterial).opacity = 1; }
     }
   };
@@ -533,10 +596,14 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     raf = requestAnimationFrame(frame);
     if (document.hidden) { lastT = performance.now(); return; }
     governor(performance.now());
-    const t = (performance.now() - t0) / 1000;
-    uNow += (uTarget - uNow) * (reduce ? 1 : 0.07);
-    pointer.cx += (pointer.x - pointer.cx) * 0.05;
-    pointer.cy += (pointer.y - pointer.cy) * 0.05;
+    const now = performance.now();
+    const t = (now - t0) / 1000;
+    const dt = Math.min(0.25, (now - lastFrame) / 1000);
+    lastFrame = now;
+    const ease = 1 - Math.exp(-dt * 4.2); // ~same feel at 60 fps, but time-based
+    uNow += (uTarget - uNow) * (reduce ? 1 : ease);
+    pointer.cx += (pointer.x - pointer.cx) * (1 - Math.exp(-dt * 3));
+    pointer.cy += (pointer.y - pointer.cy) * (1 - Math.exp(-dt * 3));
     const k = Math.min(1, Math.max(0, uNow / 4));
     posCurve.getPoint(k, base);
     lookCurve.getPoint(k, look);
@@ -572,7 +639,8 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       return { id: l.id, x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h, opacity: inFront ? near : 0 };
     }));
 
-    renderer.render(scene, camera);
+    (cinema.uniforms as { uTime: { value: number } }).uTime.value = t;
+    composer.render();
   };
   // compile every shader in the background first (KHR_parallel_shader_compile), then start drawing
   renderer.compileAsync(scene, camera).catch(() => undefined).finally(() => { if (!stopped) { lastT = performance.now(); frame(); } });
@@ -598,6 +666,8 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       disposables.forEach((d) => d.dispose());
       reflector?.dispose();
       env.dispose();
+      composer.dispose();
+      composerTarget.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     },
