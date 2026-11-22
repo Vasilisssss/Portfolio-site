@@ -5,9 +5,11 @@
 const SYMBOL: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", CHF: "CHF ", JPY: "¥" };
 const sym = (cur: string) => SYMBOL[cur] ?? `${cur} `;
 
-export const money = (v: number, cur = "USD", digits = 0) => {
+/** Whole units from 1,000 up; cents below that, so small balances and differences stay meaningful. */
+export const money = (v: number, cur = "USD", digits?: number) => {
   const sign = v < 0 ? "−" : "";
-  const [i, d] = Math.abs(v).toFixed(digits).split(".");
+  const dp = digits ?? (Math.abs(v) < 1000 ? 2 : 0);
+  const [i, d] = Math.abs(v).toFixed(dp).split(".");
   return `${sign}${sym(cur)}${i.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${d ? "." + d : ""}`;
 };
 

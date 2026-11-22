@@ -14,7 +14,7 @@ export default function About() {
       <div className="container-x flex flex-col gap-20 py-32">
         <div className="flex flex-wrap gap-14">
           <div className="flex flex-[1_1_260px] flex-col gap-6">
-            <h2 id="about-title" className="eyebrow flex items-center gap-4 text-champagne-deep"><span className="tnum">07</span><span className="block h-px w-10 bg-champagne" />About</h2>
+            <h2 id="about-title" className="eyebrow flex items-center gap-4 text-ice-deep"><span className="tnum">07</span><span className="block h-px w-10 iris-line" />About</h2>
             <p className="font-serif text-[30px]">{profile.name}</p>
           </div>
           <RevealText as="p" className="display flex-[3_1_620px] text-[clamp(34px,4vw,64px)] leading-[1.1]">{a.intro}</RevealText>

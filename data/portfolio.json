@@ -1,0 +1,122 @@
+{
+  "_comment": "PUBLIC portfolio data (committed). Source: Interactive Brokers — positions, cost basis and FX as of asOf; history = IBKR PortfolioAnalyst month-end NAV and time-weighted return. Everything here is published on the website subject to content/privacy.ts.",
+  "source": "Interactive Brokers",
+  "baseCurrency": "EUR",
+  "fx": {
+    "EUR": 1,
+    "USD": 0.91178945
+  },
+  "asOf": "2026-11-22",
+  "holdings": [
+    {
+      "id": "anthropic",
+      "name": "Anthropic PBC (Class A)",
+      "ticker": "ANT",
+      "assetClass": "Stocks",
+      "quantity": 2,
+      "avgPrice": 96.79485,
+      "currentPrice": 87.80000305,
+      "currency": "USD",
+      "purchaseDate": "2026-11-19",
+      "geography": "North America",
+      "industry": "Technology"
+    },
+    {
+      "id": "alphabet",
+      "name": "Alphabet Inc. (Class C)",
+      "ticker": "GOOG",
+      "assetClass": "Stocks",
+      "quantity": 0.0829,
+      "avgPrice": 280.00241255,
+      "currentPrice": 268.5,
+      "currency": "USD",
+      "purchaseDate": "2026-11-19",
+      "geography": "North America",
+      "industry": "Communications"
+    },
+    {
+      "id": "vanguard-eur-cash-etf",
+      "name": "Vanguard EUR Cash ETF",
+      "ticker": "VCSHA",
+      "assetClass": "ETFs",
+      "quantity": 0.2623,
+      "avgPrice": 20.01410599,
+      "currentPrice": 15.2989998,
+      "currency": "EUR",
+      "geography": "Europe",
+      "industry": "Cash equivalents"
+    },
+    {
+      "id": "cash-eur",
+      "name": "Cash (EUR)",
+      "assetClass": "Cash",
+      "invested": 3.52,
+      "currentValue": 3.52,
+      "currency": "EUR",
+      "geography": "Europe",
+      "industry": "Cash"
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-02-27",
+      "value": 10,
+      "netContributions": 10,
+      "twr": 0
+    },
+    {
+      "date": "2026-03-31",
+      "value": 10,
+      "netContributions": 10,
+      "twr": 0
+    },
+    {
+      "date": "2026-04-30",
+      "value": 10,
+      "netContributions": 10,
+      "twr": 0
+    },
+    {
+      "date": "2026-05-29",
+      "value": 10,
+      "netContributions": 10,
+      "twr": 0
+    },
+    {
+      "date": "2026-06-30",
+      "value": 10,
+      "netContributions": 10,
+      "twr": 0
+    },
+    {
+      "date": "2026-07-31",
+      "value": 9.123396,
+      "netContributions": 10,
+      "twr": -0.0876604
+    },
+    {
+      "date": "2026-08-31",
+      "value": 9.990356,
+      "netContributions": 10,
+      "twr": -0.0009644
+    },
+    {
+      "date": "2026-09-30",
+      "value": 8.740648,
+      "netContributions": 10,
+      "twr": -0.1259352
+    },
+    {
+      "date": "2026-10-30",
+      "value": 8.750648,
+      "netContributions": 10,
+      "twr": -0.1249352
+    },
+    {
+      "date": "2026-11-22",
+      "value": 187.92094,
+      "netContributions": 206.625,
+      "twr": -0.21225155
+    }
+  ]
+}

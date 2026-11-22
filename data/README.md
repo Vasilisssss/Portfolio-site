@@ -1,10 +1,11 @@
-# Your real portfolio data
+# Portfolio data
 
-Put your real data in `data/portfolio.private.json`. The file is **git-ignored**, so it never reaches GitHub,
-even though the repository is public. When the file exists, the site uses it instead of the sample data,
-and the "Sample data" labels disappear.
+`data/portfolio.json` is the portfolio the site shows. It is committed, so it is **public** like the repository.
+Push a change to `main` and the site redeploys.
 
-Only what `content/privacy.ts` allows ends up in the built site. Check the output before you publish.
+To keep the raw data private, either put it in `data/portfolio.private.json` (git-ignored, local builds) or in the
+`PORTFOLIO_JSON` repository secret (CI). Both override `portfolio.json`. Only what `content/privacy.ts` allows
+reaches the built site. With no data file at all, the clearly-labelled sample in `content/sample-portfolio.ts` is used.
 
 ## Format
 
@@ -39,13 +40,13 @@ Only what `content/privacy.ts` allows ends up in the built site. Check the outpu
     }
   ],
   "history": [
-    { "date": "2024-01-31", "value": 100000, "netContributions": 95000 }
+    { "date": "2024-01-31", "value": 100000, "netContributions": 95000, "twr": 0.052 }
   ]
 }
 ```
 
 - `assetClass` must be one of the following: Stocks, ETFs, Cryptocurrency, Real Estate, Bonds, Cash, Precious Metals, Private Investments, Other Assets.
 - Leave out any field you don't have. The site then doesn't show it, and nothing is ever estimated or made up.
-- `history` lists month-end values with cumulative net deposits. It drives the performance section, which separates
+- `history` lists month-end values with cumulative net deposits. `twr` (optional) is the broker's cumulative time-weighted return; when every point has it, it is used as-is. If the last point's date equals `asOf`, its value is replaced by the live total, so charts and totals agree. It drives the performance section, which separates
   your returns from the money you put in. If you leave it empty, the performance section shows an empty state.
 - `"public": false` keeps a holding off the site. Its value still counts towards totals and allocation, labelled "Undisclosed".

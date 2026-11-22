@@ -36,12 +36,12 @@ export default function Strategy({ s }: { s: StrategyContent }) {
     <section id="strategy" ref={root} aria-labelledby="strategy-title" className="relative">
       <div className="container-x flex flex-col gap-[110px] py-36">
         <div className="flex flex-col gap-10">
-          <span className="eyebrow flex items-center gap-4 text-champagne-deep"><span className="tnum">05</span><span className="block h-px w-10 bg-champagne" />Investment strategy
-            {s.draft && <span className="rounded-full border border-champagne-deep/40 px-2.5 py-1 text-[9px] tracking-[0.2em]">Draft</span>}
+          <span className="eyebrow flex items-center gap-4 text-ice-deep"><span className="tnum">05</span><span className="block h-px w-10 iris-line" />Investment strategy
+            {s.draft && <span className="rounded-full border border-ice-deep/40 px-2.5 py-1 text-[9px] tracking-[0.2em]">Draft</span>}
           </span>
           <h2 id="strategy-title" data-manifesto className="display max-w-[1300px] text-[clamp(52px,8vw,148px)] leading-[0.92] tracking-[-0.03em]">
             {s.headline.map((w, i) => (
-              <span key={i} data-word className={i >= s.italicFrom ? "bg-gradient-to-r from-lavender-deep to-ice-deep bg-clip-text italic text-transparent" : undefined}>{w} </span>
+              <span key={i} data-word className={i >= s.italicFrom ? "iris-text italic" : undefined}>{w} </span>
             ))}
           </h2>
         </div>

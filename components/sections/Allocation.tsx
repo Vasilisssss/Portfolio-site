@@ -49,7 +49,7 @@ export default function Allocation({ allocation, currency }: { allocation: Publi
 
       <div role="tabpanel" className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
         <div className="relative mx-auto aspect-square w-full max-w-[400px]">
-          <div aria-hidden className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_35%_30%,#ffffff,#ece8f6_60%,#dfe9f1)] shadow-[inset_0_-10px_30px_rgba(95,85,150,0.15),0_30px_60px_-30px_rgba(36,38,43,0.3)]" />
+          <div aria-hidden className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_35%_30%,#ffffff,#e9e5fb_55%,#d8eafa)] shadow-[inset_0_-10px_30px_rgba(90,82,166,0.14),0_30px_60px_-30px_rgba(46,106,153,0.35)]" />
           <svg viewBox="0 0 300 300" className="relative h-full w-full -rotate-90" role="img" aria-label={`Allocation by ${TABS.find((t) => t.key === tab)?.label}: ${slices.map((s) => `${s.label} ${pct(s.weight)}`).join(", ")}`}>
             <circle cx="150" cy="150" r={R} fill="none" stroke="rgba(36,38,43,0.05)" strokeWidth={SW} />
             {arcs.map((a) => (

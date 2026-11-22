@@ -28,6 +28,7 @@ export default function Hero({ eyebrow, lines, body, orbs, showInvestments }: {
   return (
     <section id="top" ref={root} aria-label="Introduction" className="relative flex min-h-[max(860px,100svh)] flex-col justify-end overflow-hidden">
       <div className="relative mx-auto mt-24 h-[92vw] max-h-[560px] w-full md:absolute md:right-[-6%] md:top-[2%] md:mt-0 md:h-[min(920px,82vw)] md:max-h-none md:w-[min(1080px,66vw)]">
+        <div aria-hidden className="absolute inset-[22%] rounded-full bg-[conic-gradient(from_200deg,#cde6fb,#e3dcfb,#f6e0ef,#d9f3ec,#cde6fb)] opacity-60 blur-3xl" />
         <Sculpture orbs={orbs} className="h-full w-full" />
       </div>
 
@@ -37,7 +38,7 @@ export default function Hero({ eyebrow, lines, body, orbs, showInvestments }: {
         </p>
         <h1 className="display text-[clamp(56px,9.4vw,164px)] leading-[0.9] tracking-[-0.03em]">
           <RevealText as="span" onLoad className="block">{lines[0]}</RevealText>
-          <RevealText as="span" onLoad delay={0.15} className="block bg-gradient-to-r from-lavender-deep via-ice-deep to-champagne-deep bg-clip-text pb-[0.08em] italic text-transparent">{lines[1]}</RevealText>
+          <RevealText as="span" onLoad delay={0.15} className="block iris-text pb-[0.08em] italic text-transparent">{lines[1]}</RevealText>
         </h1>
         <div className="pointer-events-auto mt-12 flex flex-wrap items-end justify-between gap-10">
           <p data-hero-fade className="max-w-[440px] text-[17px] leading-[1.7] text-graphite-2">{body}</p>

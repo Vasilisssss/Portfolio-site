@@ -45,7 +45,7 @@ export default async function EntryPage({ params }: { params: Promise<{ slug: st
       </div>
       {more.length > 0 && (
         <aside aria-labelledby="more" className="flex flex-col gap-6 border-t border-line pt-12">
-          <h2 id="more" className="eyebrow text-champagne-deep">More from the journal</h2>
+          <h2 id="more" className="eyebrow text-ice-deep">More from the journal</h2>
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {more.map((m) => (
               <li key={m.slug}><Link href={`/journal/${m.slug}`} data-cursor="Read" className="glass group flex h-full flex-col gap-3 rounded-[24px] p-6"><Kind k={m.kind} /><span className="font-serif text-[26px] leading-[1.1] group-hover:text-lavender-deep">{m.title}</span></Link></li>

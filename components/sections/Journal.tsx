@@ -9,7 +9,7 @@ import { Reveal } from "@/components/ui/Reveal";
 const KIND_TONE: Record<string, string> = {
   Observation: "bg-ice/70 text-ice-deep",
   Decision: "bg-lavender/70 text-lavender-deep",
-  Research: "bg-[#efe3c8] text-champagne-deep",
+  Research: "bg-mint text-aqua-deep",
   Lesson: "bg-pearl-2 text-graphite-2",
   "Portfolio update": "bg-snow text-graphite",
 };

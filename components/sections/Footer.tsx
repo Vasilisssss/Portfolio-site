@@ -6,12 +6,12 @@ import Magnetic from "@/components/ui/Magnetic";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="relative z-[1] overflow-hidden border-t border-white/80 bg-gradient-to-b from-pearl to-pearl-2">
-      <div aria-hidden className="pointer-events-none absolute -bottom-60 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,#d4cdee,#cfe2ee_45%,transparent)] opacity-70 blur-2xl" />
+    <footer id="contact" className="relative z-[1] overflow-hidden border-t border-white/80 bg-gradient-to-b from-pearl to-[#eef4fc]">
+      <div aria-hidden className="pointer-events-none absolute -bottom-60 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,#dcd6fb,#cde6fb_45%,#f6e0ef_75%,transparent)] opacity-70 blur-2xl" />
       <div className="container-x relative flex flex-col gap-24 pb-10 pt-40">
         <h2 className="display text-[clamp(56px,10vw,184px)] leading-[0.88] tracking-[-0.035em]">
           <RevealText as="span" className="block">{profile.closing[0]}</RevealText>
-          <RevealText as="span" delay={0.12} className="block bg-gradient-to-r from-lavender-deep via-ice-deep to-champagne-deep bg-clip-text pb-[0.06em] italic text-transparent">{profile.closing[1]}</RevealText>
+          <RevealText as="span" delay={0.12} className="block iris-text pb-[0.06em] italic text-transparent">{profile.closing[1]}</RevealText>
         </h2>
         <div className="grid grid-cols-1 gap-12 border-t border-line-2/60 pt-12 sm:grid-cols-3">
           <div className="flex flex-col gap-3.5">

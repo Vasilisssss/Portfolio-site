@@ -86,12 +86,12 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
         className="relative h-[300px] cursor-crosshair md:h-[400px]">
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden className="absolute inset-0 h-full w-full overflow-visible">
           <defs>
-            <linearGradient id="pvLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#3f6f8f" /><stop offset="1" stopColor="#5f5596" /></linearGradient>
-            <linearGradient id="pvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#8fb6d1" stopOpacity="0.35" /><stop offset="1" stopColor="#cfe2ee" stopOpacity="0" /></linearGradient>
+            <linearGradient id="pvLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#2e6a99" /><stop offset="1" stopColor="#5a52a6" /></linearGradient>
+            <linearGradient id="pvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7fb3e0" stopOpacity="0.32" /><stop offset="1" stopColor="#cde6fb" stopOpacity="0" /></linearGradient>
           </defs>
           {v.grid.map((g) => <path key={g.y} d={`M0 ${g.y.toFixed(1)}H${W}`} stroke="rgba(36,38,43,0.08)" vectorEffect="non-scaling-stroke" />)}
-          {mode === "value" && <path data-fade d={v.contribArea} fill="#d4cdee" fillOpacity={0.55} />}
-          {mode === "value" && <path data-fade d={v.contrib} fill="none" stroke="#5f5596" strokeOpacity={0.5} strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />}
+          {mode === "value" && <path data-fade d={v.contribArea} fill="#dcd6fb" fillOpacity={0.6} />}
+          {mode === "value" && <path data-fade d={v.contrib} fill="none" stroke="#5a52a6" strokeOpacity={0.5} strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />}
           <path data-fade d={v.area} fill="url(#pvFill)" />
           <path data-draw d={v.main} fill="none" stroke="url(#pvLine)" strokeWidth={2} vectorEffect="non-scaling-stroke" pathLength={1} strokeDasharray="1" />
         </svg>
@@ -125,7 +125,7 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
 
 function cellStyle(r: number) {
   const a = Math.min(1, Math.abs(r) / 0.06);
-  return r >= 0 ? { background: `rgba(143,182,209,${0.15 + a * 0.6})` } : { background: `rgba(155,74,85,${0.1 + a * 0.4})` };
+  return r >= 0 ? { background: `rgba(127,179,224,${0.15 + a * 0.6})` } : { background: `rgba(163,69,106,${0.1 + a * 0.4})` };
 }
 
 function Heatmap({ perf }: { perf: Perf }) {
@@ -169,7 +169,7 @@ function YearBars({ perf }: { perf: Perf }) {
         {perf.yearly.map((y) => (
           <div key={y.year} className="relative flex flex-1 flex-col items-center">
             <div className="relative h-full w-full">
-              <span data-yb className={`absolute left-1/2 w-[60%] max-w-14 -translate-x-1/2 rounded-md ${y.r >= 0 ? "origin-bottom bg-gradient-to-t from-ice to-[#8fb6d1]" : "origin-top bg-gradient-to-b from-[#e7c9cd] to-[#c98b95]"}`}
+              <span data-yb className={`absolute left-1/2 w-[60%] max-w-14 -translate-x-1/2 rounded-md ${y.r >= 0 ? "origin-bottom bg-gradient-to-t from-ice to-[#7fb3e0]" : "origin-top bg-gradient-to-b from-[#f3d3e2] to-[#d98aae]"}`}
                 style={y.r >= 0 ? { bottom: "50%", height: `${(y.r / max) * 46}%` } : { top: "50%", height: `${(-y.r / max) * 46}%` }} />
               <span className={`tnum absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] ${y.r >= 0 ? "text-gain" : "text-loss"}`}
                 style={y.r >= 0 ? { bottom: `calc(50% + ${(y.r / max) * 46}% + 6px)` } : { top: `calc(50% + ${(-y.r / max) * 46}% + 6px)` }}>{pct(y.r, true)}</span>
@@ -204,7 +204,7 @@ function HoldingBars({ holdings }: { holdings: PublicHolding[] }) {
               <Link href={`/investments/${h.id}`} data-cursor="View" className="group grid grid-cols-[minmax(120px,1.1fr)_minmax(0,2fr)_72px] items-center gap-4 rounded-xl px-2 py-2.5 hover:bg-snow/60">
                 <span className="truncate text-[14px] group-hover:text-lavender-deep">{h.name}</span>
                 <span className="relative h-2.5 rounded-full bg-pearl-2">
-                  <span data-hb className={`absolute top-0 h-full rounded-full ${r >= 0 ? "origin-left bg-gradient-to-r from-ice to-[#8fb6d1]" : "origin-right bg-gradient-to-l from-[#e7c9cd] to-[#c98b95]"}`}
+                  <span data-hb className={`absolute top-0 h-full rounded-full ${r >= 0 ? "origin-left bg-gradient-to-r from-ice to-[#7fb3e0]" : "origin-right bg-gradient-to-l from-[#f3d3e2] to-[#d98aae]"}`}
                     style={r >= 0 ? { left: hasNeg ? "50%" : 0, width: `${w}%` } : { right: "50%", width: `${w}%` }} />
                 </span>
                 <span className={`tnum text-right text-[14px] ${r >= 0 ? "text-gain" : "text-loss"}`}>{pct(r, true)}</span>
@@ -221,8 +221,8 @@ export default function Performance({ perf, holdings, amounts, currency }: { per
   const kpis = [
     { label: "Time-weighted return", v: pct(perf.twr, true), tone: perf.twr },
     ...(perf.annualised != null ? [{ label: "Annualised", v: pct(perf.annualised, true), tone: perf.annualised }] : []),
-    ...(perf.netDeposits != null ? [{ label: "Net deposits", v: money(perf.netDeposits, currency), tone: 0 }] : []),
-    ...(perf.marketGain != null ? [{ label: "Market gain", v: (perf.marketGain >= 0 ? "+" : "") + money(perf.marketGain, currency), tone: perf.marketGain }] : []),
+    ...(perf.netDeposits != null ? [{ label: "Invested capital", v: money(perf.netDeposits, currency), tone: 0 }] : []),
+    ...(perf.marketGain != null ? [{ label: "Profit / loss", v: (perf.marketGain >= 0 ? "+" : "") + money(perf.marketGain, currency), tone: perf.marketGain }] : []),
     { label: `Best month · ${monthYear(perf.best.date)}`, v: pct(perf.best.r, true), tone: perf.best.r },
     { label: `Worst month · ${monthYear(perf.worst.date)}`, v: pct(perf.worst.r, true), tone: perf.worst.r },
   ];

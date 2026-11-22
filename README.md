@@ -1,8 +1,9 @@
 # Personal investment portfolio
 
-A personal site showing **my own investments**: what I own, how my capital is allocated, how it has performed, and how I think about investing.
+My own investments: what I own, how my capital is allocated, how it has performed, and how I think about investing.
+Live at **https://vasilisssss.github.io/Portfolio-site/**
 
-Next.js 16 (App Router, static export) · TypeScript · Tailwind CSS 4 · GSAP + ScrollTrigger · Framer Motion · Lenis · Three.js
+Next.js 16 (App Router, **static export**) · TypeScript · Tailwind CSS 4 · GSAP + ScrollTrigger · Framer Motion · Lenis · Three.js
 
 ## Sections
 
@@ -12,36 +13,49 @@ Next.js 16 (App Router, static export) · TypeScript · Tailwind CSS 4 · GSAP +
 
 | What | File |
 |---|---|
-| **What is public** — amounts, quantities, prices, dates, which holdings, which sections | `content/privacy.ts` |
-| Your real holdings and history (**git-ignored, never committed**) | `data/portfolio.private.json` — format in `data/README.md` |
+| Portfolio data (holdings, FX, month-end history) | `data/portfolio.json` (committed and **public**) |
+| What the site reveals (amounts, quantities, prices, dates, holdings, sections) | `content/privacy.ts` |
+| **All financial calculations, the single source of truth** | `lib/portfolio.ts` |
+| Privacy filter (the only data that reaches the browser) | `lib/public.ts` |
 | Name, hero text, strategy, about, contact | `content/profile.ts` |
 | Journal entries | `content/journal.ts` |
-| Development sample data (used only when no private file exists) | `content/sample-portfolio.ts` |
 
-## Privacy model
+## How figures are defined (`lib/portfolio.ts`)
 
-- Real data is read **only at build time on the server** (`lib/data.ts`, marked `server-only`).
-- `lib/public.ts` applies `content/privacy.ts` and produces the only data shape that leaves the server.
-  Hidden fields are removed before rendering, so they are not in the HTML, the JavaScript or the page data.
-- A holding with `"public": false` gets no page. Its value counts in totals and allocation, shown as "Undisclosed".
-- With `showAmounts: false` the site shows percentages and returns only. Charts switch to "growth of 100".
-- Nothing is estimated: fields you don't provide are not shown, and performance needs real history.
+- **Total portfolio value**: the sum of every position at current price × FX.
+- **Invested capital**: net deposits (deposits − withdrawals) from the history; cost basis is used only when there is no history.
+- **Profit / loss**: total value − invested capital. It splits into *open positions* (Σ value − cost basis) and *fees, FX & cash*.
+- **Total return**: profit / loss ÷ invested capital.
+- **Time-weighted return**: from the broker (`twr` on history points); otherwise Modified Dietz. Deposits never count as performance.
+- The last history point is valued exactly like the headline total, so every chart ends on the same number.
 
-Verified: building with `showAmounts: false` and one hidden holding leaves no currency amounts, quantities or hidden names
-anywhere in `out/`.
+Every section reads these values. Nothing is estimated, and fields that aren't in the data are not shown.
 
-## Data source
+## Updating the data
 
-Holdings and history were read from Interactive Brokers (positions, cost basis, PortfolioAnalyst NAV and time-weighted returns).
-When broker TWR is present (`twr` on history points), it is used as-is. Otherwise returns are computed with Modified Dietz,
-so deposits never count as performance.
+Replace `data/portfolio.json` (format in `data/README.md`) and push to `main`. The site redeploys automatically.
+The current data comes from Interactive Brokers: positions and cost basis, plus PortfolioAnalyst month-end NAV and TWR.
 
-## Run / build / deploy
+**Keeping data out of the public repo (optional):** store the JSON in a repository secret named `PORTFOLIO_JSON`.
+The deploy workflow then uses it instead of `data/portfolio.json`. For local builds, `data/portfolio.private.json` does the same
+(it is git-ignored).
+
+## Deployment: GitHub Pages
+
+`.github/workflows/deploy-pages.yml` runs on every push to `main` and on manual dispatch. It runs `npm ci`, then
+`npm run build:pages` (static export under `/Portfolio-site`), checks the output, and publishes `out/` to the `gh-pages` branch.
+Pages serves that branch (Settings › Pages › Deploy from a branch › `gh-pages` / root). No server is involved.
 
 ```bash
 npm install
 npm run dev            # http://localhost:3000
-npm run build:pages    # static export for GitHub Pages → out/
+npm run build:pages    # the exact build CI runs → out/
 ```
 
-Deploy by pushing the contents of `out/` to the `gh-pages` branch. Check `content/privacy.ts` first: whatever it allows becomes public.
+## Performance and accessibility
+
+- The 3D scene is procedural geometry with a generated environment: no model or texture downloads. Three.js
+  loads lazily when the hero is visible and the browser is idle. Rendering pauses off-screen and in background tabs.
+- Phones and low-core devices get a lighter tier: no glass transmission, fewer polygons, lower pixel ratio.
+- `prefers-reduced-motion`: no intro, no smooth scroll, a static scene that only renders on input, and instant reveals.
+- Server-rendered text, semantic landmarks, keyboard-operable charts and tabs, and visible focus.

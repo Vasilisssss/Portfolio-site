@@ -26,9 +26,9 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
   const color = classColor(h.assetClass);
   return (
     <Link ref={ref} href={`/investments/${h.id}`} data-cursor="View" data-card
-      className="glass group flex h-full flex-col overflow-hidden rounded-[24px] transition-shadow duration-500 hover:shadow-[0_40px_80px_-40px_rgba(95,85,150,0.45)]">
+      className="glass group flex h-full flex-col overflow-hidden rounded-[24px] transition-shadow duration-500 hover:shadow-[0_40px_80px_-40px_rgba(46,106,153,0.35)]">
       <div className="relative h-[210px] overflow-hidden" style={{ background: `radial-gradient(120% 90% at 70% 10%, ${color}55, transparent 70%)` }}>
-        <CardArt assetClass={h.assetClass} seed={i + 1} accent={color === "#e8e4da" ? "var(--color-champagne-deep)" : color} className="absolute inset-0 h-full w-full scale-[1.02] transition-transform duration-[1.1s] ease-[var(--ease-expo)] group-hover:scale-[1.1]" />
+        <CardArt assetClass={h.assetClass} seed={i + 1} accent={color === "#e9eef5" ? "var(--color-ice-deep)" : color} className="absolute inset-0 h-full w-full scale-[1.02] transition-transform duration-[1.1s] ease-[var(--ease-expo)] group-hover:scale-[1.1]" />
         <div className="absolute inset-x-5 top-4 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 rounded-full bg-snow/80 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-graphite-2 backdrop-blur"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}</span>
           {h.ticker && <span className="tnum text-[11px] tracking-[0.2em] text-graphite-2">{h.ticker}</span>}

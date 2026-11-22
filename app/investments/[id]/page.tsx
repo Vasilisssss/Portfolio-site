@@ -41,7 +41,7 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
   if (h.quantity != null) fields.push({ label: "Quantity", value: `${num(h.quantity)}${h.unit ? ` ${h.unit}` : ""}` });
   if (h.avgPrice != null) fields.push({ label: "Average purchase price", value: money(h.avgPrice, h.currency, 2) });
   if (h.currentPrice != null) fields.push({ label: "Current price", value: money(h.currentPrice, h.currency, 2) });
-  if (h.invested != null) fields.push({ label: "Total invested", value: money(h.invested, cur, 2) });
+  if (h.invested != null) fields.push({ label: "Cost basis (incl. fees)", value: money(h.invested, cur, 2) });
   if (h.value != null) fields.push({ label: "Current valuation", value: money(h.value, cur, 2) });
   if (h.pnl != null) fields.push({ label: "Profit / loss", value: moneySigned(h.pnl, cur), tone: h.pnl });
   if (h.returnPct != null) fields.push({ label: "Return", value: pct(h.returnPct, true), tone: h.returnPct });
@@ -72,7 +72,7 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Reveal>
           <div className="glass relative h-[clamp(300px,40vw,520px)] overflow-hidden rounded-[28px]" style={{ background: `radial-gradient(120% 100% at 75% 0%, ${color}66, transparent 65%), linear-gradient(160deg, rgba(255,255,255,.8), rgba(255,255,255,.4))` }}>
-            <CardArt assetClass={h.assetClass} seed={i + 1} accent={color === "#e8e4da" ? "var(--color-champagne-deep)" : color} className="absolute inset-0 h-full w-full" />
+            <CardArt assetClass={h.assetClass} seed={i + 1} accent={color === "#e9eef5" ? "var(--color-ice-deep)" : color} className="absolute inset-0 h-full w-full" />
           </div>
         </Reveal>
         <Reveal delay={0.1}>
@@ -106,14 +106,14 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
 
       {h.note && (
         <section aria-labelledby="note" className="flex flex-wrap gap-12">
-          <h2 id="note" className="eyebrow flex-[1_1_220px] text-champagne-deep">Why I hold it</h2>
+          <h2 id="note" className="eyebrow flex-[1_1_220px] text-ice-deep">Why I hold it</h2>
           <RevealText as="p" className="display flex-[2.4_1_560px] text-[clamp(28px,3vw,44px)] leading-[1.2]">{h.note}</RevealText>
         </section>
       )}
 
       {related.length > 0 && (
         <section aria-labelledby="related" className="flex flex-col gap-5">
-          <h2 id="related" className="eyebrow text-champagne-deep">From my journal</h2>
+          <h2 id="related" className="eyebrow text-ice-deep">From my journal</h2>
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {related.map((e) => (
               <li key={e.slug}><Link href={`/journal/${e.slug}`} data-cursor="Read" className="glass group flex flex-col gap-3 rounded-[24px] p-6"><Kind k={e.kind} /><span className="font-serif text-[26px] leading-[1.1] group-hover:text-lavender-deep">{e.title}</span></Link></li>

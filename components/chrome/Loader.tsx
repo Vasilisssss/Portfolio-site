@@ -29,7 +29,7 @@ export default function Loader({ line }: { line: string }) {
           <Monogram size={96} draw duration={1.6} stroke={0.6} />
           <motion.span className="display text-[28px] italic text-graphite" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 1 }}>{line}</motion.span>
           <span className="block h-px w-[200px] bg-line">
-            <motion.span className="block h-px bg-gradient-to-r from-ice-deep via-lavender-deep to-champagne-deep" initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ duration: 1.8, ease: [0.6, 0, 0.2, 1] }} />
+            <motion.span className="block h-px bg-gradient-to-r from-ice-deep via-lavender-deep to-aqua-deep" initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ duration: 1.8, ease: [0.6, 0, 0.2, 1] }} />
           </span>
         </motion.div>
       )}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PublicView } from "@/lib/public";
-import { dateLong, pct } from "@/lib/format";
+import { dateLong, moneySigned, pct } from "@/lib/format";
 import SectionHead from "@/components/ui/SectionHead";
 import SampleBadge from "@/components/ui/SampleBadge";
 import Ticker from "@/components/ui/Ticker";
@@ -24,13 +24,13 @@ export default function Overview({ view }: { view: PublicView }) {
 
   const stats: { label: string; node: React.ReactNode; hint?: string }[] = [];
   if (amounts) {
-    stats.push({ label: "Invested capital", node: <Ticker value={s.invested!} kind="money" currency={cur} />, hint: "Total cost of current positions" });
-    stats.push({ label: "Current value", node: <Ticker value={s.value!} kind="money" currency={cur} />, hint: "At latest prices" });
-    stats.push({ label: "Unrealised profit / loss", node: <Ticker value={s.pnl!} kind="moneySigned" currency={cur} className={s.pnl! >= 0 ? "text-gain" : "text-loss"} /> });
+    stats.push({ label: "Invested capital", node: <Ticker value={s.invested!} kind="money" currency={cur} />, hint: s.investedSource === "deposits" ? "Money deposited, net of withdrawals" : "Cost of current positions" });
+    stats.push({ label: "Profit / loss", node: <Ticker value={s.pnl!} kind="moneySigned" currency={cur} className={s.pnl! >= 0 ? "text-gain" : "text-loss"} />, hint: "Portfolio value − invested capital" });
   }
-  if (ret != null) stats.push({ label: "Overall return", node: <Ticker value={ret} kind="pctSigned" className={ret >= 0 ? "text-gain" : "text-loss"} />, hint: "On invested capital" });
-  if (perf) stats.push({ label: "Time-weighted return", node: <Ticker value={perf.twr} kind="pctSigned" />, hint: "Excludes the effect of deposits" });
+  if (ret != null) stats.push({ label: "Total return", node: <Ticker value={ret} kind="pctSigned" className={ret >= 0 ? "text-gain" : "text-loss"} />, hint: "Profit / loss ÷ invested capital" });
+  if (perf) stats.push({ label: "Time-weighted return", node: <Ticker value={perf.twr} kind="pctSigned" className={perf.twr >= 0 ? "text-gain" : "text-loss"} />, hint: "Ignores the timing of deposits" });
   if (s.positions) stats.push({ label: "Positions", node: <span className="tnum">{s.positions}</span>, hint: `Across ${s.classes} asset classes` });
+  const recon = amounts && s.positionsPnl != null && s.otherPnl != null && Math.abs(s.otherPnl) >= 0.005;
 
   return (
     <section id="overview" aria-labelledby="overview-title" className="container-x relative pb-24 pt-28">
@@ -47,7 +47,12 @@ export default function Overview({ view }: { view: PublicView }) {
                 <span className="display text-[clamp(56px,7.6vw,128px)] leading-[0.9]">
                   {amounts ? <Ticker value={s.value!} kind="money" currency={cur} /> : ret != null ? <Ticker value={ret} kind="pctSigned" /> : "—"}
                 </span>
-                <span className="text-[13px] text-mute">As of {dateLong(view.asOf)}{!amounts && " · amounts kept private"}</span>
+                <span className="text-[13px] text-mute">As of {dateLong(view.asOf)}{view.source && ` · ${view.source}`}{!amounts && " · amounts kept private"}</span>
+                {recon && (
+                  <span className="tnum text-[13px] text-graphite-2">
+                    Profit / loss {moneySigned(s.pnl!, cur)} = open positions {moneySigned(s.positionsPnl!, cur)} + fees, FX &amp; cash {moneySigned(s.otherPnl!, cur)}
+                  </span>
+                )}
               </div>
               {perf && (
                 <Link href="/#performance" className="group flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-graphite-2 hover:text-lavender-deep">
@@ -60,8 +65,8 @@ export default function Overview({ view }: { view: PublicView }) {
               {spark ? (
                 <svg viewBox="0 0 600 160" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" role="img" aria-label={`Portfolio ${amounts ? "value" : "return index"} over time${perf ? `, time-weighted return ${pct(perf.twr, true)}` : ""}`}>
                   <defs>
-                    <linearGradient id="ovFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#b3a8e2" stopOpacity="0.45" /><stop offset="1" stopColor="#cfe2ee" stopOpacity="0" /></linearGradient>
-                    <linearGradient id="ovLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#3f6f8f" /><stop offset="1" stopColor="#5f5596" /></linearGradient>
+                    <linearGradient id="ovFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#a99ee8" stopOpacity="0.4" /><stop offset="1" stopColor="#cde6fb" stopOpacity="0" /></linearGradient>
+                    <linearGradient id="ovLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#2e6a99" /><stop offset="1" stopColor="#5a52a6" /></linearGradient>
                   </defs>
                   <path d={spark.area} fill="url(#ovFill)" />
                   <path d={spark.line} fill="none" stroke="url(#ovLine)" strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
@@ -71,7 +76,7 @@ export default function Overview({ view }: { view: PublicView }) {
               )}
             </div>
           </div>
-          <dl className="grid grid-cols-2 border-t border-white/80 md:grid-cols-3 xl:grid-cols-6">
+          <dl className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] border-t border-white/80">
             {stats.map((st) => (
               <div key={st.label} className="flex flex-col gap-2 border-b border-r border-white/70 p-6 md:p-7">
                 <dt className="label">{st.label}</dt>

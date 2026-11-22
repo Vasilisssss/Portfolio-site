@@ -44,6 +44,8 @@ export interface HistoryPoint {
 export interface PortfolioData {
   /** true while using generated development data */
   sample: boolean;
+  /** where the figures come from, e.g. "Interactive Brokers" */
+  source?: string;
   baseCurrency: string;
   /** units of base currency per 1 unit of each other currency */
   fx: Record<string, number>;

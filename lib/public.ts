@@ -1,12 +1,12 @@
 import "server-only";
 import { privacy, type SectionKey } from "@/content/privacy";
 import { loadPortfolio } from "./data";
+import { computeMetrics } from "./portfolio";
 import type { AssetClass, Holding } from "./types";
-import { ASSET_CLASSES } from "./types";
 
 /**
- * The ONLY shape that leaves the server. Every field the privacy settings hide is
- * removed here, so it never reaches HTML, client props or the RSC payload.
+ * The ONLY shape that leaves the server. It is derived from lib/portfolio.ts (the single source of truth)
+ * and filtered by content/privacy.ts — hidden fields never reach HTML, client props or the page payload.
  */
 export interface PublicHolding {
   id: string;
@@ -30,21 +30,30 @@ export interface PublicHolding {
 }
 
 export interface Slice { key: string; label: string; weight: number; value?: number; undisclosed?: boolean }
-
 export interface PerfPoint { date: string; index: number; value?: number; contributions?: number }
 
 export interface PublicView {
   sample: boolean;
+  source?: string;
   asOf: string;
   baseCurrency: string;
   showAmounts: boolean;
   sections: Record<SectionKey, boolean>;
-  summary: { value?: number; invested?: number; pnl?: number; returnPct: number | null; positions: number; classes: number };
+  summary: {
+    value?: number;
+    invested?: number;
+    investedSource: "deposits" | "costBasis";
+    pnl?: number;
+    positionsPnl?: number;
+    otherPnl?: number;
+    returnPct: number | null;
+    positions: number;
+    classes: number;
+  };
   holdings: PublicHolding[];
   classes: { key: AssetClass; weight: number; value?: number; returnPct: number | null; count: number }[];
   allocation: { assetClass: Slice[]; investment: Slice[]; geography: Slice[]; industry: Slice[]; currency: Slice[] };
   performance: null | {
-    /** "broker" = returns reported by your broker; "dietz" = computed from values and deposits */
     method: "broker" | "dietz";
     points: PerfPoint[];
     monthly: { date: string; r: number }[];
@@ -59,123 +68,111 @@ export interface PublicView {
   };
 }
 
-const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
-
 let cached: PublicView | null = null;
+const clean = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
 
 export function getPublicView(): PublicView {
   if (cached) return cached;
   const data = loadPortfolio();
-  const fx = (c: string) => data.fx[c] ?? 1;
+  const m = computeMetrics(data);
   const amt = privacy.showAmounts;
-
-  const rows = data.holdings.map((h: Holding) => {
-    const value = (h.currentValue ?? (h.quantity != null && h.currentPrice != null ? h.quantity * h.currentPrice : NaN)) * fx(h.currency);
-    const cost = (h.invested ?? (h.quantity != null && h.avgPrice != null ? h.quantity * h.avgPrice : NaN)) * fx(h.currency);
-    return { h, value: Number.isFinite(value) ? value : 0, cost: Number.isFinite(cost) ? cost : NaN };
-  });
-  const total = sum(rows.map((r) => r.value)) || 1;
-  const knownCost = rows.filter((r) => Number.isFinite(r.cost));
-  const invested = sum(knownCost.map((r) => r.cost));
-  const valueWithCost = sum(knownCost.map((r) => r.value));
 
   const isPublic = (h: Holding) =>
     privacy.showHoldings && h.public !== false && (privacy.holdingsMode === "all" || privacy.selected.includes(h.id));
 
-  const holdings: PublicHolding[] = rows
-    .filter((r) => isPublic(r.h))
-    .sort((a, b) => b.value - a.value)
-    .map(({ h, value, cost }) => {
-      const p: PublicHolding = {
+  const holdings: PublicHolding[] = m.positions
+    .filter((p) => isPublic(p.holding))
+    .map((p) => {
+      const h = p.holding;
+      return clean<PublicHolding>({
         id: h.id, name: h.name, ticker: h.ticker, assetClass: h.assetClass, currency: h.currency,
         geography: h.geography, industry: h.industry, note: h.note,
-        weight: value / total,
-        returnPct: Number.isFinite(cost) && cost > 0 ? value / cost - 1 : null,
-      };
-      if (privacy.showPurchaseDates && h.purchaseDate) p.purchaseDate = h.purchaseDate;
-      if (privacy.showQuantities && h.quantity != null) { p.quantity = h.quantity; p.unit = h.unit; }
-      if (amt && privacy.showPrices) { p.avgPrice = h.avgPrice; p.currentPrice = h.currentPrice; }
-      if (amt) { p.value = value; if (Number.isFinite(cost)) { p.invested = cost; p.pnl = value - cost; } }
-      // strip undefined keys so nothing empty is serialised
-      return Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) as PublicHolding;
+        weight: p.weight, returnPct: p.returnPct,
+        purchaseDate: privacy.showPurchaseDates ? h.purchaseDate : undefined,
+        quantity: privacy.showQuantities ? h.quantity : undefined,
+        unit: privacy.showQuantities ? h.unit : undefined,
+        avgPrice: amt && privacy.showPrices ? h.avgPrice : undefined,
+        currentPrice: amt && privacy.showPrices ? h.currentPrice : undefined,
+        value: amt ? p.value : undefined,
+        invested: amt && p.cost != null ? p.cost : undefined,
+        pnl: amt && p.pnl != null ? p.pnl : undefined,
+      });
     });
 
-  const group = (keyOf: (h: Holding) => string | undefined) => {
-    const m = new Map<string, number>();
-    rows.forEach((r) => { const k = keyOf(r.h) || "Unspecified"; m.set(k, (m.get(k) ?? 0) + r.value); });
-    return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ key: k, label: k, weight: v / total, ...(amt ? { value: v } : {}) }));
-  };
+  const slice = (key: string, label: string, weight: number, value: number, extra: Partial<Slice> = {}): Slice =>
+    clean<Slice>({ key, label, weight, value: amt ? value : undefined, ...extra });
 
-  const classes = ASSET_CLASSES.map((c) => {
-    const rs = rows.filter((r) => r.h.assetClass === c);
-    const v = sum(rs.map((r) => r.value));
-    const kc = rs.filter((r) => Number.isFinite(r.cost));
-    const cc = sum(kc.map((r) => r.cost)), cv = sum(kc.map((r) => r.value));
-    return { key: c, weight: v / total, ...(amt ? { value: v } : {}), returnPct: cc > 0 ? cv / cc - 1 : null, count: rs.length };
-  }).filter((c) => c.count > 0).sort((a, b) => b.weight - a.weight);
-
-  const hiddenValue = sum(rows.filter((r) => !isPublic(r.h)).map((r) => r.value));
+  const hiddenValue = m.positions.filter((p) => !isPublic(p.holding)).reduce((s, p) => s + p.value, 0);
   const investment: Slice[] = privacy.showHoldings
     ? [
-        ...holdings.map((h) => ({ key: h.id, label: h.name, weight: h.weight, ...(amt ? { value: h.value } : {}) })),
-        ...(hiddenValue > 0 ? [{ key: "undisclosed", label: "Undisclosed", weight: hiddenValue / total, undisclosed: true, ...(amt ? { value: hiddenValue } : {}) }] : []),
+        ...m.positions.filter((p) => isPublic(p.holding)).map((p) => slice(p.holding.id, p.holding.name, p.weight, p.value)),
+        ...(hiddenValue > 0 ? [slice("undisclosed", "Undisclosed", hiddenValue / (m.totalValue || 1), hiddenValue, { undisclosed: true })] : []),
       ]
     : [];
 
-  // performance — Modified Dietz monthly returns, chained (time-weighted), so deposits never count as gains
+  // performance — broker TWR when provided, otherwise monthly Modified Dietz, chained
   let performance: PublicView["performance"] = null;
-  const hist = data.history;
+  const hist = m.history;
   if (hist.length >= 2) {
-    const monthly: { date: string; r: number }[] = [];
-    const points: PerfPoint[] = [{ date: hist[0].date, index: 100, ...(amt ? { value: hist[0].value, contributions: hist[0].netContributions } : {}) }];
-    let idx = 100;
     const brokerTwr = hist.every((h) => typeof h.twr === "number");
-    for (let i = 1; i < hist.length; i++) {
-      const flow = hist[i].netContributions - hist[i - 1].netContributions;
-      const base = hist[i - 1].value + flow / 2;
-      const r = brokerTwr
-        ? (1 + hist[i].twr!) / (1 + hist[i - 1].twr!) - 1 // broker-reported time-weighted return
-        : base > 0 ? (hist[i].value - hist[i - 1].value - flow) / base : 0;
-      monthly.push({ date: hist[i].date, r });
-      idx *= 1 + r;
-      points.push({ date: hist[i].date, index: idx, ...(amt ? { value: hist[i].value, contributions: hist[i].netContributions } : {}) });
-    }
+    const monthly: { date: string; r: number }[] = [];
+    const points: PerfPoint[] = [];
+    let idx = 100;
+    hist.forEach((h, i) => {
+      if (i > 0) {
+        const prev = hist[i - 1];
+        const flow = h.netContributions - prev.netContributions;
+        const base = prev.value + flow / 2;
+        const r = brokerTwr ? (1 + h.twr!) / (1 + prev.twr!) - 1 : base > 0 ? (h.value - prev.value - flow) / base : 0;
+        monthly.push({ date: h.date, r });
+        idx *= 1 + r;
+      }
+      points.push(clean<PerfPoint>({ date: h.date, index: idx, value: amt ? h.value : undefined, contributions: amt ? h.netContributions : undefined }));
+    });
     const years = new Map<number, number>();
-    monthly.forEach((m) => { const y = +m.date.slice(0, 4); years.set(y, (years.get(y) ?? 1) * (1 + m.r)); });
-    const twr = brokerTwr ? (1 + hist[hist.length - 1].twr!) / (1 + hist[0].twr!) - 1 : idx / 100 - 1;
+    monthly.forEach((x) => { const y = +x.date.slice(0, 4); years.set(y, (years.get(y) ?? 1) * (1 + x.r)); });
+    const twr = idx / 100 - 1;
     const span = (Date.parse(hist[hist.length - 1].date) - Date.parse(hist[0].date)) / (365.25 * 86400000);
     const sorted = [...monthly].sort((a, b) => b.r - a.r);
-    const last = hist[hist.length - 1];
-    performance = {
-      method: brokerTwr ? "broker" : "dietz",
+    performance = clean({
+      method: brokerTwr ? ("broker" as const) : ("dietz" as const),
       points, monthly,
       yearly: [...years.entries()].map(([year, g]) => ({ year, r: g - 1 })),
-      twr, annualised: span >= 1 ? Math.pow(1 + twr, 1 / span) - 1 : null,
+      twr,
+      annualised: span >= 1 ? Math.pow(1 + twr, 1 / span) - 1 : null,
       best: sorted[0], worst: sorted[sorted.length - 1],
-      ...(amt ? { netDeposits: last.netContributions, marketGain: last.value - last.netContributions } : {}),
-    };
+      // the same figures as the overview — one definition, see lib/portfolio.ts
+      netDeposits: amt ? m.investedCapital : undefined,
+      marketGain: amt ? m.totalPnl : undefined,
+    });
   }
 
   cached = {
     sample: data.sample,
+    source: data.source,
     asOf: data.asOf,
     baseCurrency: data.baseCurrency,
     showAmounts: amt,
     sections: { ...privacy.sections, investments: privacy.sections.investments && privacy.showHoldings },
-    summary: {
-      ...(amt ? { value: total, invested, pnl: valueWithCost - invested } : {}),
-      returnPct: invested > 0 ? valueWithCost / invested - 1 : null,
-      positions: privacy.showHoldings ? data.holdings.length : 0,
-      classes: classes.length,
-    },
+    summary: clean({
+      value: amt ? m.totalValue : undefined,
+      invested: amt ? m.investedCapital : undefined,
+      investedSource: m.investedSource,
+      pnl: amt ? m.totalPnl : undefined,
+      positionsPnl: amt ? m.positionsPnl : undefined,
+      otherPnl: amt ? m.otherPnl : undefined,
+      returnPct: m.totalReturn,
+      positions: privacy.showHoldings ? m.positions.length : 0,
+      classes: m.byClass.length,
+    }),
     holdings,
-    classes,
+    classes: m.byClass.map((c) => clean({ key: c.key, weight: c.weight, value: amt ? c.value : undefined, returnPct: c.returnPct, count: c.count })),
     allocation: {
-      assetClass: classes.map((c) => ({ key: c.key, label: c.key, weight: c.weight, ...(amt ? { value: c.value } : {}) })),
+      assetClass: m.byClass.map((c) => slice(c.key, c.key, c.weight, c.value)),
       investment,
-      geography: group((h) => h.geography),
-      industry: group((h) => h.industry),
-      currency: group((h) => h.currency),
+      geography: m.breakdown((h) => h.geography).map((b) => slice(b.key, b.key, b.weight, b.value)),
+      industry: m.breakdown((h) => h.industry).map((b) => slice(b.key, b.key, b.weight, b.value)),
+      currency: m.breakdown((h) => h.currency).map((b) => slice(b.key, b.key, b.weight, b.value)),
     },
     performance,
   };
