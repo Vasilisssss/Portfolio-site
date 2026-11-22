@@ -20,8 +20,8 @@ export default function MarketClock() {
     return () => clearInterval(iv);
   }, []);
   return (
-    <span className="tnum hidden items-center gap-2 text-[10px] tracking-[0.2em] text-silver md:flex" aria-live="off">
-      <span className={`h-1.5 w-1.5 rounded-full ${s?.open ? "bg-gold" : "bg-[#55585c]"}`} />
+    <span className="tnum hidden items-center gap-2 text-[10px] tracking-[0.2em] text-mute md:flex" aria-live="off">
+      <span className={`h-1.5 w-1.5 rounded-full ${s?.open ? "bg-ice-deep shadow-[0_0_0_3px_rgba(63,111,143,0.18)]" : "bg-line-2"}`} />
       {s ? `${s.open ? "NYSE OPEN" : "NYSE CLOSED"} · NY ${s.time}` : "NYSE · NY --:--"}
     </span>
   );

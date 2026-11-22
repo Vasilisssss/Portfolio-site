@@ -2,21 +2,14 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
-/**
- * Follower cursor for fine pointers only. Elements opt in to a label with data-cursor="View".
- * The native cursor stays visible, so nothing is lost for accessibility.
- */
+/** Follower cursor for fine pointers. Elements opt in to a label with data-cursor="View". The native cursor stays. */
 export default function Cursor() {
   const ring = useRef<HTMLDivElement>(null);
   const dot = useRef<HTMLDivElement>(null);
   const [label, setLabel] = useState("");
   const [enabled, setEnabled] = useState(false);
 
-  useEffect(() => {
-    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (!fine) return;
-    setEnabled(true);
-  }, []);
+  useEffect(() => { setEnabled(window.matchMedia("(hover: hover) and (pointer: fine)").matches); }, []);
 
   useEffect(() => {
     if (!enabled || !ring.current || !dot.current) return;
@@ -28,8 +21,7 @@ export default function Cursor() {
     const move = (e: PointerEvent) => {
       rx(e.clientX); ry(e.clientY); dx(e.clientX); dy(e.clientY);
       const t = e.target as Element | null;
-      const el = t?.closest?.("[data-cursor]");
-      const l = el?.getAttribute("data-cursor") ?? (t?.closest?.("a,button") ? "·" : "");
+      const l = t?.closest?.("[data-cursor]")?.getAttribute("data-cursor") ?? (t?.closest?.("a,button") ? "·" : "");
       if (l !== last) { last = l; setLabel(l); }
     };
     window.addEventListener("pointermove", move, { passive: true });
@@ -43,13 +35,13 @@ export default function Cursor() {
     <>
       <div ref={ring} aria-hidden className="pointer-events-none fixed left-0 top-0 z-[140] opacity-0">
         <div
-          className="-ml-[42px] -mt-[42px] flex h-[84px] w-[84px] items-center justify-center rounded-full text-[10px] tracking-[0.22em] text-ink transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-expo)]"
-          style={{ transform: `scale(${big ? 1 : label === "·" ? 0.5 : 0.3})`, background: big ? "var(--color-ivory)" : "transparent", border: `1px solid ${big ? "var(--color-ivory)" : "rgba(242,240,233,0.6)"}` }}
+          className="-ml-[42px] -mt-[42px] flex h-[84px] w-[84px] items-center justify-center rounded-full text-[10px] tracking-[0.22em] text-snow transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-expo)]"
+          style={{ transform: `scale(${big ? 1 : label === "·" ? 0.5 : 0.3})`, background: big ? "var(--color-graphite)" : "transparent", border: `1px solid ${big ? "var(--color-graphite)" : "rgba(36,38,43,0.45)"}` }}
         >
           {big ? label.toUpperCase() : ""}
         </div>
       </div>
-      <div ref={dot} aria-hidden className="pointer-events-none fixed left-0 top-0 z-[141] -ml-[2px] -mt-[2px] h-1 w-1 rounded-full bg-gold opacity-0" />
+      <div ref={dot} aria-hidden className="pointer-events-none fixed left-0 top-0 z-[141] -ml-[2px] -mt-[2px] h-1 w-1 rounded-full bg-lavender-deep opacity-0" />
     </>
   );
 }

@@ -1,35 +1,32 @@
-import { about } from "@/content/site";
+import { profile } from "@/content/profile";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
 
+/** 07 — a minimal personal introduction. Every line comes from content/profile.ts; nothing is invented. */
 export default function About() {
+  const a = profile.about;
+  const blocks = [
+    { label: "My approach", text: a.approach },
+    { label: "Long-term vision", text: a.vision },
+    { label: "Investing since", text: a.started },
+  ];
   return (
-    <section id="about" aria-labelledby="about-title" className="relative z-[2] border-t border-line">
-      <div className="container-x flex flex-col gap-24 py-36">
-        <div className="flex flex-wrap gap-16">
-          <div className="flex flex-[1_1_280px] flex-col gap-6">
-            <h2 id="about-title" className="eyebrow text-gold">V — About</h2>
-            <p className="max-w-[300px] text-[13px] leading-[1.8] text-silver">{about.background}</p>
+    <section id="about" aria-labelledby="about-title" className="relative">
+      <div className="container-x flex flex-col gap-20 py-32">
+        <div className="flex flex-wrap gap-14">
+          <div className="flex flex-[1_1_260px] flex-col gap-6">
+            <h2 id="about-title" className="eyebrow flex items-center gap-4 text-champagne-deep"><span className="tnum">07</span><span className="block h-px w-10 bg-champagne" />About</h2>
+            <p className="font-serif text-[30px]">{profile.name}</p>
           </div>
-          <RevealText as="p" className="display flex-[3_1_640px] text-[clamp(36px,4.2vw,68px)] leading-[1.08] tracking-[-0.01em]">
-            {about.statement[0]}<em className="text-gold">{about.statement[1]}</em>{about.statement[2]}
-          </RevealText>
+          <RevealText as="p" className="display flex-[3_1_620px] text-[clamp(34px,4vw,64px)] leading-[1.1]">{a.intro}</RevealText>
         </div>
         <Reveal>
-          <div className="grid grid-cols-1 gap-px border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
-            {about.blocks.map((b) => (
-              <div key={b.label} className="flex flex-col gap-4 bg-ink p-9">
-                <h3 className="label text-mute">{b.label}</h3>
-                <p className="font-serif text-[28px] leading-[1.2]">{b.text}</p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {blocks.map((b) => (
+              <div key={b.label} className="glass flex flex-col gap-4 rounded-[24px] p-8">
+                <h3 className="label">{b.label}</h3>
+                <p className="font-serif text-[24px] leading-[1.3]">{b.text}</p>
               </div>
             ))}
-            <div className="flex flex-col gap-4 bg-ink p-9">
-              <h3 className="label text-mute">Expertise</h3>
-              <ul className="flex flex-col gap-2.5 text-sm text-ivory-dim">{about.expertise.map((x) => <li key={x}>{x}</li>)}</ul>
-            </div>
-            <div className="flex flex-col gap-4 bg-ink p-9">
-              <h3 className="label text-mute">Objectives</h3>
-              <ul className="flex flex-col gap-2.5 text-sm text-ivory-dim">{about.objectives.map((x) => <li key={x}>{x}</li>)}</ul>
-            </div>
           </div>
         </Reveal>
       </div>

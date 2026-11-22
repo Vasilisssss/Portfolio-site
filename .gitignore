@@ -4,3 +4,6 @@ next-env.d.ts
 *.tsbuildinfo
 .env*
 out
+
+# Real portfolio data never gets committed
+data/*.private.json

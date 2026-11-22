@@ -1,41 +1,47 @@
-# Investment portfolio site
+# Personal investment portfolio
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · GSAP + ScrollTrigger + SplitText · Framer Motion · Lenis · Three.js
+A personal site showing **my own investments**: what I own, how my capital is allocated, how it has performed, and how I think about investing.
 
-## Run it
+Next.js 16 (App Router, static export) · TypeScript · Tailwind CSS 4 · GSAP + ScrollTrigger · Framer Motion · Lenis · Three.js
 
-```bash
-npm install
-npm run dev        # http://localhost:3000
-npm run build && npm start   # production
-```
+## Sections
 
-## Edit content (no code changes needed)
+01 Overview · 02 My investments (one page per holding) · 03 Asset allocation · 04 Performance · 05 Investment strategy · 06 Market journal · 07 About
+
+## Where things live
 
 | What | File |
 |---|---|
-| Firm name, email, address, nav, hero copy, closing line, disclaimer | `content/site.ts` |
-| Philosophy principles, About text | `content/site.ts` |
-| Holdings, allocation, returns, geography, sectors, globe cities | `content/portfolio.ts` |
-| Articles | `content/insights.ts` |
-| Performance history (currently a seeded sample series) | `lib/series.ts` → `buildSeries()` |
+| **What is public** — amounts, quantities, prices, dates, which holdings, which sections | `content/privacy.ts` |
+| Your real holdings and history (**git-ignored, never committed**) | `data/portfolio.private.json` — format in `data/README.md` |
+| Name, hero text, strategy, about, contact | `content/profile.ts` |
+| Journal entries | `content/journal.ts` |
+| Development sample data (used only when no private file exists) | `content/sample-portfolio.ts` |
 
-**All financial figures are illustrative sample data.** `portfolio.illustrative = true` shows the
-"Illustrative sample data" badges across the site. Set it to `false` only once every figure is real and verified.
-To use real history, return your daily NAV points from `buildSeries()` in the same `{ t, v, b }` shape.
+## Privacy model
 
-## Structure
+- Real data is read **only at build time on the server** (`lib/data.ts`, marked `server-only`).
+- `lib/public.ts` applies `content/privacy.ts` and produces the only data shape that leaves the server.
+  Hidden fields are removed before rendering, so they are not in the HTML, the JavaScript or the page data.
+- A holding with `"public": false` gets no page. Its value counts in totals and allocation, shown as "Undisclosed".
+- With `showAmounts: false` the site shows percentages and returns only. Charts switch to "growth of 100".
+- Nothing is estimated: fields you don't provide are not shown, and performance needs real history.
 
-- `app/` — routes: home, `/portfolio/[slug]` and `/insights/[slug]` (statically generated), 404, error, loading, sitemap, robots
-- `components/chrome/` — nav + full-screen menu, intro loader, cursor, grain, smooth scroll, NYSE clock
-- `components/hero/` — hero and the WebGL globe (pauses off-screen, static under reduced motion)
-- `components/portfolio/`, `components/analytics/`, `components/sections/` — page sections
-- `components/ui/` — text reveals, magnetic button, sample badge, procedural card art
+Verified: building with `showAmounts: false` and one hidden holding leaves no currency amounts, quantities or hidden names
+anywhere in `out/`.
 
-## Notes
+## Data source
 
-- Every animation respects `prefers-reduced-motion`; the cursor only appears on fine pointers.
-- The text is in the server-rendered HTML; animation only reveals it, so it stays crawlable.
-- Number and date formatting is deterministic, so server and client output match and no hydration errors occur.
-- Security headers are set in `next.config.ts`. No financial data leaves the build — it is static content.
-- CMS-ready: the `content/*.ts` modules are typed and can be swapped for a headless CMS fetch (Sanity, Contentful, etc.) inside the same server components.
+Holdings and history were read from Interactive Brokers (positions, cost basis, PortfolioAnalyst NAV and time-weighted returns).
+When broker TWR is present (`twr` on history points), it is used as-is. Otherwise returns are computed with Modified Dietz,
+so deposits never count as performance.
+
+## Run / build / deploy
+
+```bash
+npm install
+npm run dev            # http://localhost:3000
+npm run build:pages    # static export for GitHub Pages → out/
+```
+
+Deploy by pushing the contents of `out/` to the `gh-pages` branch. Check `content/privacy.ts` first: whatever it allows becomes public.

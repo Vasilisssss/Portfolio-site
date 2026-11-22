@@ -1,13 +1,16 @@
 import type { MetadataRoute } from "next";
 export const dynamic = "force-static";
-import { site } from "@/content/site";
-import { portfolio } from "@/content/portfolio";
-import { insights } from "@/content/insights";
+import { profile } from "@/content/profile";
+import { privacy } from "@/content/privacy";
+import { getPublicView } from "@/lib/public";
+import { journal } from "@/content/journal";
 
+/** Lists only pages the privacy settings make public. */
 export default function sitemap(): MetadataRoute.Sitemap {
+  const view = getPublicView();
   return [
-    { url: site.url, changeFrequency: "monthly", priority: 1 },
-    ...portfolio.investments.map((i) => ({ url: `${site.url}/portfolio/${i.slug}`, changeFrequency: "monthly" as const, priority: 0.7 })),
-    ...insights.map((a) => ({ url: `${site.url}/insights/${a.slug}`, lastModified: a.date, changeFrequency: "yearly" as const, priority: 0.6 })),
+    { url: profile.url, changeFrequency: "weekly", priority: 1 },
+    ...(view.sections.investments ? view.holdings.map((h) => ({ url: `${profile.url}/investments/${h.id}/`, changeFrequency: "weekly" as const, priority: 0.7 })) : []),
+    ...(privacy.sections.journal ? journal.map((e) => ({ url: `${profile.url}/journal/${e.slug}/`, lastModified: e.date, changeFrequency: "yearly" as const, priority: 0.6 })) : []),
   ];
 }

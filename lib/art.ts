@@ -1,4 +1,4 @@
-import type { ArtKind } from "@/content/portfolio";
+export type ArtKind = "eq" | "pe" | "re" | "vc" | "alt" | "sh" | "fi" | "cash";
 import { mulberry32 } from "./random";
 
 /** Procedural line-art compositions (viewBox 0 0 400 300). `a` = ivory hairlines, `b` = gold accent. */
@@ -10,13 +10,12 @@ export function makeArt(kind: ArtKind | "feature", seed = 1): { a: string; b: st
   let a = "", b = "";
   switch (kind) {
     case "eq": {
-      const tops: [number, number][] = [];
+      // neutral price columns — decorative, deliberately no up or down trend
       for (let i = 0; i < 36; i++) {
-        const x = 30 + i * 9.6, h = 30 + i * 5.4 + r() * 34;
-        tops.push([x, 270 - h]);
-        a += `M${f(x)} 270V${f(270 - h)}`;
+        const x = 30 + i * 9.6, h = 70 + Math.sin(i * 0.55) * 26 + r() * 40;
+        a += `M${f(x)} ${f(200 - h / 2)}V${f(200 + h / 2)}`;
       }
-      b = tops.map((p, i) => `${i ? "L" : "M"}${f(p[0])} ${f(p[1] - 8)}`).join("") + "M20 270H380";
+      b = "M20 200H380" + circ(200, 200, 30);
       break;
     }
     case "pe": {
@@ -75,6 +74,11 @@ export function makeArt(kind: ArtKind | "feature", seed = 1): { a: string; b: st
       }
       a += "M30 270H370";
       for (const x of [30, 70, 130, 210, 370]) b += circ(x, +f(yAt(x, 3)), 3);
+      break;
+    }
+    case "cash": {
+      for (let k = 0; k < 11; k++) { const y = 70 + k * 16, w = 260 - Math.abs(k - 5) * 18; a += `M${f(200 - w / 2)} ${y}H${f(200 + w / 2)}`; }
+      b = "M70 150H330" + circ(200, 150, 26);
       break;
     }
     default: {
