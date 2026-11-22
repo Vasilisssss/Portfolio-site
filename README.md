@@ -70,9 +70,14 @@ npm run build:pages    # the exact build CI runs → out/
 - All 3D is procedural geometry plus a GPU-generated studio environment: no model, texture or HDR downloads.
   Three.js (and the world) load only after the page has loaded and gone idle. Shaders compile asynchronously
   (`compileAsync`). Rendering pauses in background tabs, and only the environments near the camera are drawn.
-- An adaptive governor steps the resolution down and drops the mirror floor when a device can't hold ~30 fps.
-- Phones and low-core devices get a lighter tier: no transmission or mirror floor, fewer buildings and particles,
-  a lower pixel ratio and a wider lens.
+- **Native resolution on every device**: the 3D renders at the screen's own pixel density (1× standard screens,
+  2× Retina / 4K / 5K, up to 3× phones), and adopts the new density when the window moves to another screen.
+- Adaptive quality (`components/world/quality.ts`): when a device can't hold ~42 fps, effects make way first
+  (mirror floor → half-res glow → lighter anti-aliasing → glow off); resolution only steps down after that, and never
+  below 1× or 75% of native. Effects come back once the device runs smoothly again.
+- Add `?quality` to the address to see what your device actually renders (size, density, fps, quality level).
+- Phones and low-core devices get lighter geometry: no transmission or mirror floor, fewer buildings and particles,
+  and a wider lens.
 - `prefers-reduced-motion`: no intro and no smooth scroll; the camera cuts between scenes instead of flying;
   idle animation stops.
 - No WebGL: the full content renders over a static atmospheric background.

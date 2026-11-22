@@ -6,24 +6,8 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { createGovernor, dprFor } from "./quality";
 
-/** Final cinematic grade: lens fringing towards the edges, soft vignette, fine animated film grain. */
-const CinemaShader = {
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAberration: { value: 0.0022 } },
-  vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-  fragmentShader: `
-    uniform sampler2D tDiffuse; uniform float uTime; uniform float uAberration; varying vec2 vUv;
-    float rand(vec2 c){ return fract(sin(dot(c, vec2(12.9898, 78.233))) * 43758.5453); }
-    void main(){
-      vec2 d = vUv - 0.5; float r2 = dot(d, d);
-      vec2 off = d * r2 * uAberration * 4.0;
-      vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
-      col *= mix(1.0, 0.7, smoothstep(0.1, 0.5, r2));
-      col += (rand(vUv * 1400.0 + fract(uTime) * 61.0) - 0.5) * 0.02;
-      gl_FragColor = vec4(col, 1.0);
-    }`,
-};
 
 /**
  * THE CAPITAL UNIVERSE — one continuous WebGL world, five environments along a camera path.
@@ -96,8 +80,10 @@ interface Flow { at: (t: number, o: THREE.Vector3) => THREE.Vector3; start: numb
 export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boolean; reduce: boolean }, cb: WorldCallbacks) {
   const { low, reduce } = opts;
   const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: low ? "low-power" : "high-performance" });
-  // up to 2× device pixels on desktop (native sharpness on 4K / Retina), 1.5× on phones; the governor steps down if needed
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1.5 : 2));
+  // every device renders at its own native resolution: 1× standard screens, 2× Retina / 4K / 5K, up to 3× phones
+  const nativeDpr = () => Math.min(window.devicePixelRatio || 1, 3);
+  let native = nativeDpr();
+  renderer.setPixelRatio(native);
   renderer.setClearColor(BG, 1);
   renderer.toneMapping = THREE.NeutralToneMapping; // keeps the acid lime pure while compressing chrome highlights
   renderer.toneMappingExposure = 1.12;
@@ -114,15 +100,15 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 600);
 
-  // ---------- post-processing: 4× MSAA HDR target → bloom on light sources → tone map → cinematic grade
-  const composerTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: low ? 2 : 4 });
+  // ---------- post-processing: MSAA HDR target → bloom on light sources → tone map (no lens or grain filters: edges stay crisp in motion)
+  const MSAA = low ? 2 : 4;
+  let level = 0; // see ./quality.ts — effects make way before resolution does
+  const composerTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: MSAA });
   const composer = new EffectComposer(renderer, composerTarget);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), low ? 0.45 : 0.55, 0.42, 0.86);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
-  const cinema = new ShaderPass(CinemaShader);
-  composer.addPass(cinema);
   scene.add(new THREE.HemisphereLight(0x9aa09c, 0x050505, 0.35));
   const key = new THREE.DirectionalLight(0xf3f2ed, 1.2);
   key.position.set(20, 40, 30);
@@ -142,7 +128,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
   ));
   const limeLight = track(new THREE.MeshBasicMaterial({ color: LIME, toneMapped: false, fog: false })); // light sources read through the haze
   const whiteLine = track(new THREE.LineBasicMaterial({ color: WHITE, transparent: true, opacity: 0.16, depthWrite: false }));
-  const glowTex = track(canvasTexture(128, (g, s) => {
+  const glowTex = track(canvasTexture(256, (g, s) => {
     const r = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
     r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.25, "rgba(255,255,255,0.35)"); r.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = r; g.fillRect(0, 0, s, s);
@@ -219,7 +205,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       groups[0].add(seam);
     }
     // light shafts behind the portal
-    const shaftTex = track(canvasTexture(64, (c, s) => { const lg = c.createLinearGradient(0, s, 0, 0); lg.addColorStop(0, "rgba(255,255,255,0.5)"); lg.addColorStop(1, "rgba(255,255,255,0)"); c.fillStyle = lg; c.fillRect(0, 0, s, s); }));
+    const shaftTex = track(canvasTexture(128, (c, s) => { const lg = c.createLinearGradient(0, s, 0, 0); lg.addColorStop(0, "rgba(255,255,255,0.5)"); lg.addColorStop(1, "rgba(255,255,255,0)"); c.fillStyle = lg; c.fillRect(0, 0, s, s); }));
     const shaftMat = track(new THREE.MeshBasicMaterial({ map: shaftTex, color: WHITE, transparent: true, opacity: 0.07, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
     for (let i = 0; i < 7; i++) {
       const shaft = new THREE.Mesh(track(new THREE.PlaneGeometry(1.2 + (i % 3), 60)), shaftMat);
@@ -557,7 +543,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     const pr = renderer.getPixelRatio();
     composer.setPixelRatio(pr);
     composer.setSize(w, h);
-    bloom.resolution.set(w * pr, h * pr);
+    if (level >= 2) bloom.setSize(Math.round((w * pr) / 2), Math.round((h * pr) / 2));
     const rs = Math.min(1, 2048 / Math.max(1, w * pr * 0.75));
     reflector?.getRenderTarget().setSize(Math.round(w * pr * 0.75 * rs), Math.round(h * pr * 0.75 * rs));
   };
@@ -578,24 +564,50 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
   const t0 = performance.now();
   let raf = 0, stopped = false, lastFrame = performance.now();
   const v = new THREE.Vector3();
-  // adaptive quality: if the GPU can't hold ~30fps, step resolution down and drop the mirror floor
-  let dpr = renderer.getPixelRatio(), lastT = performance.now(), acc = 0, n = 0;
-  const governor = (now: number) => {
-    acc += now - lastT; lastT = now; n++;
-    if (n < 45) return;
-    const avg = acc / n; acc = 0; n = 0;
-    if (avg > 34 && dpr > 0.6) {
-      dpr = Math.max(0.6, dpr - 0.25);
-      renderer.setPixelRatio(dpr);
-      resize();
-      if (dpr <= 0.85) bloom.strength *= 0.85;
-      if (reflector) { reflector.visible = false; (floor.material as THREE.MeshStandardMaterial).opacity = 1; }
-    }
+  // ---------- adaptive quality: keep native resolution; when a device can't hold ~42 fps, effects make way first,
+  // and they come back once it runs smoothly again (median frame time, so load hitches and scroll stalls don't count)
+  const floorMat = floor.material as THREE.MeshStandardMaterial;
+  const applyQuality = (l: number) => {
+    level = l;
+    if (reflector) { reflector.visible = level < 1; floorMat.opacity = level < 1 ? 0.82 : 1; }
+    bloom.enabled = level < 4;
+    const samples = level >= 3 ? (native >= 2 ? 0 : 2) : MSAA; // at 2×+ the pixels are small enough to need little MSAA
+    for (const rt of [composer.renderTarget1, composer.renderTarget2]) if (rt.samples !== samples) { rt.samples = samples; rt.dispose(); }
+    renderer.setPixelRatio(dprFor(native, level));
+    resize();
   };
+  const gov = createGovernor({ native, onChange: applyQuality });
+  let frames = 0;
+  // moving the window to another screen (e.g. laptop → 4K monitor): adopt that screen's native resolution
+  let dprQuery: MediaQueryList | null = null;
+  const watchDpr = () => {
+    dprQuery?.removeEventListener("change", onDpr);
+    dprQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    dprQuery.addEventListener("change", onDpr);
+  };
+  const onDpr = () => { native = nativeDpr(); gov.setNative(native); watchDpr(); };
+  watchDpr();
+  // ?quality in the address shows what this device actually renders
+  const LEVELS = ["full quality", "mirror floor off", "glow half-res", "lighter anti-aliasing", "glow off"];
+  let readout: HTMLDivElement | null = null;
+  if (new URLSearchParams(window.location.search).has("quality")) {
+    readout = document.createElement("div");
+    readout.setAttribute("aria-hidden", "true");
+    readout.style.cssText = "position:fixed;left:12px;bottom:12px;z-index:200;padding:8px 12px;border-radius:10px;background:rgba(8,9,10,.85);border:1px solid rgba(243,242,237,.12);color:#d7ff3f;font:11px/1.5 ui-monospace,monospace;pointer-events:none;white-space:pre";
+    document.body.appendChild(readout);
+  }
+  const report = setInterval(() => {
+    const c = renderer.domElement, pr = renderer.getPixelRatio();
+    const lv = level <= 4 ? LEVELS[level] : `${LEVELS[4]}, resolution ${pr.toFixed(2)}×`;
+    host.dataset.render = `${c.width}x${c.height}@${pr.toFixed(2)}/${native} L${level}`;
+    if (readout) readout.textContent = `3D render ${c.width} × ${c.height} px\n${pr.toFixed(2)}× (native ${native}×) · ${frames * 2} fps\n${lv}`;
+    frames = 0;
+  }, 500);
+
   const frame = () => {
     raf = requestAnimationFrame(frame);
-    if (document.hidden) { lastT = performance.now(); return; }
-    governor(performance.now());
+    if (document.hidden) { gov.pause(performance.now()); return; }
+    gov.sample(performance.now());
     const now = performance.now();
     const t = (now - t0) / 1000;
     const dt = Math.min(0.25, (now - lastFrame) / 1000);
@@ -639,11 +651,11 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       return { id: l.id, x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h, opacity: inFront ? near : 0 };
     }));
 
-    (cinema.uniforms as { uTime: { value: number } }).uTime.value = t;
     composer.render();
+    frames++;
   };
   // compile every shader in the background first (KHR_parallel_shader_compile), then start drawing
-  renderer.compileAsync(scene, camera).catch(() => undefined).finally(() => { if (!stopped) { lastT = performance.now(); frame(); } });
+  renderer.compileAsync(scene, camera).catch(() => undefined).finally(() => { if (!stopped) { gov.start(performance.now()); frame(); } });
 
   const onClick = () => { if (hovered) cb.onSelect(hovered); };
   window.addEventListener("click", onClick);
@@ -654,6 +666,9 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       stopped = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
+      clearInterval(report);
+      dprQuery?.removeEventListener("change", onDpr);
+      readout?.remove();
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("click", onClick);
       document.body.style.cursor = "";
