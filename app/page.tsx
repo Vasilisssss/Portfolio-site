@@ -12,11 +12,17 @@ import About from "@/components/sections/About";
 import SectionHead from "@/components/ui/SectionHead";
 import SampleBadge from "@/components/ui/SampleBadge";
 import { Reveal } from "@/components/ui/Reveal";
-import { dateLong } from "@/lib/format";
+import { dateLong, pct } from "@/lib/format";
+import Marquee, { type MarqueeItem } from "@/components/ui/Marquee";
 
 export default function Home() {
   const view = getPublicView();
   const on = view.sections;
+  // ticker band: real holdings and returns, then asset-class weights (percentages only)
+  const tickerRows: MarqueeItem[][] = [
+    view.holdings.map((h): MarqueeItem => ({ label: h.ticker ?? h.name, value: h.returnPct == null ? undefined : pct(h.returnPct, true), tone: h.returnPct == null || Math.abs(h.returnPct) < 0.0005 ? "flat" : h.returnPct > 0 ? "gain" : "loss" })),
+    view.classes.map((c): MarqueeItem => ({ label: c.key, value: pct(c.weight), tone: "flat" })),
+  ].filter((r) => r.length > 0);
   const jsonLd = { "@context": "https://schema.org", "@type": "ProfilePage", name: profile.siteTitle, description: profile.hero.body, url: profile.url };
 
   return (
@@ -24,6 +30,8 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Hero eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
         orbs={view.classes.map((c) => ({ key: c.key, weight: c.weight }))} showInvestments={on.investments && view.holdings.length > 0} />
+
+      {tickerRows.length > 0 && <Marquee rows={tickerRows} />}
 
       {on.overview && <Overview view={view} />}
 

@@ -50,6 +50,8 @@ export default function Investments({ holdings, currency }: { holdings: PublicHo
   const classes = useMemo(() => [...new Set(holdings.map((h) => h.assetClass))], [holdings]);
   const [filter, setFilter] = useState<string>("All");
   const grid = useRef<HTMLDivElement>(null);
+  const pin = useRef<HTMLDivElement>(null);
+  const bar = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const on = (e: Event) => { const k = (e as CustomEvent<string>).detail; setFilter(classes.includes(k as PublicHolding["assetClass"]) ? k : "All"); };
@@ -58,25 +60,53 @@ export default function Investments({ holdings, currency }: { holdings: PublicHo
   }, [classes]);
 
   useGSAP(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.fromTo("[data-card]", { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.1, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: grid.current, start: "top 88%", once: true } });
-  }, { scope: grid, dependencies: [filter], revertOnUpdate: true });
+    const mm = gsap.matchMedia();
+    // desktop: pin the gallery and glide the cards sideways while you scroll
+    mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
+      const track = grid.current!, wrap = pin.current!;
+      const distance = () => Math.max(0, track.scrollWidth - wrap.clientWidth);
+      if (distance() < 40) return;
+      gsap.to(track, {
+        x: () => -distance(), ease: "none",
+        scrollTrigger: { trigger: wrap, start: "top 12%", end: () => `+=${distance()}`, pin: true, pinSpacing: true /* parent is flex: GSAP would default this to false */, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1,
+          onUpdate: (st) => { if (bar.current) bar.current.style.transform = `scaleX(${st.progress})`; } },
+      });
+      gsap.fromTo("[data-card]", { autoAlpha: 0, x: 120 }, { autoAlpha: 1, x: 0, duration: 1.2, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: wrap, start: "top 85%", once: true } });
+    });
+    // smaller screens: simple rise-in grid
+    mm.add("(max-width: 1023px) and (prefers-reduced-motion: no-preference)", () => {
+      gsap.fromTo("[data-card]", { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.1, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: grid.current, start: "top 88%", once: true } });
+    });
+    return () => mm.revert();
+  }, { scope: pin, dependencies: [filter], revertOnUpdate: true });
 
   const shown = filter === "All" ? holdings : holdings.filter((h) => h.assetClass === filter);
   return (
-    <div className="flex flex-col gap-10">
-      <div role="group" aria-label="Filter by asset class" className="flex flex-wrap gap-2">
-        {["All", ...classes].map((c) => (
-          <button key={c} type="button" aria-pressed={filter === c} onClick={() => setFilter(c)}
-            className={`inline-flex h-11 items-center gap-2 rounded-full px-5 text-[11px] uppercase tracking-[0.18em] transition-colors ${filter === c ? "bg-graphite text-snow" : "glass text-graphite-2 hover:text-graphite"}`}>
-            {c !== "All" && <span className="h-2 w-2 rounded-full" style={{ background: classColor(c) }} />}
-            {c}
-            <span className="tnum opacity-60">{c === "All" ? holdings.length : holdings.filter((h) => h.assetClass === c).length}</span>
-          </button>
-        ))}
+    <div ref={pin} className="flex flex-col gap-10 py-2 motion-safe:lg:overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-6">
+        <div role="group" aria-label="Filter by asset class" className="flex flex-wrap gap-2">
+          {["All", ...classes].map((c) => (
+            <button key={c} type="button" aria-pressed={filter === c} onClick={() => setFilter(c)}
+              className={`inline-flex h-11 items-center gap-2 rounded-full px-5 text-[11px] uppercase tracking-[0.18em] transition-colors ${filter === c ? "bg-graphite text-snow" : "glass text-graphite-2 hover:text-graphite"}`}>
+              {c !== "All" && <span className="h-2 w-2 rounded-full" style={{ background: classColor(c) }} />}
+              {c}
+              <span className="tnum opacity-60">{c === "All" ? holdings.length : holdings.filter((h) => h.assetClass === c).length}</span>
+            </button>
+          ))}
+        </div>
+        <span aria-hidden className="hidden h-px w-56 overflow-hidden bg-line motion-safe:lg:block"><span ref={bar} className="block h-px origin-left scale-x-0 iris-line" /></span>
       </div>
-      <div ref={grid} className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3" aria-live="polite">
-        {shown.map((h, i) => <Card key={h.id} h={h} i={i} cur={currency} />)}
+      <div ref={grid} className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 motion-safe:lg:flex motion-safe:lg:w-max motion-safe:lg:gap-8 motion-safe:lg:pb-6" aria-live="polite">
+        <div aria-hidden className="hidden w-[min(420px,30vw)] shrink-0 flex-col justify-between rounded-[24px] border border-line p-8 motion-safe:lg:flex">
+          <span className="eyebrow text-mute">Portfolio · {shown.length} {shown.length === 1 ? "position" : "positions"}</span>
+          <span className="display text-[clamp(56px,5vw,88px)] leading-[0.9]">Scroll<br /><em className="iris-text">to explore</em></span>
+          <svg width="64" height="16" viewBox="0 0 64 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-ice-deep"><path d="M0 8h62M54 1l8 7-8 7" /></svg>
+        </div>
+        {shown.map((h, i) => (
+          <div key={h.id} className="motion-safe:lg:w-[min(440px,32vw)] motion-safe:lg:shrink-0">
+            <Card h={h} i={i} cur={currency} />
+          </div>
+        ))}
       </div>
     </div>
   );

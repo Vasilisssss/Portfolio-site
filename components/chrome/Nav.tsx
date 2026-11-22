@@ -11,11 +11,16 @@ export interface NavItem { label: string; href: string }
 export default function Nav({ name, items, email, closing }: { name: string; items: NavItem[]; email: string; closing: string }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const progress = useRef<HTMLSpanElement>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
   const openBtn = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 40);
+    const on = () => {
+      setScrolled(window.scrollY > 40);
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (progress.current) progress.current.style.transform = `scaleX(${max > 0 ? Math.min(1, window.scrollY / max) : 0})`;
+    };
     on();
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
@@ -33,6 +38,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
   return (
     <>
       <header className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500 ${scrolled ? "border-line bg-pearl/75 backdrop-blur-xl" : "border-transparent"}`}>
+        <span aria-hidden ref={progress} className="absolute inset-x-0 bottom-[-1px] block h-[2px] origin-left scale-x-0 iris-line" />
         <div className="container-x flex items-center justify-between gap-6 py-5">
           <Link href="/#top" aria-label={`${name} — home`} className="flex items-center gap-3.5">
             <Monogram draw />
