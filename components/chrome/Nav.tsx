@@ -37,10 +37,10 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
 
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500 ${scrolled ? "border-line bg-pearl/75 backdrop-blur-xl" : "border-transparent"}`}>
+      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500 ${scrolled ? "border-line bg-pearl/70 backdrop-blur-xl" : "border-transparent"}`}>
         <span aria-hidden ref={progress} className="absolute inset-x-0 bottom-[-1px] block h-[2px] origin-left scale-x-0 iris-line" />
         <div className="container-x flex items-center justify-between gap-6 py-5">
-          <Link href="/#top" aria-label={`${name} — home`} className="flex items-center gap-3.5">
+          <Link href="/#top" aria-label={`${name} Portfolio — home`} className="flex items-center gap-3.5">
             <Monogram draw />
             <span className="flex flex-col leading-[1.1]">
               <span className="font-serif text-[22px] font-medium tracking-[0.01em]">{name}</span>
@@ -58,7 +58,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
           <div className="flex items-center gap-5">
             <MarketClock />
             <button ref={openBtn} type="button" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="site-menu"
-              className="flex h-11 items-center gap-2.5 rounded-full border border-line-2 bg-snow/60 px-[18px] text-[11px] tracking-[0.24em] backdrop-blur transition-colors hover:border-lavender-deep">
+              className="flex h-11 items-center gap-2.5 rounded-full border border-line-2 bg-black/30 px-[18px] text-[11px] tracking-[0.24em] backdrop-blur transition-colors hover:border-lavender-deep">
               MENU
               <span aria-hidden className="flex flex-col gap-1"><span className="block h-px w-4 bg-graphite" /><span className="block h-px w-2.5 bg-lavender-deep" /></span>
             </button>
@@ -75,7 +75,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
             animate={{ clipPath: "circle(150% at calc(100% - 80px) 44px)", transition: { duration: 1, ease: [0.7, 0, 0.2, 1] } }}
             exit={{ clipPath: "circle(0% at calc(100% - 80px) 44px)", transition: { duration: 0.8, ease: [0.7, 0, 0.2, 1] } }}
           >
-            <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[620px] w-[620px] rounded-full bg-[radial-gradient(closest-side,#dcd6fb,transparent)] opacity-80 blur-2xl" />
+            <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[620px] w-[620px] rounded-full bg-[radial-gradient(closest-side,rgba(215,255,63,0.18),transparent)] opacity-80 blur-2xl" />
             <div className="relative flex items-center justify-between">
               <span className="text-[10px] tracking-[0.32em] text-mute">{name.toUpperCase()}</span>
               <button ref={closeBtn} type="button" onClick={() => { setOpen(false); openBtn.current?.focus(); }}

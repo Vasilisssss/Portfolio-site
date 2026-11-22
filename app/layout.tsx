@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { profile } from "@/content/profile";
 import { navItems } from "@/lib/nav";
@@ -10,8 +10,9 @@ import Grain from "@/components/chrome/Grain";
 import Nav from "@/components/chrome/Nav";
 import Footer from "@/components/sections/Footer";
 
-const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "400", "500"], style: ["normal", "italic"], variable: "--font-cormorant", display: "swap" });
-const sans = Inter({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-inter", display: "swap" });
+const sans = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
+const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-instrument", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(profile.url),
@@ -22,13 +23,13 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export const viewport: Viewport = { themeColor: "#F6F4EF", colorScheme: "light" };
+export const viewport: Viewport = { themeColor: "#08090A", colorScheme: "dark" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <body>
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-graphite focus:px-4 focus:py-3 focus:text-snow">Skip to content</a>
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-lime focus:px-4 focus:py-3 focus:text-black">Skip to content</a>
         <Grain />
         <SmoothScroll />
         <Loader line={profile.hero.lines.join(" ")} />

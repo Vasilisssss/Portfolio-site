@@ -65,14 +65,14 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
       </nav>
 
       <header className="flex flex-col gap-6">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-snow/70 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.22em] text-graphite-2"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}{h.ticker && ` · ${h.ticker}`}</span>
+        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-1.5 text-[10px] uppercase tracking-[0.22em] text-graphite-2"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}{h.ticker && ` · ${h.ticker}`}</span>
         <RevealText as="h1" onLoad className="display text-[clamp(52px,8vw,140px)] leading-[0.92]">{h.name}</RevealText>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Reveal>
-          <div className="glass relative h-[clamp(300px,40vw,520px)] overflow-hidden rounded-[28px]" style={{ background: `radial-gradient(120% 100% at 75% 0%, ${color}66, transparent 65%), linear-gradient(160deg, rgba(255,255,255,.8), rgba(255,255,255,.4))` }}>
-            <CardArt assetClass={h.assetClass} seed={i + 1} accent={color === "#e9eef5" ? "var(--color-ice-deep)" : color} className="absolute inset-0 h-full w-full" />
+          <div className="glass relative h-[clamp(300px,40vw,520px)] overflow-hidden rounded-[28px]" style={{ background: `radial-gradient(120% 100% at 75% 0%, ${color}66, transparent 65%), linear-gradient(160deg, rgba(22,24,27,.85), rgba(10,11,13,.75))` }}>
+            <CardArt assetClass={h.assetClass} seed={i + 1} accent={color} className="absolute inset-0 h-full w-full" />
           </div>
         </Reveal>
         <Reveal delay={0.1}>
@@ -95,9 +95,9 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
         </Reveal>
       </div>
 
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[28px] bg-white/70 md:grid-cols-3 xl:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[28px] bg-white/[0.06] md:grid-cols-3 xl:grid-cols-4">
         {fields.map((f) => (
-          <div key={f.label} className="flex flex-col gap-2.5 bg-pearl/85 p-6 backdrop-blur">
+          <div key={f.label} className="flex flex-col gap-2.5 bg-pearl/90 p-6 backdrop-blur">
             <dt className="label">{f.label}</dt>
             <dd className={`tnum font-serif text-[clamp(24px,2.2vw,32px)] leading-tight ${f.tone == null ? "" : f.tone >= 0 ? "text-gain" : "text-loss"}`}>{f.value}</dd>
           </div>

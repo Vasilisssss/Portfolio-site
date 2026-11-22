@@ -12,65 +12,129 @@ import About from "@/components/sections/About";
 import SectionHead from "@/components/ui/SectionHead";
 import SampleBadge from "@/components/ui/SampleBadge";
 import { Reveal } from "@/components/ui/Reveal";
-import { dateLong, pct } from "@/lib/format";
 import Marquee, { type MarqueeItem } from "@/components/ui/Marquee";
+import Chapter from "@/components/world/Chapter";
+import WorldMount from "@/components/world/WorldMount";
+import type { WorldLabel } from "@/components/world/World";
+import type { WorldData } from "@/components/world/engine";
+import { dateLong, money, moneySigned, monthYear, pct } from "@/lib/format";
 
 export default function Home() {
   const view = getPublicView();
   const on = view.sections;
-  // ticker band: real holdings and returns, then asset-class weights (percentages only)
+  const cur = view.baseCurrency;
+  const s = view.summary;
+  const perf = view.performance;
+  const amounts = view.showAmounts && s.value != null;
+  const tone = (x: number | null | undefined) => (x == null || Math.abs(x) < 0.0005 ? "flat" : x > 0 ? "gain" : "loss") as "flat" | "gain" | "loss";
+
+  // ---- the 3D world receives percentages only (safe whatever the privacy settings)
+  const worldData: WorldData = {
+    holdings: view.holdings.map((h) => ({ id: h.id, label: h.ticker ?? h.name, name: h.name, weight: h.weight, returnPct: h.returnPct, assetClass: h.assetClass })),
+    history: perf ? perf.points.map((p) => ({ date: p.date, index: p.index })) : [],
+  };
+  const labels: WorldLabel[] = [
+    ...view.holdings.map((h) => ({ id: `engine:${h.id}`, holdingId: h.id, assetClass: h.assetClass, title: h.ticker ?? h.name, lines: [`${pct(h.weight)} of capital`] })),
+    ...view.holdings.map((h) => ({
+      id: `district:${h.id}`, holdingId: h.id, assetClass: h.assetClass, title: h.ticker ?? h.name,
+      lines: [`${pct(h.weight)}${h.returnPct != null ? ` · ${pct(h.returnPct, true)}` : ""}`, ...(h.value != null ? [money(h.value, cur)] : [])],
+    })),
+    ...(perf ? [
+      { id: "obs:start", title: monthYear(perf.points[0].date), lines: ["Index 100.0"] },
+      { id: "obs:end", title: monthYear(perf.points[perf.points.length - 1].date), lines: [`Index ${perf.points[perf.points.length - 1].index.toFixed(1)} · ${pct(perf.twr, true)}`] },
+    ] : []),
+  ];
+
   const tickerRows: MarqueeItem[][] = [
-    view.holdings.map((h): MarqueeItem => ({ label: h.ticker ?? h.name, value: h.returnPct == null ? undefined : pct(h.returnPct, true), tone: h.returnPct == null || Math.abs(h.returnPct) < 0.0005 ? "flat" : h.returnPct > 0 ? "gain" : "loss" })),
+    view.holdings.map((h): MarqueeItem => ({ label: h.ticker ?? h.name, value: h.returnPct == null ? undefined : pct(h.returnPct, true), tone: tone(h.returnPct) })),
     view.classes.map((c): MarqueeItem => ({ label: c.key, value: pct(c.weight), tone: "flat" })),
   ].filter((r) => r.length > 0);
+
+  const largest = view.holdings[0];
   const jsonLd = { "@context": "https://schema.org", "@type": "ProfilePage", name: profile.siteTitle, description: profile.hero.body, url: profile.url };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Hero eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
-        orbs={view.classes.map((c) => ({ key: c.key, weight: c.weight }))} showInvestments={on.investments && view.holdings.length > 0} />
+      <WorldMount data={worldData} labels={labels} />
 
-      {tickerRows.length > 0 && <Marquee rows={tickerRows} />}
+      {/* I — THE PORTAL */}
+      <div data-scene="0" className="relative">
+        <Hero name={profile.name} eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
+          figure={amounts ? { value: money(s.value!, cur), label: `Portfolio value · ${dateLong(view.asOf)}` } : s.returnPct != null ? { value: pct(s.returnPct, true), label: "Total return" } : undefined}
+          showInvestments={on.investments && view.holdings.length > 0} />
+      </div>
 
-      {on.overview && <Overview view={view} />}
+      {/* II — THE CAPITAL ENGINE */}
+      <div data-scene="1" className="relative">
+        <Chapter index={1} roman="II" kicker="The Capital Engine" title={<>Every euro <em>flows</em> through here.</>}
+          stats={amounts
+            ? [{ value: money(s.invested!, cur), label: "In — invested capital" }, { value: money(s.value!, cur), label: "Now — portfolio value" }, { value: moneySigned(s.pnl!, cur), label: "Profit / loss", tone: tone(s.pnl) }]
+            : s.returnPct != null ? [{ value: pct(s.returnPct, true), label: "Total return", tone: tone(s.returnPct) }] : []}
+          note="The white stream is money deposited; each lime stream leaves the core in proportion to the position it funds." />
+        {tickerRows.length > 0 && <Marquee rows={tickerRows} />}
+        {on.overview && <Overview view={view} />}
+      </div>
 
-      {on.investments && view.holdings.length > 0 && (
-        <section id="investments" aria-labelledby="investments-title" className="container-x relative flex flex-col gap-14 py-24">
-          <SectionHead index="02" eyebrow="My investments" id="investments-title" aside={<SampleBadge show={view.sample} />}>
-            What I <em>own,</em> and why.
-          </SectionHead>
-          <Investments holdings={view.holdings} currency={view.baseCurrency} />
-        </section>
-      )}
+      {/* III — THE INVESTMENT DISTRICT */}
+      <div data-scene="2" className="relative">
+        <Chapter index={2} roman="III" kicker="The Investment District" title={<>A city of <em>positions.</em></>}
+          stats={[
+            { value: String(s.positions || view.holdings.length), label: "Positions" },
+            { value: String(s.classes), label: "Asset classes" },
+            ...(largest ? [{ value: `${largest.ticker ?? largest.name} ${pct(largest.weight)}`, label: "Largest position" }] : []),
+          ]}
+          note="Each tower is one holding; its height follows its value. The ring at its foot turns coral when the position is below cost. Click a tower to open it." />
+        {on.investments && view.holdings.length > 0 && (
+          <section id="investments" aria-labelledby="investments-title" className="container-x relative flex flex-col gap-14 py-24">
+            <SectionHead index="02" eyebrow="My investments" id="investments-title" aside={<SampleBadge show={view.sample} />}>
+              What I <em>own,</em> and why.
+            </SectionHead>
+            <Investments holdings={view.holdings} currency={cur} />
+          </section>
+        )}
+        {on.allocation && (
+          <section id="allocation" aria-labelledby="allocation-title" className="container-x relative flex flex-col gap-14 py-24">
+            <SectionHead index="03" eyebrow="Asset allocation" id="allocation-title"
+              aside={<p className="max-w-[320px] text-sm leading-[1.7] text-mute">How my capital is distributed, by asset class, investment, geography, industry and currency.</p>}>
+              Capital, <em>in proportion.</em>
+            </SectionHead>
+            <Reveal><Allocation allocation={view.allocation} currency={cur} /></Reveal>
+          </section>
+        )}
+      </div>
 
-      {on.allocation && (
-        <section id="allocation" aria-labelledby="allocation-title" className="container-x relative flex flex-col gap-14 py-24">
-          <SectionHead index="03" eyebrow="Asset allocation" id="allocation-title"
-            aside={<p className="max-w-[320px] text-sm leading-[1.7] text-mute">How my capital is distributed, by asset class, investment, geography, industry and currency.</p>}>
-            Capital, <em>in proportion.</em>
-          </SectionHead>
-          <Reveal><Allocation allocation={view.allocation} currency={view.baseCurrency} /></Reveal>
-        </section>
-      )}
+      {/* IV — THE OBSERVATORY */}
+      <div data-scene="3" className="relative">
+        <Chapter index={3} roman="IV" kicker="The Observatory" title={<>Looking back, <em>honestly.</em></>}
+          stats={perf ? [
+            { value: pct(perf.twr, true), label: "Time-weighted return", tone: tone(perf.twr) },
+            { value: `${monthYear(perf.points[0].date)} → ${monthYear(perf.points[perf.points.length - 1].date)}`, label: "Period" },
+          ] : []}
+          note="The lime ribbon on the horizon is my real month-end performance index, rebased to 100. The white line marks where it started." />
+        {on.performance && (
+          <section id="performance" aria-labelledby="performance-title" className="container-x relative flex flex-col gap-14 py-24">
+            <SectionHead index="04" eyebrow="Performance" id="performance-title" aside={<SampleBadge show={view.sample} />}>
+              Returns, <em>not deposits.</em>
+            </SectionHead>
+            {perf ? (
+              <Performance perf={perf} holdings={view.holdings} amounts={view.showAmounts} currency={cur} />
+            ) : (
+              <p className="glass rounded-[24px] p-10 text-mute">Performance appears once month-end history is added (see data/README.md).</p>
+            )}
+            <p className="font-mono text-[11px] tracking-[0.06em] text-mute">Data as of {dateLong(view.asOf)}{view.source ? ` · ${view.source}` : ""}.</p>
+          </section>
+        )}
+        {on.journal && <Journal entries={journal} />}
+      </div>
 
-      {on.performance && (
-        <section id="performance" aria-labelledby="performance-title" className="container-x relative flex flex-col gap-14 py-24">
-          <SectionHead index="04" eyebrow="Performance" id="performance-title" aside={<SampleBadge show={view.sample} />}>
-            Returns, <em>not deposits.</em>
-          </SectionHead>
-          {view.performance ? (
-            <Performance perf={view.performance} holdings={view.holdings} amounts={view.showAmounts} currency={view.baseCurrency} />
-          ) : (
-            <p className="glass rounded-[24px] p-10 text-mute">Performance appears once month-end history is added (see data/README.md).</p>
-          )}
-          <p className="text-[12px] text-mute">Data as of {dateLong(view.asOf)}.</p>
-        </section>
-      )}
-
-      {on.strategy && <Strategy s={profile.strategy} />}
-      {on.journal && <Journal entries={journal} />}
-      {on.about && <About />}
+      {/* V — THE FUTURE */}
+      <div data-scene="4" className="relative">
+        <Chapter index={4} roman="V" kicker="The Future" title={<>What I&apos;m <em>building.</em></>}
+          note="How I think about money, risk and time — and where this portfolio is going next." />
+        {on.strategy && <Strategy s={profile.strategy} />}
+        {on.about && <About />}
+      </div>
     </>
   );
 }

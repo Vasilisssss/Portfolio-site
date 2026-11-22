@@ -35,8 +35,8 @@ export default function Cursor() {
     <>
       <div ref={ring} aria-hidden className="pointer-events-none fixed left-0 top-0 z-[140] opacity-0">
         <div
-          className="-ml-[42px] -mt-[42px] flex h-[84px] w-[84px] items-center justify-center rounded-full text-[10px] tracking-[0.22em] text-snow transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-expo)]"
-          style={{ transform: `scale(${big ? 1 : label === "·" ? 0.5 : 0.3})`, background: big ? "var(--color-graphite)" : "transparent", border: `1px solid ${big ? "var(--color-graphite)" : "rgba(36,38,43,0.45)"}` }}
+          className="-ml-[42px] -mt-[42px] flex h-[84px] w-[84px] items-center justify-center rounded-full text-[10px] tracking-[0.22em] text-pearl transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-expo)]"
+          style={{ transform: `scale(${big ? 1 : label === "·" ? 0.5 : 0.3})`, background: big ? "var(--color-graphite)" : "transparent", border: `1px solid ${big ? "var(--color-graphite)" : "rgba(243,242,237,0.45)"}` }}
         >
           {big ? label.toUpperCase() : ""}
         </div>

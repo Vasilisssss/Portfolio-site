@@ -22,7 +22,7 @@ export function RevealText({ as = "div", children, className, delay = 0, onLoad 
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let split: SplitText | null = null;
     const run = () => {
-      split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "line" });
+      split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "line", aria: "none" });
       const tween = gsap.from(split.lines, {
         yPercent: 110, duration: 1.3, ease: "expo.out", stagger, delay,
         scrollTrigger: onLoad ? undefined : { trigger: el, start: "top 88%", once: true },
@@ -34,7 +34,7 @@ export function RevealText({ as = "div", children, className, delay = 0, onLoad 
       gsap.set(el, { autoAlpha: 0 });
       const go = () => { gsap.set(el, { autoAlpha: 1 }); run(); };
       window.addEventListener("intro:done", go, { once: true });
-      const fallback = setTimeout(go, 2600);
+      const fallback = setTimeout(go, 2000);
       return () => { clearTimeout(fallback); window.removeEventListener("intro:done", go); split?.revert(); };
     }
     run();

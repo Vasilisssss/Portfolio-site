@@ -41,7 +41,7 @@ export default function Marquee({ rows }: { rows: MarqueeItem[][] }) {
   }, { scope: root });
 
   return (
-    <div ref={root} aria-label="Portfolio ticker" role="region" className="relative overflow-hidden border-y border-white/80 py-6 [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
+    <div ref={root} aria-label="Portfolio ticker" role="region" className="relative overflow-hidden border-y border-white/[0.06] py-6 [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
       {rows.map((row, r) => (
         <div key={r} data-track className="flex w-max whitespace-nowrap will-change-transform" aria-hidden={r > 0}>
           {[0, 1].map((copy) => (
@@ -52,7 +52,7 @@ export default function Marquee({ rows }: { rows: MarqueeItem[][] }) {
                   {it.value && (
                     <span className={`tnum ${r % 2 ? "text-[clamp(16px,1.6vw,22px)]" : "text-[clamp(18px,2vw,28px)]"} ${it.tone === "gain" ? "text-gain" : it.tone === "loss" ? "text-loss" : "text-mute"}`}>{it.value}</span>
                   )}
-                  <span aria-hidden className="mx-4 inline-block h-2.5 w-2.5 rounded-full bg-[conic-gradient(#8ec5f0,#b9aef0,#f1b9d8,#9fdcc9,#8ec5f0)] self-center" />
+                  <span aria-hidden className="mx-4 inline-block h-2.5 w-2.5 rounded-full bg-lime self-center" />
                 </span>
               ))}
             </div>

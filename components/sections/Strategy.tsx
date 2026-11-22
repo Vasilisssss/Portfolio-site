@@ -22,7 +22,7 @@ export default function Strategy({ s }: { s: StrategyContent }) {
 
   useGSAP(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.fromTo("[data-word]", { opacity: 0.12, filter: "blur(6px)" }, {
+    gsap.fromTo("[data-word]", { opacity: 0.42, filter: "blur(2px)" }, {
       opacity: 1, filter: "blur(0px)", stagger: 0.12, ease: "none",
       scrollTrigger: { trigger: "[data-manifesto]", start: "top 80%", end: "bottom 35%", scrub: 0.6 },
     });
@@ -41,7 +41,7 @@ export default function Strategy({ s }: { s: StrategyContent }) {
           </span>
           <h2 id="strategy-title" data-manifesto className="display max-w-[1300px] text-[clamp(52px,8vw,148px)] leading-[0.92] tracking-[-0.03em]">
             {s.headline.map((w, i) => (
-              <span key={i} data-word className={i >= s.italicFrom ? "iris-text italic" : undefined}>{w} </span>
+              <span key={i} data-word className={i >= s.italicFrom ? "serif text-lime" : undefined}>{w} </span>
             ))}
           </h2>
         </div>
@@ -54,7 +54,7 @@ export default function Strategy({ s }: { s: StrategyContent }) {
           </div>
           <ol className="flex min-w-0 flex-[1.6_1_520px] flex-col gap-4">
             {s.principles.map((p, i) => (
-              <li key={p.title} data-principle className={`glass grid grid-cols-[56px_minmax(0,1fr)] gap-6 rounded-[24px] p-7 transition-[transform,box-shadow] duration-500 md:p-9 ${active === i ? "translate-x-0 shadow-[0_30px_70px_-35px_rgba(95,85,150,0.5)]" : ""}`}>
+              <li key={p.title} data-principle className={`glass grid grid-cols-[56px_minmax(0,1fr)] gap-6 rounded-[24px] p-7 transition-[transform,box-shadow] duration-500 md:p-9 ${active === i ? "translate-x-0 shadow-[0_30px_70px_-35px_rgba(215,255,63,0.25)]" : ""}`}>
                 <span className={`tnum pt-2 text-[11px] tracking-[0.2em] ${active === i ? "text-lavender-deep" : "text-mute"}`}>{pad2(i + 1)}</span>
                 <div className="flex flex-col gap-3">
                   <h3 className="font-serif text-[clamp(30px,3vw,46px)] leading-none">{p.title}</h3>

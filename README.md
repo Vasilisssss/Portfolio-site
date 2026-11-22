@@ -1,9 +1,22 @@
-# Personal investment portfolio
+# Personal investment portfolio: The Capital Universe
 
 My own investments: what I own, how my capital is allocated, how it has performed, and how I think about investing.
+The site is a scroll-driven flight through one continuous 3D world. Each environment carries real portfolio data:
+
+| Chapter | Environment | Real content |
+|---|---|---|
+| I · The Portal | Black-chrome iris over a mirror floor; the camera flies through it | Headline, portfolio value |
+| II · The Capital Engine | Optical crystal core; white stream = deposits in, lime streams = capital out per holding (∝ allocation) | Invested capital, value, P/L, overview |
+| III · The Investment District | One tower per holding (height from value), foot ring lime/coral by return, in a decorative city | Holdings, allocation; click a tower to open it |
+| IV · The Observatory | Terrace under a lattice dome facing a ribbon of the real month-end index (rebased to 100) | Performance, journal |
+| V · The Future | Horizon ring rising out of the mirror floor, monolith | Strategy, about, closing |
+
+Code: `components/world/engine.ts` (Three.js world and camera path), `components/world/World.tsx` (scroll mapping, labels,
+scene rail), `components/world/Chapter.tsx` (chapter cards). Scroll mapping: while chapter *i* scrolls into view,
+the camera flies from scene *i−1* to *i*; while reading, it drifts. The scene rail (desktop) and the menu jump anywhere.
 Live at **https://vasilisssss.github.io/Portfolio-site/**
 
-Next.js 16 (App Router, **static export**) · TypeScript · Tailwind CSS 4 · GSAP + ScrollTrigger · Framer Motion · Lenis · Three.js
+Next.js 16 (App Router, **static export**) · TypeScript · Tailwind CSS 4 · Three.js · GSAP + ScrollTrigger · Framer Motion · Lenis · Geist / Geist Mono / Instrument Serif
 
 ## Sections
 
@@ -54,8 +67,14 @@ npm run build:pages    # the exact build CI runs → out/
 
 ## Performance and accessibility
 
-- The 3D scene is procedural geometry with a generated environment: no model or texture downloads. Three.js
-  loads lazily when the hero is visible and the browser is idle. Rendering pauses off-screen and in background tabs.
-- Phones and low-core devices get a lighter tier: no glass transmission, fewer polygons, lower pixel ratio.
-- `prefers-reduced-motion`: no intro, no smooth scroll, a static scene that only renders on input, and instant reveals.
+- All 3D is procedural geometry plus a GPU-generated studio environment: no model, texture or HDR downloads.
+  Three.js (and the world) load only after the page has loaded and gone idle. Shaders compile asynchronously
+  (`compileAsync`). Rendering pauses in background tabs, and only the environments near the camera are drawn.
+- An adaptive governor steps the resolution down and drops the mirror floor when a device can't hold ~30 fps.
+- Phones and low-core devices get a lighter tier: no transmission or mirror floor, fewer buildings and particles,
+  a lower pixel ratio and a wider lens.
+- `prefers-reduced-motion`: no intro and no smooth scroll; the camera cuts between scenes instead of flying;
+  idle animation stops.
+- No WebGL: the full content renders over a static atmospheric background.
+- The 3D receives percentages only, so the privacy settings still hold.
 - Server-rendered text, semantic landmarks, keyboard-operable charts and tabs, and visible focus.

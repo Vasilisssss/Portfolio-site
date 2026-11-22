@@ -65,11 +65,11 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
           )}
           {mode === "value" ? (
             <>
-              <span className="flex items-center gap-2"><span className="h-[2px] w-5 bg-gradient-to-r from-ice-deep to-lavender-deep" />Portfolio value</span>
+              <span className="flex items-center gap-2"><span className="h-[2px] w-5 bg-lime" />Portfolio value</span>
               <span className="flex items-center gap-2"><span className="h-3 w-5 rounded-sm bg-lavender/70" />Net deposits</span>
             </>
           ) : (
-            <span className="flex items-center gap-2"><span className="h-[2px] w-5 bg-gradient-to-r from-ice-deep to-lavender-deep" />Growth of 100, time-weighted</span>
+            <span className="flex items-center gap-2"><span className="h-[2px] w-5 bg-lime" />Growth of 100, time-weighted</span>
           )}
           <span className={`tnum ${v.change >= 0 ? "text-gain" : "text-loss"}`}>{pct(v.change, true)} · {range}</span>
         </div>
@@ -86,19 +86,19 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
         className="relative h-[300px] cursor-crosshair md:h-[400px]">
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden className="absolute inset-0 h-full w-full overflow-visible">
           <defs>
-            <linearGradient id="pvLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#2e6a99" /><stop offset="1" stopColor="#5a52a6" /></linearGradient>
-            <linearGradient id="pvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7fb3e0" stopOpacity="0.32" /><stop offset="1" stopColor="#cde6fb" stopOpacity="0" /></linearGradient>
+            <linearGradient id="pvLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#f3f2ed" /><stop offset="1" stopColor="#d7ff3f" /></linearGradient>
+            <linearGradient id="pvFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#d7ff3f" stopOpacity="0.22" /><stop offset="1" stopColor="#d7ff3f" stopOpacity="0" /></linearGradient>
           </defs>
-          {v.grid.map((g) => <path key={g.y} d={`M0 ${g.y.toFixed(1)}H${W}`} stroke="rgba(36,38,43,0.08)" vectorEffect="non-scaling-stroke" />)}
-          {mode === "value" && <path data-fade d={v.contribArea} fill="#dcd6fb" fillOpacity={0.6} />}
-          {mode === "value" && <path data-fade d={v.contrib} fill="none" stroke="#5a52a6" strokeOpacity={0.5} strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />}
+          {v.grid.map((g) => <path key={g.y} d={`M0 ${g.y.toFixed(1)}H${W}`} stroke="rgba(243,242,237,0.07)" vectorEffect="non-scaling-stroke" />)}
+          {mode === "value" && <path data-fade d={v.contribArea} fill="#f3f2ed" fillOpacity={0.07} />}
+          {mode === "value" && <path data-fade d={v.contrib} fill="none" stroke="#f3f2ed" strokeOpacity={0.45} strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />}
           <path data-fade d={v.area} fill="url(#pvFill)" />
           <path data-draw d={v.main} fill="none" stroke="url(#pvLine)" strokeWidth={2} vectorEffect="non-scaling-stroke" pathLength={1} strokeDasharray="1" />
         </svg>
         {v.grid.map((g) => <span key={g.label + g.y} aria-hidden className="tnum absolute right-0 -translate-y-[120%] text-[10px] tracking-[0.1em] text-mute" style={{ top: `${(g.y / H) * 100}%` }}>{g.label}</span>)}
         {hp && (
           <>
-            <span aria-hidden className="absolute inset-y-0 w-px bg-graphite/20" style={{ left: `${left}%` }} />
+            <span aria-hidden className="absolute inset-y-0 w-px bg-graphite/25" style={{ left: `${left}%` }} />
             <span aria-hidden className="absolute -ml-[6px] -mt-[6px] h-3 w-3 rounded-full border-2 border-snow bg-lavender-deep shadow" style={{ left: `${left}%`, top: `${(v.Y(mode === "value" ? hp.value ?? 0 : hp.idx) / H) * 100}%` }} />
             <span aria-live="polite" className="glass tnum pointer-events-none absolute top-2 flex flex-col gap-1 whitespace-nowrap rounded-2xl px-4 py-3 text-xs"
               style={{ left: `${left}%`, transform: `translateX(${left > 72 ? -105 : left < 28 ? 5 : -50}%)` }}>
@@ -125,7 +125,7 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
 
 function cellStyle(r: number) {
   const a = Math.min(1, Math.abs(r) / 0.06);
-  return r >= 0 ? { background: `rgba(127,179,224,${0.15 + a * 0.6})` } : { background: `rgba(163,69,106,${0.1 + a * 0.4})` };
+  return r >= 0 ? { background: `rgba(215,255,63,${0.15 + a * 0.6})` } : { background: `rgba(255,122,102,${0.1 + a * 0.4})` };
 }
 
 function Heatmap({ perf }: { perf: Perf }) {
@@ -169,7 +169,7 @@ function YearBars({ perf }: { perf: Perf }) {
         {perf.yearly.map((y) => (
           <div key={y.year} className="relative flex flex-1 flex-col items-center">
             <div className="relative h-full w-full">
-              <span data-yb className={`absolute left-1/2 w-[60%] max-w-14 -translate-x-1/2 rounded-md ${y.r >= 0 ? "origin-bottom bg-gradient-to-t from-ice to-[#7fb3e0]" : "origin-top bg-gradient-to-b from-[#f3d3e2] to-[#d98aae]"}`}
+              <span data-yb className={`absolute left-1/2 w-[60%] max-w-14 -translate-x-1/2 rounded-md ${y.r >= 0 ? "origin-bottom bg-gradient-to-t from-[#4f5f12] to-[#d7ff3f]" : "origin-top bg-gradient-to-b from-[#5a2a22] to-[#ff7a66]"}`}
                 style={y.r >= 0 ? { bottom: "50%", height: `${(y.r / max) * 46}%` } : { top: "50%", height: `${(-y.r / max) * 46}%` }} />
               <span className={`tnum absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] ${y.r >= 0 ? "text-gain" : "text-loss"}`}
                 style={y.r >= 0 ? { bottom: `calc(50% + ${(y.r / max) * 46}% + 6px)` } : { top: `calc(50% + ${(-y.r / max) * 46}% + 6px)` }}>{pct(y.r, true)}</span>
@@ -204,7 +204,7 @@ function HoldingBars({ holdings }: { holdings: PublicHolding[] }) {
               <Link href={`/investments/${h.id}`} data-cursor="View" className="group grid grid-cols-[minmax(120px,1.1fr)_minmax(0,2fr)_72px] items-center gap-4 rounded-xl px-2 py-2.5 hover:bg-snow/60">
                 <span className="truncate text-[14px] group-hover:text-lavender-deep">{h.name}</span>
                 <span className="relative h-2.5 rounded-full bg-pearl-2">
-                  <span data-hb className={`absolute top-0 h-full rounded-full ${r >= 0 ? "origin-left bg-gradient-to-r from-ice to-[#7fb3e0]" : "origin-right bg-gradient-to-l from-[#f3d3e2] to-[#d98aae]"}`}
+                  <span data-hb className={`absolute top-0 h-full rounded-full ${r >= 0 ? "origin-left bg-gradient-to-r from-[#4f5f12] to-[#d7ff3f]" : "origin-right bg-gradient-to-l from-[#5a2a22] to-[#ff7a66]"}`}
                     style={r >= 0 ? { left: hasNeg ? "50%" : 0, width: `${w}%` } : { right: "50%", width: `${w}%` }} />
                 </span>
                 <span className={`tnum text-right text-[14px] ${r >= 0 ? "text-gain" : "text-loss"}`}>{pct(r, true)}</span>
@@ -228,9 +228,9 @@ export default function Performance({ perf, holdings, amounts, currency }: { per
   ];
   return (
     <div className="flex flex-col gap-6">
-      <dl className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-px overflow-hidden rounded-[28px] bg-white/70">
+      <dl className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-px overflow-hidden rounded-[28px] bg-white/[0.06]">
         {kpis.map((k) => (
-          <div key={k.label} className="flex flex-col gap-2 bg-pearl/80 p-6 backdrop-blur">
+          <div key={k.label} className="flex flex-col gap-2 bg-[#0e1012]/90 p-6 backdrop-blur">
             <dt className="label">{k.label}</dt>
             <dd className={`tnum font-serif text-[clamp(26px,2.4vw,34px)] leading-none ${k.tone > 0 ? "text-gain" : k.tone < 0 ? "text-loss" : ""}`}>{k.v}</dd>
           </div>

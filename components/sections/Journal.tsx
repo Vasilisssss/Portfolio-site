@@ -7,11 +7,11 @@ import CardArt from "@/components/ui/CardArt";
 import { Reveal } from "@/components/ui/Reveal";
 
 const KIND_TONE: Record<string, string> = {
-  Observation: "bg-ice/70 text-ice-deep",
-  Decision: "bg-lavender/70 text-lavender-deep",
-  Research: "bg-mint text-aqua-deep",
+  Observation: "bg-lime/10 text-lime",
+  Decision: "bg-white/[0.08] text-graphite",
+  Research: "bg-lime/10 text-lime",
   Lesson: "bg-pearl-2 text-graphite-2",
-  "Portfolio update": "bg-snow text-graphite",
+  "Portfolio update": "bg-white/[0.06] text-graphite",
 };
 export const Kind = ({ k }: { k: string }) => <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em] ${KIND_TONE[k] ?? ""}`}>{k}</span>;
 
@@ -30,7 +30,7 @@ export default function Journal({ entries }: { entries: JournalEntry[] }) {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.25fr_1fr]">
           <Reveal>
             <Link href={`/journal/${lead.slug}`} data-cursor="Read" className="glass group flex h-full min-h-[560px] flex-col overflow-hidden rounded-[28px]">
-              <div className="relative min-h-[300px] flex-1 overflow-hidden bg-[radial-gradient(120%_100%_at_80%_0%,#d4cdee,transparent_60%),radial-gradient(100%_100%_at_0%_100%,#cfe2ee,transparent_60%)]">
+              <div className="relative min-h-[300px] flex-1 overflow-hidden bg-[radial-gradient(120%_100%_at_80%_0%,rgba(215,255,63,0.10),transparent_60%),radial-gradient(100%_100%_at_0%_100%,rgba(243,242,237,0.05),transparent_60%)]">
                 <CardArt kind="feature" viewBox="0 0 600 340" className="absolute inset-0 h-full w-full transition-transform duration-[1.2s] ease-[var(--ease-expo)] group-hover:scale-105" />
               </div>
               <div className="flex flex-col gap-4 p-8">

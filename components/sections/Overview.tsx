@@ -61,12 +61,12 @@ export default function Overview({ view }: { view: PublicView }) {
                 </Link>
               )}
             </div>
-            <div className="relative min-h-[240px] border-t border-white/80 lg:border-l lg:border-t-0">
+            <div className="relative min-h-[240px] border-t border-white/[0.06] lg:border-l lg:border-t-0">
               {spark ? (
                 <svg viewBox="0 0 600 160" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" role="img" aria-label={`Portfolio ${amounts ? "value" : "return index"} over time${perf ? `, time-weighted return ${pct(perf.twr, true)}` : ""}`}>
                   <defs>
-                    <linearGradient id="ovFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#a99ee8" stopOpacity="0.4" /><stop offset="1" stopColor="#cde6fb" stopOpacity="0" /></linearGradient>
-                    <linearGradient id="ovLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#2e6a99" /><stop offset="1" stopColor="#5a52a6" /></linearGradient>
+                    <linearGradient id="ovFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#d7ff3f" stopOpacity="0.25" /><stop offset="1" stopColor="#d7ff3f" stopOpacity="0" /></linearGradient>
+                    <linearGradient id="ovLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#f3f2ed" /><stop offset="1" stopColor="#d7ff3f" /></linearGradient>
                   </defs>
                   <path d={spark.area} fill="url(#ovFill)" />
                   <path d={spark.line} fill="none" stroke="url(#ovLine)" strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
@@ -76,9 +76,9 @@ export default function Overview({ view }: { view: PublicView }) {
               )}
             </div>
           </div>
-          <dl className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] border-t border-white/80">
+          <dl className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] border-t border-white/[0.06]">
             {stats.map((st) => (
-              <div key={st.label} className="flex flex-col gap-2 border-b border-r border-white/70 p-6 md:p-7">
+              <div key={st.label} className="flex flex-col gap-2 border-b border-r border-white/[0.06] p-6 md:p-7">
                 <dt className="label">{st.label}</dt>
                 <dd className="font-serif text-[clamp(26px,2.4vw,36px)] leading-none">{st.node}</dd>
                 {st.hint && <dd className="text-[12px] text-mute">{st.hint}</dd>}
