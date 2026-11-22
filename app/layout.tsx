@@ -20,7 +20,8 @@ export const metadata: Metadata = {
   description: profile.hero.body,
   openGraph: { type: "website", title: profile.siteTitle, description: profile.hero.body, url: profile.url },
   twitter: { card: "summary_large_image" },
-  robots: { index: true, follow: true },
+  // preview builds (SITE_PREVIEW=1) stay out of search engines
+  robots: process.env.SITE_PREVIEW === "1" ? { index: false, follow: false } : { index: true, follow: true },
 };
 
 export const viewport: Viewport = { themeColor: "#08090A", colorScheme: "dark" };
@@ -37,6 +38,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main" className="relative z-[1]">{children}</main>
         <Footer />
         <Cursor />
+        {process.env.SITE_PREVIEW === "1" && (
+          <div className="pointer-events-none fixed left-4 top-[88px] z-[60] rounded-full border border-lime/40 bg-black/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-lime backdrop-blur">Preview · not live</div>
+        )}
       </body>
     </html>
   );
