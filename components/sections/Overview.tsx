@@ -5,6 +5,7 @@ import SectionHead from "@/components/ui/SectionHead";
 import SampleBadge from "@/components/ui/SampleBadge";
 import Ticker from "@/components/ui/Ticker";
 import { Reveal } from "@/components/ui/Reveal";
+import Sparkline from "@/components/ui/Sparkline";
 
 /** 01 — the whole portfolio at a glance. Only figures the privacy settings allow are present in `view`. */
 export default function Overview({ view }: { view: PublicView }) {
@@ -12,15 +13,9 @@ export default function Overview({ view }: { view: PublicView }) {
   const amounts = view.showAmounts && s.value != null;
   const ret = s.returnPct;
 
-  // small trend line from the performance index (percent-based, so it is safe even with amounts hidden)
+  // trend line from the performance history (percent-based index when amounts are hidden)
   const pts = perf?.points ?? [];
-  const spark = (() => {
-    if (pts.length < 2) return null;
-    const ys = pts.map((p) => p.value ?? p.index);
-    const mn = Math.min(...ys), mx = Math.max(...ys);
-    const line = ys.map((y, i) => `${i ? "L" : "M"}${((i / (ys.length - 1)) * 600).toFixed(1)} ${(150 - ((y - mn) / (mx - mn || 1)) * 130).toFixed(1)}`).join("");
-    return { line, area: `${line}L600 160L0 160Z` };
-  })();
+  const sparkValues = pts.length >= 2 ? pts.map((p) => p.value ?? p.index) : null;
 
   const stats: { label: string; node: React.ReactNode; hint?: string }[] = [];
   if (amounts) {
@@ -62,15 +57,8 @@ export default function Overview({ view }: { view: PublicView }) {
               )}
             </div>
             <div className="relative min-h-[240px] border-t border-white/[0.06] lg:border-l lg:border-t-0">
-              {spark ? (
-                <svg viewBox="0 0 600 160" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" role="img" aria-label={`Portfolio ${amounts ? "value" : "return index"} over time${perf ? `, time-weighted return ${pct(perf.twr, true)}` : ""}`}>
-                  <defs>
-                    <linearGradient id="ovFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#d7ff3f" stopOpacity="0.25" /><stop offset="1" stopColor="#d7ff3f" stopOpacity="0" /></linearGradient>
-                    <linearGradient id="ovLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#f3f2ed" /><stop offset="1" stopColor="#d7ff3f" /></linearGradient>
-                  </defs>
-                  <path d={spark.area} fill="url(#ovFill)" />
-                  <path d={spark.line} fill="none" stroke="url(#ovLine)" strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
-                </svg>
+              {sparkValues ? (
+                <Sparkline values={sparkValues} className="absolute inset-0" label={`Portfolio ${amounts ? "value" : "return index"} over time${perf ? `, time-weighted return ${pct(perf.twr, true)}` : ""}`} />
               ) : (
                 <p className="flex h-full items-center justify-center p-10 text-center text-sm text-mute">Add month-end history to show the portfolio over time.</p>
               )}

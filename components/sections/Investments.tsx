@@ -10,14 +10,15 @@ import CardArt from "@/components/ui/CardArt";
 
 function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
+  const art = useRef<HTMLDivElement>(null);
+  // Parallax on the artwork only: the card and its text never leave the pixel grid, so type stays razor sharp.
   useGSAP(() => {
-    const el = ref.current;
-    if (!el || !window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.set(el, { transformPerspective: 1200 });
-    const rx = gsap.quickTo(el, "rotationX", { duration: 0.8, ease: "power3" });
-    const ry = gsap.quickTo(el, "rotationY", { duration: 0.8, ease: "power3" });
-    const move = (e: PointerEvent) => { const r = el.getBoundingClientRect(); rx(-((e.clientY - r.top) / r.height - 0.5) * 7); ry(((e.clientX - r.left) / r.width - 0.5) * 9); };
-    const leave = () => { rx(0); ry(0); };
+    const el = ref.current, layer = art.current;
+    if (!el || !layer || !window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const x = gsap.quickTo(layer, "x", { duration: 0.8, ease: "power3" });
+    const y = gsap.quickTo(layer, "y", { duration: 0.8, ease: "power3" });
+    const move = (e: PointerEvent) => { const r = el.getBoundingClientRect(); x(((e.clientX - r.left) / r.width - 0.5) * 18); y(((e.clientY - r.top) / r.height - 0.5) * 12); };
+    const leave = () => { x(0); y(0); };
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerleave", leave);
     return () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerleave", leave); };
@@ -26,9 +27,11 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
   const color = classColor(h.assetClass);
   return (
     <Link ref={ref} href={`/investments/${h.id}`} data-cursor="View" data-card
-      className="glass group flex h-full flex-col overflow-hidden rounded-[24px] transition-shadow duration-500 hover:shadow-[0_40px_80px_-40px_rgba(215,255,63,0.18)]">
+      className="glass group flex h-full flex-col overflow-hidden rounded-[24px] transition-[box-shadow,border-color] duration-500 hover:border-lime/25 hover:shadow-[0_40px_80px_-40px_rgba(215,255,63,0.22)]">
       <div className="relative h-[210px] overflow-hidden" style={{ background: `radial-gradient(120% 90% at 70% 10%, ${color}55, transparent 70%)` }}>
-        <CardArt assetClass={h.assetClass} seed={i + 1} accent={color} className="absolute inset-0 h-full w-full scale-[1.02] transition-transform duration-[1.1s] ease-[var(--ease-expo)] group-hover:scale-[1.1]" />
+        <div ref={art} className="absolute -inset-3">
+          <CardArt assetClass={h.assetClass} seed={i + 1} accent={color} className="h-full w-full transition-transform duration-[1.1s] ease-[var(--ease-expo)] group-hover:scale-[1.06]" />
+        </div>
         <div className="absolute inset-x-5 top-4 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-graphite-2 backdrop-blur"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}</span>
           {h.ticker && <span className="tnum text-[11px] tracking-[0.2em] text-graphite-2">{h.ticker}</span>}

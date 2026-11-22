@@ -52,6 +52,7 @@ export default function Allocation({ allocation, currency }: { allocation: Publi
           <div aria-hidden className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_35%_30%,#24272b,#121417_60%,#0b0c0e)] shadow-[inset_0_1px_0_rgba(243,242,237,0.08),0_30px_60px_-30px_rgba(0,0,0,0.9)]" />
           <svg viewBox="0 0 300 300" className="relative h-full w-full -rotate-90" role="img" aria-label={`Allocation by ${TABS.find((t) => t.key === tab)?.label}: ${slices.map((s) => `${s.label} ${pct(s.weight)}`).join(", ")}`}>
             <circle cx="150" cy="150" r={R} fill="none" stroke="rgba(243,242,237,0.05)" strokeWidth={SW} />
+            <circle cx="150" cy="150" r={R + SW / 2 + 9} fill="none" stroke="rgba(243,242,237,0.10)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
             {arcs.map((a) => (
               <circle key={a.s.key} data-arc cx="150" cy="150" r={R} fill="none" stroke={color(a.s, a.i)} strokeWidth={active === a.i ? SW + 10 : SW}
                 strokeDasharray={a.dash} strokeDashoffset={a.off} opacity={active === -1 || active === a.i ? 1 : 0.35}
