@@ -228,7 +228,10 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     world.update(reduce ? 0 : dt, st);
     // intro: the key light comes up and the camera settles in over the first seconds
     const lightIn = easeOut(clamp01(introT / 2.6));
-    key.intensity = 26 * lightIn; top.intensity = 3.2 * lightIn;
+    // V: the light turns slightly more dramatic for the final reveal (key down, rim up)
+    const fin = clamp01((uNow - 3.4) / 0.6);
+    key.intensity = 26 * lightIn * (1 - 0.32 * fin); top.intensity = 3.2 * lightIn * (1 - 0.45 * fin);
+    rim.intensity = 12 * (1 + 0.9 * fin);
     gal.intensity = 3.6 * clamp01((st.lid - 1.2) / 0.5) * lightIn;
     rim.position.x = THREE.MathUtils.lerp(-1.6, 0.25, easeOut(clamp01(introT / 4.2)));
     rim.lookAt(0, 0.09, 0);
