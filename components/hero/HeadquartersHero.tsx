@@ -42,6 +42,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
 
     let raf = 0;
     let lastTime = -1;
+    let activeVideo: HTMLVideoElement | null = null;
     const sync = () => {
       raf = 0;
       const rect = section.getBoundingClientRect();
@@ -57,8 +58,8 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
       if (video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0) {
         const local = nextShot === 0 ? progress * 2 : (progress - 0.5) * 2;
         const time = Math.min(video.duration - 0.04, Math.max(0, local * video.duration));
-        if (Math.abs(time - lastTime) > 0.035 || video !== (lastTime < 0 ? null : video)) {
-          try { video.currentTime = time; lastTime = time; } catch { /* metadata may still be settling */ }
+        if (video !== activeVideo || Math.abs(time - lastTime) > 0.035) {
+          try { video.currentTime = time; lastTime = time; activeVideo = video; } catch { /* metadata may still be settling */ }
         }
       }
       video.pause();
