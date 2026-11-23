@@ -35,10 +35,8 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
             <div className={`absolute inset-0 ${h.id === "alphabet" ? "bg-[radial-gradient(ellipse_at_78%_28%,rgba(66,133,244,.18),transparent_34%),radial-gradient(ellipse_at_22%_82%,rgba(52,168,83,.10),transparent_42%),linear-gradient(135deg,#15191e_0%,#101214_60%,#0b0d0f_100%)]" : h.id === "anthropic" ? "bg-[radial-gradient(ellipse_at_78%_25%,rgba(217,154,116,.18),transparent_38%),linear-gradient(135deg,#211915_0%,#141211_60%,#0b0d0f_100%)]" : "bg-[radial-gradient(ellipse_at_82%_18%,rgba(217,192,155,.12),transparent_44%),linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]"}`} />
             <div className="absolute inset-y-0 right-0 w-[42%] border-l border-white/[.045] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.025))]" />
             {h.id === "alphabet" ? (
-              <div className="absolute right-7 top-8 flex items-center gap-3 opacity-90 transition-transform duration-700 group-hover:scale-105">
-                <span className="font-sans text-[clamp(76px,11vw,132px)] font-semibold leading-none tracking-[-.1em]">
-                  <span className="text-[#4285F4]">G</span>
-                </span>
+              <div className="absolute -right-2 top-7 select-none font-sans text-[clamp(72px,10vw,118px)] font-semibold leading-none tracking-[-.1em] opacity-90 transition-transform duration-700 group-hover:-translate-x-2 group-hover:scale-105" aria-hidden="true">
+                <span className="text-[#4285F4]">G</span><span className="absolute inset-0 text-[#EA4335] [clip-path:polygon(0_0,48%_0,48%_48%,0_48%)]">G</span><span className="absolute inset-0 text-[#FBBC05] [clip-path:polygon(48%_0,100%_0,100%_48%,48%_48%)]">G</span><span className="absolute inset-0 text-[#34A853] [clip-path:polygon(0_48%,48%_48%,48%_100%,0_100%)]">G</span>
               </div>
             ) : h.id === "anthropic" ? (
               <div className="absolute right-9 top-10 flex h-32 w-32 items-center justify-center opacity-80 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">
@@ -61,12 +59,16 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
             <div className="mt-10 flex items-end justify-between gap-4">
               <div className="min-w-0">
                 {h.id === "alphabet" ? (
-                  <p className="mb-2 flex items-center gap-1 font-sans text-[21px] font-medium tracking-[-.06em]">
-                    <span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span>
-                    <span className="ml-2 font-mono text-[9px] font-normal uppercase tracking-[.18em] text-white/35">via Alphabet</span>
+                  <p className="mb-2 flex items-center gap-2">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/15 bg-white/[.06] font-sans text-[15px] font-semibold text-[#4285F4]">G</span>
+                    <span className="font-sans text-[19px] font-medium tracking-[-.055em] text-white/90">Google</span>
+                    <span className="ml-1 border-l border-white/15 pl-3 font-mono text-[8px] uppercase tracking-[.17em] text-white/35">Alphabet · Class C</span>
                   </p>
                 ) : h.id === "anthropic" ? (
-                  <p className="mb-2 font-sans text-[18px] font-medium tracking-[.08em] text-[#E8C3A8]">ANTHROPIC</p>
+                  <p className="mb-2 flex items-center gap-2">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#D99A74]/35 bg-[#D99A74]/10 font-serif text-[16px] text-[#E8C3A8]">A</span>
+                    <span className="font-sans text-[16px] font-medium tracking-[.12em] text-[#E8C3A8]">ANTHROPIC</span>
+                  </p>
                 ) : null}
                 <p className="font-mono text-[12px] tracking-[.24em] text-[#d9c09b]">{h.ticker ?? "PUBLIC EQUITY"}</p>
                 <h3 className="mt-3 max-w-[13ch] font-serif text-[clamp(30px,3vw,42px)] leading-[.98] tracking-[-.025em] text-[#f0eee8] transition-colors duration-500 group-hover:text-[#e4cda9]">{h.name}</h3>
