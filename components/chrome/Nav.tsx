@@ -60,7 +60,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
             <Monogram draw />
             <span className="flex flex-col leading-[1.1]">
               <span className="font-serif text-[22px] font-medium tracking-[0.01em] text-[#f4f1eb]">{name}</span>
-              <span className="text-[10px] tracking-[0.32em] text-white/45">PORTFOLIO</span>
+              <span className="text-[9px] tracking-[0.22em] text-white/45">INVESTOR · CFA LEVEL III CANDIDATE</span>
             </span>
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-8 text-[11px] tracking-[0.22em] xl:flex">
