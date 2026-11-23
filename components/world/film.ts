@@ -3,15 +3,14 @@ import type { LabelOut, WorldCallbacks, WorldData } from "./types";
 /**
  * THE PHOTOGRAPHIC INVESTMENT EXCHANGE — scroll-driven cinematic film.
  *
- * The world is a path-traced film (Blender Cycles, tools/film): one continuous camera move from a closed
- * aluminium briefcase in a dark studio, into the 1 : 110 trading hall inside it, down to eye level, through the
- * gallery and the performance wall, and back out into the open case. Scroll progress u ∈ [0, 4] scrubs it:
- *   u = 0  the closed case · 1 the trading floor · 2 the gallery · 3 the performance wall · 4 the open case
- * At each whole u the film rests on a full-resolution still ("hold"); between them it plays rendered motion frames,
- * cross-faded frame to frame. While a scene's text is read, the hold drifts very slightly, like a camera on a slider.
+ * The headquarters approach is a separate scroll-scrubbed video sequence. This path-traced
+ * film begins inside the exchange and follows one continuous camera move through the trading
+ * floor, investment gallery and performance wall. The visible playhead is constrained to u ∈ [1, 3]:
+ *   u = 1  trading floor · u = 2  investment gallery · u = 3  performance wall
+ * The legacy studio/briefcase frames remain in the source manifest but are never requested.
  *
- * Labels: every frame carries the screen position of each label anchor (projected in Blender), so the page's
- * HTML labels sit exactly on the rendered objects.
+ * At each whole u the film rests on a full-resolution still; between them it plays rendered
+ * motion frames. Projected label anchors keep HTML labels aligned with objects in the film.
  */
 interface Manifest {
   w: number; h: number;
@@ -221,7 +220,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
       setU(u: number) { uTarget = Math.min(3, Math.max(1, u)); },
       /** jump the playhead to the target, decode what it needs, then draw */
       async settle(u?: number) {
-        if (u != null) uTarget = u;
+        if (u != null) uTarget = Math.min(3, Math.max(1, u));
         uNow = uTarget; driftNow = drift; manageWindow();
         for (let i = 0; i < 100 && decoding.size; i++) await new Promise((r) => setTimeout(r, 30));
         draw(); return qa.state();
