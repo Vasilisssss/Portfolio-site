@@ -32,9 +32,17 @@ export function RevealText({ as = "div", children, className, delay = 0, onLoad 
     const ready = document.documentElement.dataset.ready === "1";
     if (onLoad && !ready) {
       gsap.set(el, { autoAlpha: 0 });
-      const go = () => { gsap.set(el, { autoAlpha: 1 }); run(); };
+      let started = false;
+      let fallback: ReturnType<typeof setTimeout>;
+      const go = () => {
+        if (started) return;
+        started = true;
+        clearTimeout(fallback);
+        gsap.set(el, { autoAlpha: 1 });
+        run();
+      };
       window.addEventListener("intro:done", go, { once: true });
-      const fallback = setTimeout(go, 2000);
+      fallback = setTimeout(go, 2000);
       return () => { clearTimeout(fallback); window.removeEventListener("intro:done", go); split?.revert(); };
     }
     run();
