@@ -1,30 +1,32 @@
-# Personal investment portfolio: The World Inside a Briefcase
+# Personal investment portfolio: Inside the Investment Headquarters
 
 My own investments: what I own, how my capital is allocated, how it has performed, and how I think about investing.
-A brushed-aluminium briefcase opens in a dark photographic studio; inside it lies a 1 : 110 model of a trading hall.
-The camera descends into the model and arrives at eye level in the full-scale hall, walks to the gallery and the
-performance wall, then rises back out into the open case. Everything you see is a path-traced film (Blender Cycles),
-scrubbed by scrolling.
+The experience opens with a cinematic arrival at a premium financial headquarters, then moves inside to a
+photographic investment exchange. The approved exterior and entrance films are scrubbed by scrolling; the
+path-traced exchange film continues the journey through the trading floor, investment gallery and performance wall.
 
 | Chapter | Where | Real content |
 |---|---|---|
-| I · The Reveal | The closed case on a basalt pedestal; the lid opens on the hall inside | Headline, portfolio value |
-| II · The Capital Engine | The trading floor: the video wall, ticker and every desk monitor show the real figures | Invested capital, value, P/L, overview |
+| I · Headquarters | Blue-hour financial district and a warm timber-and-glass entrance; scroll reveals the exchange | Headline, portfolio value |
+| II · The Capital Engine | Trading floor: the video wall, ticker and desk monitors show privacy-filtered portfolio figures | Invested capital, value, P/L, overview |
 | III · The Investment Gallery | Gallery wing: one brushed-steel monolith per holding, **height ∝ share of capital**, a lime/coral band (above/below cost), a brass plaque | Holdings, allocation |
-| IV · The Performance Gallery | On the walnut wall: the **real month-end index** as a steel line, rebased to 100; each month's ring lime (gain) or coral (loss) | Performance, journal |
-| V · The Final Reveal | Up through the open roof and back out to the whole open case | Strategy, about, closing |
+| IV · The Performance Gallery | Walnut wall: the **real month-end index** as a steel line, rebased to 100; each month's ring lime (gain) or coral (loss) | Performance, journal |
+| V · Investment Philosophy | Strategy, journal and about content complete the portfolio narrative | Strategy, about, closing |
 
 How it is made:
-- `tools/film/world.py` — the hall, gallery, performance wall, studio, briefcase and the 1 : 110 miniature, modelled by
-  script in Blender with scanned materials and models; `render.py` — one camera path over scroll progress u ∈ [0, 4],
+- `tools/film/world.py` — the trading hall, investment gallery, performance wall and legacy studio/briefcase source
+  assets, modelled by script in Blender with scanned materials and models; `render.py` — the original camera path over scroll progress u ∈ [0, 4],
   five full-resolution stills (one per scene) and ~160 motion frames, with the screen position of every label anchor
   per frame; `encode.py` — photographic grade, WebP at two sizes, `public/film/manifest.json`.
 - Screens are drawn from the site's own privacy-filtered export (`/film-data.json`, built from `lib/public.ts`) by
   `screens_img.py`, so the film can only show what the page may show.
 - `tools/film/check.mjs` runs in `npm run build:pages` and **stops the build if the portfolio data changed since the
   film was rendered** — the film must be re-rendered rather than publish stale figures.
-- `components/world/film.ts` — the player: loads the scene stills first, then motion frames nearest the playhead,
-  cross-fades frame to frame, keeps a small window decoded, and positions the HTML labels on the rendered objects.
+- `components/world/film.ts` — the exchange-only player: starts at u = 1 and is constrained to u ∈ [1, 3].
+  It loads only trading-floor/gallery/performance stills and motion frames, keeps a small window decoded,
+  and positions the HTML labels on the rendered objects. Legacy briefcase endpoints remain source assets but are not requested.
+- `components/hero/HeadquartersHero.tsx` — scroll-scrubs the approved headquarters exterior and entrance clips,
+  then fades into the exchange film. Poster fallbacks and a reduced-motion static presentation are included.
 - `tools/exchange/proto.py` — the approved one-room prototype the film grew from.
 - Render: Blender as a Python module (`pip install bpy pillow`), Cycles on CPU, OpenImageDenoise.
   `python tools/film/world.py --out world.blend` → `python tools/film/render.py world.blend out keys 1920 192` and
@@ -91,19 +93,15 @@ npm run build:pages    # the exact build CI runs → out/
 
 ## Performance and accessibility
 
-- All 3D is procedural geometry plus a GPU-generated studio environment: no model, texture or HDR downloads.
-  Three.js (and the world) load only after the page has loaded and gone idle. Shaders compile asynchronously
-  (`compileAsync`). Rendering pauses in background tabs, and only the environments near the camera are drawn.
-- **Native resolution on every device**: the 3D renders at the screen's own pixel density (1× standard screens,
-  2× Retina / 4K / 5K, up to 3× phones), and adopts the new density when the window moves to another screen.
-- Adaptive quality (`components/world/quality.ts`): when a device can't hold ~42 fps, effects make way first
-  (ambient occlusion → depth of field → lighter anti-aliasing and bloom → softer shadow map); resolution only steps down
-  after that, and never below 1× or 75% of native. Effects come back once the device runs smoothly again.
-- Add `?quality` to the address to see what your device actually renders (size, density, fps, quality level).
-- Phones and low-core devices get a lighter tier: no ambient occlusion, depth of field or glass refraction, 2K shadow map,
-  512 px surface maps, fewer bevel segments; the lens widens so the framing holds on narrow screens.
-- `prefers-reduced-motion`: no intro and no smooth scroll; the camera cuts between scenes instead of flying;
-  idle animation stops.
+- The exchange is a pre-rendered Blender Cycles film displayed on a canvas; the headquarters approach uses two
+  optimized, muted MP4 clips with JPEG poster fallbacks. The hero video is scrubbed by scroll rather than autoplayed.
+- The film loads only the visible exchange scenes; legacy briefcase endpoint frames are retained in source but excluded
+  from the normal loading path.
+- Responsive cover framing, a capped 2× canvas pixel density, deferred motion-frame decoding and a small decoded-frame
+  window help control memory and rendering cost on desktop and mobile.
+- Add `?qa` to the address to expose deterministic film test hooks for engineering verification.
+- `prefers-reduced-motion`: video scrubbing is disabled, the hero uses its poster fallback, and the exchange film
+  resolves to scene stills rather than playing motion frames.
 - No WebGL: the full content renders over a static atmospheric background.
 - The 3D receives percentages only, so the privacy settings still hold.
 - Server-rendered text, semantic landmarks, keyboard-operable charts and tabs, and visible focus.
