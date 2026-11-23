@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type { WorldData, LabelOut } from "./engine";
+import type { WorldData, LabelOut } from "./types";
 
 export interface WorldLabel { id: string; title: string; lines: string[]; holdingId?: string; assetClass?: string }
 
@@ -10,7 +10,7 @@ const ROMAN = ["I", "II", "III", "IV", "V"];
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
 
 /**
- * Fixed full-screen WebGL world behind the home page. Scroll position drives the camera:
+ * Fixed full-screen film behind the home page (path-traced in Blender, tools/film). Scroll position drives the camera:
  * while chapter i (a full-height title card, [data-chapter=i]) scrolls into view, the camera travels from scene i-1 to scene i
  * (from 0 to 1 the case unlocks, opens and its model rises).
  * While the content of a scene is read, the camera drifts gently around it.
@@ -28,10 +28,9 @@ export default function World({ data, labels }: { data: WorldData; labels: World
     let world: { setProgress: (u: number, d: number) => void; dispose: () => void } | null = null;
     let disposed = false;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const low = window.matchMedia("(max-width: 820px), (pointer: coarse)").matches || (navigator.hardwareConcurrency ?? 8) <= 4;
+    // small screens and data-saver connections get the 1280 / 854 px film instead of 1920 / 1280 px
+    const low = window.matchMedia("(max-width: 820px)").matches || !!(navigator as unknown as { connection?: { saveData?: boolean } }).connection?.saveData;
 
-    const probe = document.createElement("canvas");
-    if (!(probe.getContext("webgl2") || probe.getContext("webgl"))) { setOk(false); return; }
 
     const byId = new Map(labels.map((l) => [l.id, l]));
     let lastActive = -1;
@@ -57,7 +56,7 @@ export default function World({ data, labels }: { data: WorldData; labels: World
     };
 
     // the page's text and data come first; the world is built once the browser is idle after load
-    const boot = () => import("./engine").then(({ createWorld }) => {
+    const boot = () => import("./film").then(({ createWorld }) => {
       if (disposed) return;
       try {
         world = createWorld(el, data, { low, reduce }, {
@@ -92,7 +91,7 @@ export default function World({ data, labels }: { data: WorldData; labels: World
         el.querySelector("canvas")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: reduce ? 0 : 1600, easing: "ease-out" });
         progress();
       } catch (e) {
-        console.error("3D world failed to start; showing the static fallback.", e);
+        console.error("The film failed to start; the page stays readable without it.", e);
         setOk(false);
       }
     });

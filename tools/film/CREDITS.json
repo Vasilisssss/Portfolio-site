@@ -1,0 +1,149 @@
+{
+ "granite_tile": {
+  "name": "Granite Tile",
+  "authors": {
+   "Charlotte Baglioni": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/granite_tile"
+ },
+ "granite_tile_03": {
+  "name": "Granite Tile 03",
+  "authors": {
+   "Charlotte Baglioni": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/granite_tile_03"
+ },
+ "marble_01": {
+  "name": "Marble 01",
+  "authors": {
+   "Rob Tuytel": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/marble_01"
+ },
+ "fabric_leather_01": {
+  "name": "Fabric Leather 01",
+  "authors": {
+   "Rob Tuytel": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/fabric_leather_01"
+ },
+ "smoked_walnut_veneer": {
+  "name": "Smoked Walnut Veneer",
+  "authors": {
+   "Jenelle van Heerden": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/smoked_walnut_veneer"
+ },
+ "black_oak_veneer": {
+  "name": "Black Oak Veneer",
+  "authors": {
+   "Jenelle van Heerden": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/black_oak_veneer"
+ },
+ "white_oak_veneer": {
+  "name": "White Oak Veneer",
+  "authors": {
+   "Jenelle van Heerden": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/white_oak_veneer"
+ },
+ "poly_wool_herringbone": {
+  "name": "Poly Wool Herringbone",
+  "authors": {
+   "colormass": "Photography",
+   "Rico Cilliers": "Processing"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/poly_wool_herringbone"
+ },
+ "canary_wharf": {
+  "name": "Canary Wharf",
+  "authors": {
+   "Andreas Mischok": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/canary_wharf"
+ },
+ "pachira_aquatica_01": {
+  "name": "Pachira Aquatica 01",
+  "authors": {
+   "Rob Tuytel": "scanning",
+   "Rico Cilliers": "modeling"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/pachira_aquatica_01"
+ },
+ "calathea_orbifolia_01": {
+  "name": "Calathea Orbifolia 01",
+  "authors": {
+   "Rob Tuytel": "scanning",
+   "Rico Cilliers": "modeling"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/calathea_orbifolia_01"
+ },
+ "potted_plant_01": {
+  "name": "Potted Plant 01",
+  "authors": {
+   "Rico Cilliers": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/potted_plant_01"
+ },
+ "potted_plant_02": {
+  "name": "Potted Plant 02",
+  "authors": {
+   "Rico Cilliers": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/potted_plant_02"
+ },
+ "potted_plant_04": {
+  "name": "Potted Plant 04",
+  "authors": {
+   "James Ray Cock": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/potted_plant_04"
+ },
+ "mid_century_lounge_chair": {
+  "name": "Mid Century Lounge Chair",
+  "authors": {
+   "Kuutti Siitonen": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/mid_century_lounge_chair"
+ },
+ "modern_coffee_table_01": {
+  "name": "Modern Coffee Table 01",
+  "authors": {
+   "Amin": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/modern_coffee_table_01"
+ },
+ "side_table_01": {
+  "name": "Side Table 01",
+  "authors": {
+   "James Ray Cock": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/side_table_01"
+ },
+ "wall_clock": {
+  "name": "Wall Clock",
+  "authors": {
+   "PierreB3D": "All"
+  },
+  "license": "CC0",
+  "url": "https://polyhaven.com/a/wall_clock"
+ }
+}
