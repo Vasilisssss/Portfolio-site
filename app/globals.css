@@ -206,3 +206,42 @@
     opacity: .72;
   }
 }
+
+
+/* Phone-specific spacing and type scale for the capital chapter. */
+@media (max-width: 700px) {
+  .trading-floor-scene [data-chapter="1"] {
+    min-height: 82svh;
+    align-items: flex-end;
+  }
+  .trading-floor-scene [data-chapter="1"] .container-x {
+    padding-top: 8rem;
+    padding-bottom: 5rem;
+  }
+  .trading-floor-scene [data-chapter="1"] .eyebrow {
+    font-size: 10px;
+    letter-spacing: .16em;
+  }
+  .trading-floor-scene [data-chapter="1"] .display {
+    font-size: clamp(42px, 11vw, 58px);
+    line-height: .94;
+    max-width: 9ch;
+  }
+  .trading-floor-scene [data-chapter="1"] dl {
+    max-width: 100%;
+    gap: 1.35rem 1rem;
+  }
+  .trading-floor-scene [data-chapter="1"] dl dt {
+    font-size: 8px;
+    line-height: 1.5;
+    letter-spacing: .12em;
+  }
+  .trading-floor-scene [data-chapter="1"] dl dd {
+    overflow-wrap: anywhere;
+  }
+  .trading-floor-scene [data-chapter="1"] p {
+    max-width: 34ch;
+    font-size: 11px;
+    line-height: 1.8;
+  }
+}
