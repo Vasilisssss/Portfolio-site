@@ -245,3 +245,25 @@
     line-height: 1.8;
   }
 }
+
+
+/* Chapter II: close the vertical gap between the architectural set and its story. */
+.trading-floor-scene [data-chapter="1"] {
+  min-height: clamp(600px, 76svh, 860px);
+}
+.trading-floor-scene [data-chapter="1"] .container-x {
+  padding-bottom: clamp(44px, 7vh, 76px);
+}
+@media (max-width: 700px) {
+  .trading-floor-atmosphere {
+    height: 58svh;
+    opacity: .78;
+  }
+  .trading-floor-scene [data-chapter="1"] {
+    min-height: clamp(500px, 66svh, 620px);
+  }
+  .trading-floor-scene [data-chapter="1"] .container-x {
+    padding-top: 7rem;
+    padding-bottom: 3.5rem;
+  }
+}
