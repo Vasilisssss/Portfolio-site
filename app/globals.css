@@ -2,8 +2,8 @@
 
 /*
  * THE CAPITAL UNIVERSE — design tokens.
- * Token names are kept from the previous theme so every component re-skins from one place:
- *   pearl* = surfaces, graphite* = text, ice-deep / lavender-deep = the controlled lime accent.
+ * Legacy token names remain for component compatibility; the visual language is graphite,
+ * soft ivory, champagne metal and restrained rose for negative performance.
  */
 @theme {
   --color-pearl: #08090a;        /* deep black — page */
@@ -11,8 +11,8 @@
   --color-snow: #0d0f11;         /* inverse ink on light buttons / dark chips */
   --color-line: #202328;
   --color-line-2: #2e3238;
-  --color-ice: #1b1f14;          /* lime-tinted dark fill */
-  --color-ice-deep: #d9c09b;     /* acid lime accent */
+  --color-ice: #1b1f14;          /* deep neutral surface */
+  --color-ice-deep: #d9c09b;     /* champagne accent */
   --color-lavender: #1a1c1f;
   --color-lavender-deep: #d9c09b;
   --color-blush: #1f1a1a;
@@ -21,8 +21,8 @@
   --color-graphite: #f3f2ed;     /* soft white — primary text */
   --color-graphite-2: #c8c9c3;
   --color-mute: #898d8c;
-  --color-gain: #d7ff3f;
-  --color-loss: #ff7a66;
+  --color-gain: #d9c09b;
+  --color-loss: #d99a91;
   --color-lime: #d9c09b;
   --font-serif: var(--font-instrument), "Instrument Serif", Georgia, serif;
   --font-sans: var(--font-geist), "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -53,21 +53,21 @@
   .container-x { max-width: 1520px; margin-inline: auto; padding-inline: clamp(20px, 3.2vw, 48px); }
   /* 5K / large 4K desktops (≥2200 CSS px): use more of the canvas instead of a narrow centre column */
   @media (min-width: 2200px) { .container-x { max-width: 1840px; padding-inline: 64px; } }
-  /* smoked glass panel over the 3D world */
+  /* Smoked-glass surface used by portfolio data panels. */
   .glass {
     border: 1px solid rgba(243, 242, 237, 0.08);
     background: linear-gradient(160deg, rgba(22, 24, 27, 0.78), rgba(10, 11, 13, 0.7));
     box-shadow: 0 1px 0 rgba(243, 242, 237, 0.06) inset, 0 40px 80px -40px rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(22px) saturate(1.2);
   }
-  /* accent text: soft white into lime */
+  /* accent text: soft white into champagne */
   .iris-text { background: linear-gradient(100deg, #f3f2ed 0%, #f3f2ed 35%, #d9c09b 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .iris-line { background: linear-gradient(90deg, #d7ff3f, rgba(217, 192, 155, 0.25)); }
+  .iris-line { background: linear-gradient(90deg, #d9c09b, rgba(217, 192, 155, 0.25)); }
   .hairline { border-color: var(--color-line); }
   .lime-glow { text-shadow: 0 0 40px rgba(217, 192, 155, 0.28); }
 }
 
-/* atmosphere when WebGL is unavailable or loading: a single, faint lime horizon */
+/* Ambient graphite atmosphere beneath the cinematic sections. */
 .aura { position: fixed; inset: 0; z-index: 0; pointer-events: none; background:
   radial-gradient(120% 60% at 50% 115%, rgba(217, 192, 155, 0.08), transparent 60%),
   radial-gradient(80% 50% at 50% -10%, rgba(243, 242, 237, 0.05), transparent 70%); }
