@@ -1,22 +1,21 @@
-name: Cinematic redesign checks
+name: Cinematic redesign checks and release
 
 on:
   push:
     branches: [cinematic-redesign]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: cinematic-redesign-checks-${{ github.ref }}
-  cancel-in-progress: true
+  group: cinematic-redesign-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,11 +32,30 @@ jobs:
         run: npm run build:pages
         env:
           PAGES_BASE_PATH: /Portfolio-site
-      - name: Upload build artifact for private review
-        if: github.event_name == 'push' && github.ref == 'refs/heads/cinematic-redesign'
+      - name: Upload site artifact
         uses: actions/upload-artifact@v4
         with:
           name: cinematic-pages
           path: out/
           if-no-files-found: error
           retention-days: 7
+
+  deploy:
+    if: github.ref == 'refs/heads/cinematic-redesign'
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download validated site
+        uses: actions/download-artifact@v4
+        with:
+          name: cinematic-pages
+          path: out/
+      - name: Publish cinematic redesign to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./out
+          force_orphan: false
+          enable_jekyll: false
+          commit_message: "deploy: cinematic redesign ${{ github.sha }}"
