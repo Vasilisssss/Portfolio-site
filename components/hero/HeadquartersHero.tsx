@@ -22,6 +22,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
   const [shot, setShot] = useState<0 | 1>(0);
   const [mediaReady, setMediaReady] = useState(false);
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const mediaLayer = useRef<HTMLDivElement>(null);
   const firstVideo = useRef<HTMLVideoElement>(null);
   const secondVideo = useRef<HTMLVideoElement>(null);
 
@@ -46,6 +47,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
       const rect = section.getBoundingClientRect();
       const distance = Math.max(1, section.offsetHeight - window.innerHeight);
       const progress = Math.min(1, Math.max(0, -rect.top / distance));
+      if (mediaLayer.current) mediaLayer.current.style.opacity = String(1 - Math.min(1, Math.max(0, (progress - 0.88) / 0.12)));
       const nextShot: 0 | 1 = progress < 0.5 ? 0 : 1;
       setShot(nextShot);
 
@@ -78,7 +80,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
 
   return (
     <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate min-h-[200svh]">
-      <div className="headquarters-media" aria-hidden="true">
+      <div ref={mediaLayer} className="headquarters-media" aria-hidden="true">
         <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" fetchPriority="high" decoding="async" /></div>
         <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
         <video ref={secondVideo} className={`headquarters-video ${shot === 1 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-arrival.mp4`} poster={`${basePath}/media/headquarters-arrival.jpg`} muted playsInline preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
