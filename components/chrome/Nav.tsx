@@ -30,10 +30,26 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
     const lenis = (window as unknown as { __lenis?: { stop(): void; start(): void } }).__lenis;
     if (open) { lenis?.stop(); document.body.style.overflow = "hidden"; closeBtn.current?.focus(); }
     else { lenis?.start(); document.body.style.overflow = ""; }
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && open) { setOpen(false); openBtn.current?.focus(); } };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) { setOpen(false); openBtn.current?.focus(); return; }
+      if (e.key !== "Tab" || !open) return;
+      const dialog = document.getElementById("site-menu");
+      const focusable = dialog?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
+
+  useEffect(() => () => {
+    const lenis = (window as unknown as { __lenis?: { start(): void } }).__lenis;
+    document.body.style.overflow = "";
+    lenis?.start();
+  }, []);
 
   return (
     <>
