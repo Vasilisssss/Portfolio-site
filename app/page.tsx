@@ -15,6 +15,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import Marquee, { type MarqueeItem } from "@/components/ui/Marquee";
 import Chapter from "@/components/world/Chapter";
 import TradingFloorAtmosphere from "@/components/world/TradingFloorAtmosphere";
+import WorldMount from "@/components/world/WorldMount";
+import { worldFromView } from "@/lib/world-data";
 import { dateLong, money, moneySigned, monthYear, pct } from "@/lib/format";
 
 export default function Home() {
@@ -26,7 +28,8 @@ export default function Home() {
   const amounts = view.showAmounts && s.value != null;
   const tone = (x: number | null | undefined) => (x == null || Math.abs(x) < 0.0005 ? "flat" : x > 0 ? "gain" : "loss") as "flat" | "gain" | "loss";
 
-  // ---- the world gets the same privacy-filtered view as the page: amounts only when the privacy settings show them
+  // The scroll film receives exactly the same privacy-filtered portfolio view as the page.
+  const { data: worldData, labels } = worldFromView(view);
 
   const tickerRows: MarqueeItem[][] = [
     view.holdings.map((h): MarqueeItem => ({ label: h.ticker ?? h.name, value: h.returnPct == null ? undefined : pct(h.returnPct, true), tone: tone(h.returnPct) })),
@@ -39,6 +42,7 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <WorldMount data={worldData} labels={labels} />
 
       {/* I — HEADQUARTERS */}
       <div data-scene="0" id="capital-engine" className="relative">
