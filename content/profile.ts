@@ -32,4 +32,14 @@ export const profile = {
       { title: "Quantitative evidence", body: "Use data and analytical methods to test assumptions, identify patterns and support—not replace—judgement." },
     ],
   },
+
+  about: {
+    intro: "A finance professional with an interest in investment research, portfolio analysis and long-term decision-making.",
+    approach: "A considered approach grounded in research, valuation, risk awareness and continuous learning.",
+    vision: "To keep developing sound judgement through experience, study and disciplined analysis.",
+    started: "—",
+  },
+
+  closing: ["Think long term.", "Build with conviction."],
+  disclaimer: "This is a personal record of my own investments, shared for transparency. It is not investment advice, a recommendation or an offer of any kind. Past performance does not predict future results.",
 };
