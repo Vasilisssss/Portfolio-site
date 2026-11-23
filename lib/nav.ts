@@ -7,6 +7,7 @@ const ALL = [
   { key: "performance", label: "Performance", href: "/#performance" },
   { key: "strategy", label: "Strategy", href: "/#strategy" },
   { key: "journal", label: "Journal", href: "/#journal" },
+  { key: "experience", label: "Experience", href: "/#experience" },
   { key: "about", label: "About", href: "/#about" },
 ] as const;
 
