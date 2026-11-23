@@ -5,7 +5,7 @@ import type { WorldData, LabelOut } from "./types";
 export interface WorldLabel { id: string; title: string; lines: string[]; holdingId?: string; assetClass?: string }
 
 export const SCENES = ["The Trading Floor", "The Investment Gallery", "The Performance Gallery"];
-const ROMAN = ["I", "II", "III", "IV", "V"];
+const ROMAN = ["II", "III", "IV"];
 
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
 
