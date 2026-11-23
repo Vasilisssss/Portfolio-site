@@ -126,3 +126,23 @@
 [data-scene="1"],[data-scene="3"] { background:linear-gradient(180deg,rgba(20,26,29,.45),rgba(8,11,13,.96) 45%,#080b0d); }
 [data-scene="2"],[data-scene="4"] { background:linear-gradient(180deg,#080b0d,rgba(17,21,23,.92) 55%,#080b0d); }
 .glass { border-color:rgba(217,192,155,.12); background:linear-gradient(155deg,rgba(28,30,31,.82),rgba(9,12,14,.82)); box-shadow:0 1px 0 rgba(243,242,237,.055) inset,0 35px 90px -45px rgba(0,0,0,.9); }
+
+
+/* Trading floor — layered glass atrium, ceiling lights and workstation rhythm */
+.trading-floor-scene { overflow:hidden; background:linear-gradient(180deg,#10171b 0%,#0b1013 42%,#080b0d 100%); }
+.trading-floor-atmosphere { position:absolute; inset:0 0 auto; height:min(100svh,920px); overflow:hidden; pointer-events:none; opacity:.88; }
+.trading-floor-ceiling { position:absolute; inset:0 0 53%; background:repeating-linear-gradient(90deg,transparent 0 11.8%,rgba(203,188,165,.09) 11.9%,transparent 12.1%),linear-gradient(180deg,rgba(151,164,165,.12),transparent 72%); transform:perspective(700px) rotateX(-9deg) scale(1.12); transform-origin:top; }
+.trading-floor-gallery { position:absolute; top:8%; left:9%; right:8%; height:29%; display:grid; grid-template-columns:repeat(7,1fr); gap:1px; border:1px solid rgba(217,192,155,.16); background:rgba(217,192,155,.12); box-shadow:0 0 70px rgba(0,0,0,.5); }
+.trading-floor-gallery span { background:linear-gradient(180deg,rgba(20,31,36,.8),rgba(8,13,16,.9)); border-top:2px solid rgba(217,192,155,.18); box-shadow:inset 0 0 24px rgba(191,151,103,.08); }
+.trading-floor-gallery span:nth-child(3n) { background:linear-gradient(180deg,rgba(45,53,54,.56),rgba(8,13,16,.95)); }
+.trading-floor-glass { position:absolute; top:37%; left:-4%; right:-4%; height:18%; border-top:1px solid rgba(220,205,181,.23); border-bottom:1px solid rgba(220,205,181,.12); background:linear-gradient(180deg,rgba(129,148,148,.07),rgba(10,15,18,.24)); transform:skewY(-2deg); }
+.trading-floor-deskline { position:absolute; top:52%; left:5%; right:5%; height:22%; display:grid; grid-template-columns:repeat(8,1fr); gap:clamp(5px,1vw,18px); align-items:end; perspective:800px; transform:rotateX(4deg); }
+.trading-floor-deskline i { height:var(--desk-height,72%); display:flex; align-items:flex-start; justify-content:center; gap:3px; padding:5px 3px; border:1px solid rgba(210,191,160,.16); background:linear-gradient(180deg,rgba(46,53,54,.78),rgba(8,12,14,.96)); box-shadow:0 15px 25px rgba(0,0,0,.35); }
+.trading-floor-deskline i:nth-child(2n) { --desk-height:88%; }
+.trading-floor-deskline i:nth-child(3n) { --desk-height:62%; }
+.trading-floor-deskline b { width:29%; height:24%; border:1px solid rgba(212,191,157,.2); background:linear-gradient(180deg,rgba(73,97,98,.65),rgba(9,15,18,.95)); box-shadow:0 0 12px rgba(186,153,111,.07); }
+.trading-floor-reflection { position:absolute; left:0; right:0; bottom:0; height:28%; background:linear-gradient(180deg,transparent,rgba(6,9,11,.9)),repeating-linear-gradient(90deg,transparent 0 12%,rgba(196,173,141,.045) 12.1%,transparent 12.3%); }
+.trading-floor-scene [data-chapter="1"] { position:relative; z-index:1; }
+.trading-floor-scene [data-chapter="1"] .display { max-width:10ch; }
+@media(max-width:700px) { .trading-floor-atmosphere { height:74svh; opacity:.55; } .trading-floor-gallery { left:2%; right:2%; top:13%; height:23%; } .trading-floor-deskline { left:1%; right:1%; top:48%; gap:3px; } .trading-floor-deskline i { padding:3px 1px; } }
+@media(prefers-reduced-motion:reduce) { .trading-floor-atmosphere * { animation:none!important; transition:none!important; } }
