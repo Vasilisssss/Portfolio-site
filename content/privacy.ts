@@ -30,6 +30,7 @@ export const privacy = {
     performance: true,
     strategy: true,
     journal: true,
+    experience: true,
     about: true,
   },
 };
