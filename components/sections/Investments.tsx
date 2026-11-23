@@ -32,12 +32,11 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
       {isStock ? (
         <>
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div ref={art} className="absolute -right-12 -top-7 h-[250px] w-[78%] opacity-[.22] transition-all duration-1000 group-hover:opacity-[.42]">
-              <CardArt assetClass={h.assetClass} seed={i + 1} accent="#d9c09b" className="h-full w-full transition-transform duration-[1.2s] ease-[var(--ease-expo)] group-hover:scale-110" />
-            </div>
-            <div className="absolute inset-0 bg-[linear-gradient(118deg,#111315_5%,rgba(17,19,21,.92)_42%,rgba(17,19,21,.28)_100%)]" />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c09b]/55 to-transparent" />
-            <div className="absolute -right-3 top-10 select-none font-mono text-[clamp(84px,12vw,148px)] font-light leading-none tracking-[-.1em] text-white/[.035]">{h.ticker ?? "—"}</div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_82%_18%,rgba(217,192,155,.12),transparent_44%),linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]" />
+            <div className="absolute inset-y-0 right-0 w-[42%] border-l border-white/[.035] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.018))]" />
+            <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] font-normal italic leading-[.8] tracking-[-.09em] text-[#d9c09b]/[.075] transition-all duration-700 group-hover:text-[#d9c09b]/[.14]">{(h.ticker ?? h.name.slice(0, 3)).slice(0, 4)}</div>
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c09b]/50 to-transparent" />
+            <div className="absolute bottom-[34%] left-8 right-8 h-px bg-white/[.07]" />
           </div>
           <div className="relative flex flex-1 flex-col p-7 sm:p-8">
             <div className="flex items-center justify-between gap-3">
