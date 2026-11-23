@@ -12,13 +12,13 @@ Both optimized MP4 files and their poster JPEGs are committed under `public/medi
 - `public/media/headquarters-arrival.mp4`
 - `public/media/headquarters-arrival.jpg`
 
-The hero references these paths with the `NEXT_PUBLIC_BASE_PATH` prefix for GitHub Pages. Both muted, inline clips are scrubbed by scroll position inside a pinned two-viewport hero: the exterior establishing shot leads into the entrance approach, then the headquarters layer fades into the exchange film. Poster images remain underneath as visual fallbacks. Reduced-motion preferences disable video scrubbing and collapse the hero to one viewport.
+The hero references these paths with the `NEXT_PUBLIC_BASE_PATH` prefix for GitHub Pages. Both muted, inline clips play while the two-viewport hero is in view. Scrolling through the hero switches from the exterior establishing shot to the entrance approach; the headquarters layer then fades into the exchange film. Poster images remain underneath as visual fallbacks. Reduced-motion preferences disable video playback and collapse the hero to one viewport.
 
 ## Validation and preview
 
-The `Cinematic redesign checks` GitHub Actions workflow runs TypeScript validation and a static GitHub Pages build. On branch pushes, it retains the generated `cinematic-pages` artifact for seven days. The artifact is a build output, not a hosted preview URL.
+The `Cinematic redesign checks and release` GitHub Actions workflow runs TypeScript validation and a static GitHub Pages build on `cinematic-redesign` pushes, then publishes the validated output to `gh-pages`. `main` remains untouched.
 
-The workflow has read-only repository permissions and does not publish to `gh-pages`, deploy a site, or alter `main`. A hosted browser preview must be provided separately before visual QA can be completed.
+The release workflow publishes only from `cinematic-redesign` to GitHub Pages; it does not merge or write to `main`.
 
 Automated build success does not replace browser QA. Desktop/mobile layout, scroll-scrub responsiveness, clip transition, reduced-motion behavior, poster fallback, and the deployed `/Portfolio-site` base path still require visual verification.
 
@@ -26,4 +26,4 @@ Automated build success does not replace browser QA. Desktop/mobile layout, scro
 
 The owner-uploaded originals remain at the repository root as source copies; the integration uses only the four normalized files in `public/media/`. No original uploads were deleted. The legacy briefcase source files and old endpoint frames remain in the repository as source history. The homepage camera is constrained to exchange scenes 1–3, and the film player no longer requests the legacy opening/closing holds or motion frames.
 
-All redesign work remains on `cinematic-redesign`. Do not merge into `main`, publish a release, or deploy without the owner's separate explicit approval.
+All redesign work remains on `cinematic-redesign`. The owner explicitly approved publication to GitHub Pages. Do not merge into `main` without separate approval.
