@@ -4,7 +4,7 @@ import type { WorldData, LabelOut } from "./types";
 
 export interface WorldLabel { id: string; title: string; lines: string[]; holdingId?: string; assetClass?: string }
 
-export const SCENES = ["The Reveal", "The Capital Engine", "The Investment Gallery", "The Performance Gallery", "The Final Reveal"];
+export const SCENES = ["The Trading Floor", "The Investment Gallery", "The Performance Gallery"];
 const ROMAN = ["I", "II", "III", "IV", "V"];
 
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
@@ -18,7 +18,7 @@ const clamp = (x: number) => Math.min(1, Math.max(0, x));
 export default function World({ data, labels }: { data: WorldData; labels: WorldLabel[] }) {
   const host = useRef<HTMLDivElement>(null);
   const labelEls = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(1);
   const [hovered, setHovered] = useState<string | null>(null);
   const [ok, setOk] = useState(true);
 
@@ -41,7 +41,7 @@ export default function World({ data, labels }: { data: WorldData; labels: World
       const chapters = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
       // Chapter II is the arrival/hold inside the exchange. Subsequent chapters scrub the
       // existing continuous camera path: trading floor → investment gallery → performance wall → final reveal.
-      chapters.slice(1).forEach((ch) => {
+      chapters.slice(1, 3).forEach((ch) => {
         const top = ch.getBoundingClientRect().top + y;
         u += clamp((y - (top - vh)) / vh);
       });
@@ -113,9 +113,9 @@ export default function World({ data, labels }: { data: WorldData; labels: World
   }, [data, labels]);
 
   const go = (i: number) => {
-    const target = i === 0 ? document.body : document.querySelector(`[data-chapter="${i}"]`);
+    const scene = i + 1;
+    const target = document.querySelector(`[data-chapter="${scene}"]`);
     const lenis = (window as unknown as { __lenis?: { scrollTo: (t: Element | number) => void } }).__lenis;
-    if (i === 0) { if (lenis) lenis.scrollTo(0); else window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     if (target) { if (lenis) lenis.scrollTo(target); else target.scrollIntoView({ behavior: "smooth" }); }
   };
 
@@ -141,11 +141,11 @@ export default function World({ data, labels }: { data: WorldData; labels: World
       {/* scene rail: where am I in the journey + direct navigation */}
       <nav aria-label="Journey" className="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 lg:flex">
         {SCENES.map((s, i) => (
-          <button key={s} type="button" onClick={() => go(i)} aria-current={active === i ? "step" : undefined}
+          <button key={s} type="button" onClick={() => go(i)} aria-current={active === i + 1 ? "step" : undefined}
             className="group flex items-center justify-end gap-3 text-right">
-            <span className={`font-mono text-[10px] uppercase tracking-[0.2em] transition-all duration-500 ${active === i ? "text-graphite opacity-100" : "translate-x-2 text-mute opacity-0 group-hover:translate-x-0 group-hover:opacity-100"}`}>{s}</span>
-            <span className={`font-mono text-[10px] tracking-[0.1em] ${active === i ? "text-[#d9c09b]" : "text-mute"}`}>{ROMAN[i]}</span>
-            <span className={`block h-px transition-all duration-500 ${active === i ? "w-10 bg-[#d9c09b]" : "w-4 bg-white/30 group-hover:w-6"}`} />
+            <span className={`font-mono text-[10px] uppercase tracking-[0.2em] transition-all duration-500 ${active === i + 1 ? "text-graphite opacity-100" : "translate-x-2 text-mute opacity-0 group-hover:translate-x-0 group-hover:opacity-100"}`}>{s}</span>
+            <span className={`font-mono text-[10px] tracking-[0.1em] ${active === i + 1 ? "text-[#d9c09b]" : "text-mute"}`}>{ROMAN[i]}</span>
+            <span className={`block h-px transition-all duration-500 ${active === i + 1 ? "w-10 bg-[#d9c09b]" : "w-4 bg-white/30 group-hover:w-6"}`} />
           </button>
         ))}
       </nav>
