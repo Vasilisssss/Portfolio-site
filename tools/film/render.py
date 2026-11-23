@@ -83,6 +83,7 @@ FRAMES.append(4.0)
 cam = scene.camera
 WORLD_BG = scene.world.node_tree.nodes["Background"]; SKY = WORLD_BG.inputs["Strength"].default_value
 HALL_LIGHTS = [(o.data, o.data.energy) for o in bpy.data.collections["lights"].objects if o.type == "LIGHT"]
+HALL_LIGHT_OBJS = [o for o in bpy.data.collections["lights"].objects if o.type == "LIGHT"]
 ceiling = bpy.data.collections["ceiling"]
 void = [bpy.data.objects["void_ground"], bpy.data.objects["void_skirt"]]
 hinge = bpy.data.objects["lid_hinge"]
@@ -110,6 +111,7 @@ def setup(u):
     k = min(1.0, max(0.0, (pos.z - (H - 0.4)) / 3.5)); k = k * k * (3 - 2 * k)
     WORLD_BG.inputs["Strength"].default_value = SKY * (1 - 0.6 * k)
     for L, e in HALL_LIGHTS: L.energy = e * (1 - k)
+    for o in HALL_LIGHT_OBJS: o.visible_camera = not ceiling.hide_render  # the bare emitters never show once the roof is off
     for o in void: o.hide_render = not (inside and pos.z > H + 0.5)
     return pos, inside
 
