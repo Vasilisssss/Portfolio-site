@@ -15,7 +15,7 @@ export const profile = {
   hero: {
     eyebrow: "Investor · CFA Level III Candidate",
     lines: ["My capital,", "in the long run."],
-    body: "A personal investment portfolio and professional profile — documenting the companies I invest in, the principles behind my decisions and my journey as a CFA Level III candidate.",
+    body: "Risk Analyst at Argus Management Ltd., with previous experience in portfolio performance at Albourne. A finance professional documenting investment research, portfolio thinking and a continued commitment to the CFA Program.",
   },
 
   strategy: {
@@ -34,10 +34,10 @@ export const profile = {
   },
 
   about: {
-    intro: "I’m Vasilis Mavroudes — an investor and CFA Level III candidate, documenting my investment portfolio and professional journey.",
-    approach: "An evolving, research-led approach to understanding businesses, valuation and risk.",
-    vision: "Build lasting investment knowledge, sound judgement and a disciplined process over time.",
-    started: "CFA Program · Level III Candidate",
+    intro: "I’m Vasilis Mavroudes, a finance professional working across risk and portfolio analysis, with experience spanning hedge funds and private markets.",
+    approach: "My work has focused on portfolio performance, risk monitoring, client reporting and investment data. I hold an MSc in Finance from the University of Groningen, where my thesis examined machine-learning-based predictive modelling of M&A outcomes.",
+    vision: "I am continuing my professional development through the CFA Program, having completed Levels I and II and currently pursuing Level III.",
+    started: "Risk Analyst · Argus Management Ltd.",
   },
 
   closing: ["Think long term.", "Build with conviction."],
