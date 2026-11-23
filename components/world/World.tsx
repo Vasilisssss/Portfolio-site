@@ -150,7 +150,7 @@ export default function World({ data, labels }: { data: WorldData; labels: World
         ))}
       </nav>
       <div aria-hidden className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-white/10 bg-black/60 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-graphite-2 backdrop-blur-md lg:hidden">
-        <span className="text-[#d9c09b]">{ROMAN[active]}</span> · {SCENES[active]}
+        <span className="text-[#d9c09b]">{ROMAN[active - 1]}</span> · {SCENES[active - 1]}
       </div>
     </>
   );
