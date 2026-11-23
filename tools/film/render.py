@@ -30,7 +30,7 @@ def studio(dx, dy, dz):
 
 # ---------------------------------------------------------------- the path: (u, position, look-at, focal length mm)
 KEYS = [
-    (0.00, studio(0.04, -1.22, 0.40), studio(-0.06, 0.02, -0.02), 55),
+    (0.00, studio(0.08, -1.55, 0.50), studio(-0.21, 0.02, -0.03), 55),   # the case sits right of the headline
     (0.30, studio(0.06, -0.98, 0.56), studio(-0.02, 0.04, -0.02), 52),
     (0.52, studio(0.02, -0.40, 0.56), studio(0.0, 0.0, -0.04), 42),
     (0.68, studio(0.0, -0.03, 0.37), studio(0.0, 0.0, -0.07), 35),
@@ -48,7 +48,7 @@ KEYS = [
     (3.60, (23.0, 9.4, 30.0), (23.0, 10.0, 0.0), 30),
     (3.72, studio(0.0, -0.06, 0.40), studio(0.0, 0.0, -0.07), 35),
     (3.86, studio(0.12, -0.55, 0.58), studio(0.0, 0.01, -0.03), 42),
-    (4.00, studio(0.30, -1.12, 0.52), studio(-0.03, 0.05, 0.0), 50),
+    (4.00, studio(0.36, -1.48, 0.60), studio(-0.16, 0.08, 0.075), 50),
 ]
 HOLDS = [0.0, 1.0, 2.0, 3.0, 4.0]
 # motion frames per scene transition; denser where the move is fastest (the descent)
@@ -116,6 +116,10 @@ def project(u):
     out = {}
     pos, inside = setup(u)
     bpy.context.view_layer.update()
+    # where the subject is across the frame: narrow (portrait) screens crop around it
+    focus = Vector(CT) if not inside else None
+    fx = round(world_to_camera_view(scene, cam, focus).x, 4) if focus is not None else 0.5
+    out["__fx"] = fx
     for k, a in META["anchors"].items():
         w = Vector(a) if inside else MO + Vector(a) * S
         v = world_to_camera_view(scene, cam, w)
@@ -133,11 +137,13 @@ if MODE == "plan":
     plan = []
     for i, u in enumerate(FRAMES):
         labels, pos, inside = project(u)
-        plan.append({"i": i, "u": round(u, 5), "space": "hall" if inside else "studio", "cam": [round(c, 3) for c in pos], "labels": labels})
+        fx = labels.pop("__fx")
+        plan.append({"i": i, "u": round(u, 5), "space": "hall" if inside else "studio", "cam": [round(c, 3) for c in pos], "fx": fx, "labels": labels})
     holds = []
     for u in HOLDS:
         labels, pos, inside = project(u)
-        holds.append({"u": u, "labels": labels})
+        fx = labels.pop("__fx")
+        holds.append({"u": u, "fx": fx, "labels": labels})
     json.dump({"frames": plan, "holds": holds, "segFrames": SEG_FRAMES}, open(os.path.join(OUTDIR, "frames.json"), "w"))
     print("plan", len(plan), "frames", flush=True)
 elif MODE == "keys":

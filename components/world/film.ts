@@ -15,8 +15,8 @@ import type { LabelOut, WorldCallbacks, WorldData } from "./types";
  */
 interface Manifest {
   w: number; h: number;
-  holds: { u: number; hi: string; lo: string; labels: Record<string, [number, number]> }[];
-  seq: { w: number; h: number; hi: string; lo: string; frames: { u: number; labels: Record<string, [number, number]> }[] };
+  holds: { u: number; fx: number; hi: string; lo: string; labels: Record<string, [number, number]> }[];
+  seq: { w: number; h: number; hi: string; lo: string; frames: { u: number; fx: number; labels: Record<string, [number, number]> }[] };
   asOf?: string;
 }
 
@@ -86,6 +86,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
     const r = await fetch(`${BASE}/manifest.json`, { signal: abort.signal });
     manifest = (await r.json()) as Manifest;
     const m = manifest;
+    labelIds = [...new Set([...m.holds.flatMap((h) => Object.keys(h.labels)), ...m.seq.frames.flatMap((f) => Object.keys(f.labels))])];
     const order = [...m.holds].sort((a, b) => Math.abs(a.u - uTarget) - Math.abs(b.u - uTarget));
     for (const h of order) {
       const blob = await fetchBlob(opts.low ? h.lo : h.hi);
@@ -114,11 +115,15 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
   load().catch((e) => { if (!stopped) console.error("Film failed to load.", e); });
 
   // ---------- drawing
+  /** cover-fit; when the screen is narrower than the film, the crop follows the subject (fx: its position across the frame) */
+  let fxNow = 0.5;
   const cover = (iw: number, ih: number, zoom: number, panX: number) => {
     const cw = canvas.width, ch = canvas.height;
     const s = Math.max(cw / iw, ch / ih) * zoom;
-    return { s, dx: (cw - iw * s) / 2 + panX * cw, dy: (ch - ih * s) / 2 };
+    const dx = Math.min(0, Math.max(cw - iw * s, cw / 2 - fxNow * iw * s));
+    return { s, dx: dx + panX * cw, dy: (ch - ih * s) / 2 };
   };
+  let labelIds: string[] = [];
   const nearestSeq = (i: number) => {
     if (seqBitmaps.has(i)) return seqBitmaps.get(i)!;
     for (let d = 1; d < 6; d++) { const b = seqBitmaps.get(i - d) ?? seqBitmaps.get(i + d); if (b) return b; }
@@ -129,6 +134,13 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
     const m = manifest;
     const cw = canvas.width, ch = canvas.height;
     const k = Math.round(uNow), dh = Math.abs(uNow - k);
+    { // subject position at the playhead, for portrait crops
+      const { i0, i1, a } = seqIndexAt(uNow);
+      const f0 = m.seq.frames[i0]?.fx ?? 0.5, f1 = m.seq.frames[i1]?.fx ?? 0.5;
+      const hf = m.holds.find((h) => h.u === k)?.fx ?? 0.5;
+      const sf = f0 + (f1 - f0) * a, w = smooth(HOLD_RADIUS, 0, dh);
+      fxNow = m.seq.frames.length > 1 ? sf * (1 - w) + hf * w : hf;
+    }
     const holdW = opts.reduce ? 1 : smooth(HOLD_RADIUS, HOLD_RADIUS * 0.25, dh);
     // the slider drift applies to the still only; it eases away as the camera leaves the scene
     const zoom = 1 + 0.03 * (driftNow + 0.5) * holdW, panX = -driftNow * 0.012 * holdW;
@@ -165,11 +177,12 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
     const ids = new Set([...Object.keys(L0), ...Object.keys(L1), ...Object.keys(LH)]);
     const t = cover(m.w, m.h, zoom, panX);
     const dpr = cw / Math.max(1, host.clientWidth);
+    // every known label is reported each time, so labels of other scenes are explicitly hidden
+    for (const id of labelIds) if (!ids.has(id)) out.push({ id, x: -999, y: -999, opacity: 0 });
     for (const id of ids) {
       const sc = labelScene(id);
-      if (sc < 0) continue;
-      const vis = smooth(0.22, 0.06, Math.abs(uNow - sc));
-      if (vis <= 0) continue;
+      const vis = sc < 0 ? 0 : smooth(0.22, 0.06, Math.abs(uNow - sc));
+      if (vis <= 0) { out.push({ id, x: -999, y: -999, opacity: 0 }); continue; }
       let p: [number, number] | undefined;
       if (holdW > 0.5 && LH[id]) p = LH[id];
       else if (L0[id] && L1[id]) p = [L0[id][0] + (L1[id][0] - L0[id][0]) * a, L0[id][1] + (L1[id][1] - L0[id][1]) * a];

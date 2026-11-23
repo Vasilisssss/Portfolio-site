@@ -55,7 +55,7 @@ for h in plan["holds"]:
     im = grade(src, seed=100 + i)
     im.save(os.path.join(DST, "holds", f"hold_{i}.webp"), quality=88, method=6)
     im.resize((1280, 720), Image.LANCZOS).save(os.path.join(DST, "holds-lo", f"hold_{i}.webp"), quality=86, method=6)
-    holds.append({"u": h["u"], "hi": f"holds/hold_{i}.webp", "lo": f"holds-lo/hold_{i}.webp", "labels": h["labels"]})
+    holds.append({"u": h["u"], "fx": h.get("fx", 0.5), "hi": f"holds/hold_{i}.webp", "lo": f"holds-lo/hold_{i}.webp", "labels": h["labels"]})
 frames = []
 for f in plan["frames"]:
     i = f["i"]; src = os.path.join(SRC, "seq", f"f{i:04d}.png")
@@ -63,7 +63,7 @@ for f in plan["frames"]:
     im = grade(src, seed=1000 + i, grain=0.6)
     im.save(os.path.join(DST, "seq", f"f{i:04d}.webp"), quality=80, method=5)
     im.resize((854, 480), Image.LANCZOS).save(os.path.join(DST, "seq-lo", f"f{i:04d}.webp"), quality=78, method=5)
-    frames.append({"u": f["u"], "labels": f["labels"]})
+    frames.append({"u": f["u"], "fx": f.get("fx", 0.5), "labels": f["labels"]})
 manifest = {"w": 1920, "h": 1080, "asOf": (data.get("summary") or {}).get("asOf"), "fingerprint": fingerprint(data), "holds": holds,
             "seq": {"w": 1280, "h": 720, "hi": "seq/f{i}.webp", "lo": "seq-lo/f{i}.webp", "frames": frames}}
 json.dump(manifest, open(os.path.join(DST, "manifest.json"), "w"), separators=(",", ":"))
