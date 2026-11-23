@@ -52,7 +52,7 @@ KEYS = [
 ]
 HOLDS = [0.0, 1.0, 2.0, 3.0, 4.0]
 # portrait crops in the hall: the video wall's headline figure (1), the tallest monolith and its neighbours (2)
-HALL_FX = {1.0: 0.4, 2.0: 0.62}
+HALL_FX = {1.0: 0.4, 2.0: 0.78}
 # motion frames per scene transition; denser where the move is fastest (the descent)
 SEG_FRAMES = [56, 32, 24, 44]
 
