@@ -1,23 +1,33 @@
 # Personal investment portfolio: The World Inside a Briefcase
 
 My own investments: what I own, how my capital is allocated, how it has performed, and how I think about investing.
-The site is a scroll-driven product film: a real-scale (46 × 34 cm) luxury attaché case in a dark photographic studio
-opens, and the miniature architectural model inside it is built from my real portfolio data.
+A real-scale (46 × 34 cm) luxury attaché opens in a dark photographic studio; inside it stands a model of a stock
+exchange. The camera descends through the model's skylight and you walk through the exchange at full human scale —
+then leave through its glass façade and pull back to find it was inside the briefcase all along.
 
-| Chapter | What you see | Real content |
+| Chapter | Where | Real content |
 |---|---|---|
-| I · The Reveal | The closed case; locks release (slider → spring flap → lamp), the lid lifts to its 100° hinge stop, the model platform rises and the towers telescope up | Headline, portfolio value |
-| II · The Capital Engine | A turned reservoir of steel bearings feeding a distribution ring. **Each holding's arc is exactly its weight**; its bearings roll out on its own rail channel; a thin anodised inlay is lime (above cost), coral (below) or steel (unknown/flat) | Invested capital, value, P/L, overview |
-| III · The Investment City | A treemap of plots: **plot area ∝ weight**, building height ∝ √weight, building type by asset class (tower / pavilion / colonnade / cash vault), performance band around each plot | Holdings, allocation; select a building to open it |
-| IV · The Performance Gallery | Inside the lid: a polished steel line on standoff pins traces the **real month-end index (rebased to 100)**; month caps lime/coral; missing months break the line (nothing is interpolated) | Performance, journal |
-| V · The Final Reveal | The whole open case in the studio | Strategy, about, closing |
+| I · The Reveal | The case in the studio: locks release (slider → spring flap → lamp), lid lifts to its 100° stop, the 1 : 320 exchange rises out of it | Headline, portfolio value |
+| II · The Capital Engine | The 48 m trading hall: a ring whose arcs are **exactly each holding's weight**, steel spheres rolling out on rail channels, lime/coral inlays (above/below cost); the main board shows the real figures | Invested capital, value, P/L, overview |
+| III · The Investment Gallery | West wing: one plinth per holding, steel column ∝ √weight, performance band, data plaque | Holdings, allocation; select a plinth to open it |
+| IV · The Performance Gallery | Upstairs (via the grand stair): the **real month-end index** as a steel line on the stone wall; missing months break the line | Performance, journal |
+| V · The Final Reveal | Out through the façade glass and back to the whole open case | Strategy, about, closing |
 
-Code: `components/world/engine.ts` (renderer, studio, post-processing, camera, labels, picking, QA hooks),
-`components/world/briefcase/` (`case.ts` the briefcase, `world.ts` the data-driven model, `mechanics.ts` spring physics,
-`camera.ts` keyframes, `materials.ts` + `textures.ts` PBR materials with GPU-baked leather/brushed/scratch/fingerprint maps,
-`dims.ts` real dimensions), `components/world/treemap.ts`, `components/world/quality.ts` (adaptive quality).
-Everything is procedural: no model, texture or HDR downloads. The 3D receives percentages only.
-Add `?quality` to the address to see what your device renders; `?qa` exposes deterministic test hooks.
+How it is made:
+- `tools/exchange/` — the building is modelled by script in Blender (`build.py`), its light path-traced in Cycles and
+  baked into a 4K lightmap (`bake.py`: hidden-face culling, one atlas, Intel Open Image Denoise lightmap filter,
+  reflection panoramas) and exported for the web (`export.py`). Run with Blender's Python (`pip install bpy pyoidn pillow`).
+- `public/exchange/` — the result: 1.5 MB meshopt geometry, the lightmap, scanned materials, panoramas, city backdrop (~13 MB, loaded after the page).
+- `components/world/exchange/` — loader, lightmap/specular-occlusion shader patch, planar floor reflections, live data
+  screens, full-scale installations, the walking route (gait, eased stops, stairs).
+- `components/world/engine.ts` — scene A (studio + case + miniature) and scene B (full-scale exchange) share geometry and
+  baked light; the descent and the exit switch scenes at the glass. `components/world/briefcase/` — the case and its mechanics.
+- Add `?quality` to the address to see what your device renders; `?qa` exposes deterministic test hooks.
+
+Credits: materials and the Canary Wharf panorama are CC0 scans from [Poly Haven](https://polyhaven.com) — Granite Tile
+(Charlotte Baglioni), Marble 01 and Fabric Leather 01 (Rob Tuytel), Brushed Concrete (Dimitrios Savva, Dario Barresi),
+Flamed Black and Smoked Walnut Veneer (Jenelle van Heerden), Canary Wharf HDRI (Andreas Mischok).
+
 Live at **https://vasilisssss.github.io/Portfolio-site/**
 
 Next.js 16 (App Router, **static export**) · TypeScript · Tailwind CSS 4 · Three.js · GSAP + ScrollTrigger · Framer Motion · Lenis · Geist / Geist Mono / Instrument Serif
