@@ -44,7 +44,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
     const sync = () => {
       raf = 0;
       const rect = section.getBoundingClientRect();
-      const distance = Math.max(1, section.offsetHeight);
+      const distance = Math.max(1, section.offsetHeight - window.innerHeight);
       const progress = Math.min(1, Math.max(0, -rect.top / distance));
       const nextShot: 0 | 1 = progress < 0.5 ? 0 : 1;
       setShot(nextShot);
@@ -77,7 +77,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
   }, []);
 
   return (
-    <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden">
+    <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate min-h-[200svh]">
       <div className="headquarters-media" aria-hidden="true">
         <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" fetchPriority="high" decoding="async" /></div>
         <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
