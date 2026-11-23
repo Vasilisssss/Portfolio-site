@@ -1,4 +1,4 @@
-:HL["/Portfolio-site/_next/static/chunks/1jupg3hqoea6x.css","style"]
+:HL["/Portfolio-site/_next/static/chunks/44xgzvfo72h6y.css","style"]
 :HL["/Portfolio-site/_next/static/media/07a39a8a4660cc7c-s.p.0r6juujl39pe6.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Portfolio-site/_next/static/media/605ce01b664af129-s.p.0wgildi0cnwt9.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Portfolio-site/_next/static/media/d902bc2bfdd0a4cb-s.p.1g73gv09-xcb6.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
@@ -6,4 +6,4 @@
 3:[["children",{"s":"__PAGE__","h":160}]]
 2:[["children",{"s":{"n":"id","t":"d","k":"vanguard-eur-cash-etf","s":[]},"h":65632,"c":"$Q3"}]]
 1:[["children",{"s":"investments","h":131136,"c":"$Q2"}]]
-0:{"b":"LiehlahmW8mah9_0_6XUD","t":{"t":{"s":"","h":131088,"c":"$Q1"}}}
+0:{"b":"VyJ7wUo4stfI6IdDKTXcQ","t":{"t":{"s":"","h":131088,"c":"$Q1"}}}
