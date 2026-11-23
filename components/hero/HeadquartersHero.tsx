@@ -111,7 +111,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
         <div className="flex items-center justify-between gap-6">
           <p className="eyebrow flex items-center gap-4 text-white/75">
             <span className="h-px w-10 bg-[#c7a77a]" />
-            <span className="text-[#d9c09b]">PRIVATE INVESTMENT OFFICE</span>
+            <span className="text-[#d9c09b]">VASILIS MAVROUDES</span>
             <span className="hidden text-white/45 sm:inline">/ {eyebrow}</span>
           </p>
           <p className="hidden font-mono text-[10px] uppercase tracking-[0.24em] text-white/55 sm:block">{name}</p>
@@ -119,7 +119,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
 
         <div className="max-w-[900px] pb-8 md:pb-12">
           <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.34em] text-[#d9c09b] md:text-xs">
-            An independent approach to capital
+            INVESTOR  ·  CFA LEVEL III CANDIDATE
           </p>
           <h1 className="max-w-[12ch] text-[clamp(54px,8.8vw,142px)] font-normal leading-[0.88] tracking-[-0.065em] text-[#f4f1eb] [text-shadow:0_4px_45px_rgba(0,0,0,.5)]">
             {lines[0] || "Capital"}<br />
