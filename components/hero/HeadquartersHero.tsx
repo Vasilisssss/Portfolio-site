@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 type Props = {
@@ -12,27 +13,43 @@ type Props = {
 };
 
 /**
- * Stage 2 headquarters landing-page prototype.
- * The architectural facade is an intentional media-independent placeholder.
- * Replace it with the owner-approved exterior MP4/poster once those files are
- * supplied in the repository; never point at an unverified shared-video URL.
+ * Headquarters hero: establishing clip followed by the entrance/arrival clip.
+ * Media paths are intentionally local and same-origin for GitHub Pages export.
+ * Add the owner-provided MP4 files at:
+ * public/media/headquarters-establishing.mp4
+ * public/media/headquarters-arrival.mp4
  */
 export default function HeadquartersHero({ name, eyebrow, lines, body, figure, showInvestments }: Props) {
+  const [shot, setShot] = useState<0 | 1>(0);
+  const [mediaReady, setMediaReady] = useState(false);
+  const firstVideo = useRef<HTMLVideoElement>(null);
+  const secondVideo = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const first = firstVideo.current;
+    if (!first) return;
+    const play = first.play();
+    if (play) play.catch(() => setMediaReady(false));
+  }, []);
+
+  const advance = () => {
+    if (shot !== 0) return;
+    setShot(1);
+    const next = secondVideo.current;
+    if (next) {
+      next.currentTime = 0;
+      next.play().catch(() => setMediaReady(false));
+    }
+  };
+
   return (
     <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden">
-      <div className="headquarters-atmosphere" aria-hidden="true">
-        <div className="headquarters-sky" />
-        <div className="headquarters-building">
-          <div className="headquarters-crown" />
-          <div className="headquarters-facade">
-            {Array.from({ length: 9 }, (_, i) => <span key={i} />)}
-          </div>
-          <div className="headquarters-podium">
-            <div className="headquarters-entry"><i /><i /><i /></div>
-          </div>
-        </div>
-        <div className="headquarters-reflection" />
-        <div className="headquarters-ground" />
+      <div className="headquarters-media" aria-hidden="true">
+        <div className="headquarters-fallback" />
+        <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src="/media/headquarters-establishing.mp4" poster="/media/headquarters-establishing.jpg" muted playsInline autoPlay preload="metadata" onCanPlay={() => setMediaReady(true)} onEnded={advance} />
+        <video ref={secondVideo} className={`headquarters-video ${shot === 1 ? "is-active" : ""}`} src="/media/headquarters-arrival.mp4" poster="/media/headquarters-arrival.jpg" muted playsInline preload="metadata" onCanPlay={() => setMediaReady(true)} />
+        <div className="headquarters-vignette" />
+        <div className="headquarters-film-grain" />
       </div>
 
       <div className="relative z-10 flex min-h-[100svh] w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
@@ -55,23 +72,24 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
           </h1>
           <div className="mt-8 flex max-w-[690px] flex-col gap-7 md:mt-10 md:flex-row md:items-end md:justify-between">
             <div className="max-w-[430px]">
-              <p className="text-sm leading-[1.8] text-white/72 md:text-base">{body}</p>
-              {figure && <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-white/50">{figure.label}<span className="mt-2 block font-sans text-3xl tracking-tight text-white md:text-4xl">{figure.value}</span></p>}
+              <p className="text-sm leading-[1.8] text-white/80 md:text-base">{body}</p>
+              {figure && <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">{figure.label}<span className="mt-2 block font-sans text-3xl tracking-tight text-white md:text-4xl">{figure.value}</span></p>}
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-3">
               {showInvestments && <Link href="/#investments" className="inline-flex h-12 items-center gap-5 bg-[#d9c09b] px-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[#11110f] transition-colors hover:bg-[#f0e4d0]">Explore the portfolio <span aria-hidden>↗</span></Link>}
-              <Link href="/#strategy" className="inline-flex h-12 items-center border border-white/35 bg-black/15 px-5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:border-[#d9c09b] hover:text-[#e5cba4]">Investment approach</Link>
+              <Link href="/#strategy" className="inline-flex h-12 items-center border border-white/45 bg-black/25 px-5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:border-[#d9c09b] hover:text-[#e5cba4]">Investment approach</Link>
             </div>
           </div>
         </div>
 
-        <div className="flex items-end justify-between border-t border-white/20 pt-4">
-          <span className="font-mono text-[9px] uppercase tracking-[0.24em] text-white/45">Headquarters · Global markets</span>
-          <a href="#capital-engine" className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.24em] text-white/65 hover:text-white">
-            Discover the institution <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-sm">↓</span>
+        <div className="flex items-end justify-between border-t border-white/25 pt-4">
+          <span className="font-mono text-[9px] uppercase tracking-[0.24em] text-white/55">Headquarters · Global markets</span>
+          <a href="#capital-engine" className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.24em] text-white/75 hover:text-white">
+            Discover the institution <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-sm">↓</span>
           </a>
         </div>
       </div>
+      {!mediaReady && <span className="sr-only">Headquarters film poster fallback is displayed while the video loads.</span>}
     </section>
   );
 }
