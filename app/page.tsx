@@ -28,10 +28,16 @@ export default function Home() {
   const amounts = view.showAmounts && s.value != null;
   const tone = (x: number | null | undefined) => (x == null || Math.abs(x) < 0.0005 ? "flat" : x > 0 ? "gain" : "loss") as "flat" | "gain" | "loss";
 
-  // ---- the 3D world receives percentages only (safe whatever the privacy settings)
+  // ---- the 3D world gets the same privacy-filtered view as the page: amounts only when the privacy settings show them
   const worldData: WorldData = {
-    holdings: view.holdings.map((h) => ({ id: h.id, label: h.ticker ?? h.name, name: h.name, weight: h.weight, returnPct: h.returnPct, assetClass: h.assetClass })),
+    holdings: view.holdings.map((h) => ({ id: h.id, label: h.ticker ?? h.name, name: h.name, weight: h.weight, returnPct: h.returnPct, assetClass: h.assetClass, ...(amounts && h.value != null ? { value: money(h.value, cur) } : {}) })),
     history: perf ? perf.points.map((p) => ({ date: p.date, index: p.index })) : [],
+    summary: {
+      asOf: dateLong(view.asOf), currency: cur,
+      ...(amounts ? { value: money(s.value!, cur), invested: money(s.invested!, cur), pnl: moneySigned(s.pnl!, cur), pnlSign: Math.sign(s.pnl!) } : {}),
+      ...(s.returnPct != null ? { totalReturn: pct(s.returnPct, true) } : {}),
+      ...(perf ? { twr: pct(perf.twr, true) } : {}),
+    },
   };
   const labels: WorldLabel[] = [
     ...view.holdings.map((h) => ({ id: `engine:${h.id}`, holdingId: h.id, assetClass: h.assetClass, title: h.ticker ?? h.name, lines: [`${pct(h.weight)} of capital`] })),
@@ -71,20 +77,20 @@ export default function Home() {
           stats={amounts
             ? [{ value: money(s.invested!, cur), label: "In — invested capital" }, { value: money(s.value!, cur), label: "Now — portfolio value" }, { value: moneySigned(s.pnl!, cur), label: "Profit / loss", tone: tone(s.pnl) }]
             : s.returnPct != null ? [{ value: pct(s.returnPct, true), label: "Total return", tone: tone(s.returnPct) }] : []}
-          note="Steel bearings leave the reservoir along one rail channel per holding. Each holding owns an arc of the ring exactly as large as its share of my capital." />
+          note="Inside the trading hall, steel spheres leave the reservoir along one channel per holding. Each holding owns an arc of the ring exactly as large as its share of my capital." />
         {tickerRows.length > 0 && <Marquee rows={tickerRows} />}
         {on.overview && <Overview view={view} />}
       </div>
 
-      {/* III — THE INVESTMENT CITY */}
+      {/* III — THE INVESTMENT GALLERY */}
       <div data-scene="2" className="relative">
-        <Chapter index={2} roman="III" kicker="The Investment City" title={<>A city of <em>positions.</em></>}
+        <Chapter index={2} roman="III" kicker="The Investment Gallery" title={<>A gallery of <em>positions.</em></>}
           stats={[
             { value: String(s.positions || view.holdings.length), label: "Positions" },
             { value: String(s.classes), label: "Asset classes" },
             ...(largest ? [{ value: `${largest.ticker ?? largest.name} ${pct(largest.weight)}`, label: "Largest position" }] : []),
           ]}
-          note="Each plot's area is its share of the portfolio and the building rises with it. The band around a plot is lime above cost, coral below. Select a building to open it." />
+          note="One plinth per holding. The steel column rises with its share of the portfolio; the band is lime above cost, coral below. Select a plinth to open it." />
         {on.investments && view.holdings.length > 0 && (
           <section id="investments" aria-labelledby="investments-title" className="container-x relative flex flex-col gap-14 py-24">
             <SectionHead index="02" eyebrow="My investments" id="investments-title" aside={<SampleBadge show={view.sample} />}>
@@ -111,7 +117,7 @@ export default function Home() {
             { value: pct(perf.twr, true), label: "Time-weighted return", tone: tone(perf.twr) },
             { value: `${monthYear(perf.points[0].date)} → ${monthYear(perf.points[perf.points.length - 1].date)}`, label: "Period" },
           ] : []}
-          note="Inside the lid, a steel line traces my real month-end index, rebased to 100. Each month's cap is lime for a gain, coral for a loss; the thin rod marks 100." />
+          note="Upstairs, a steel line on the stone wall traces my real month-end index, rebased to 100. Each month's cap is lime for a gain, coral for a loss; the thin rod marks 100." />
         {on.performance && (
           <section id="performance" aria-labelledby="performance-title" className="container-x relative flex flex-col gap-14 py-24">
             <SectionHead index="04" eyebrow="Performance" id="performance-title" aside={<SampleBadge show={view.sample} />}>

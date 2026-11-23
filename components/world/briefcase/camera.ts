@@ -6,22 +6,15 @@
  */
 export interface Key { u: number; t: [number, number, number]; dist: number; az: number; el: number; fov: number; sx: number; sy: number; syPortrait: number }
 
-// gallery target: the centre of the lid's interior plate with the lid at its 100° stop
-const GAL: [number, number, number] = [0, 0.247, -0.223];
 
 export const KEYS: Key[] = [
   { u: 0.0,  t: [0, 0.056, 0],          dist: 1.16, az: 26,  el: 17, fov: 27, sx: -0.3,  sy: 0.02, syPortrait: -0.22 },  // I    hero: the case in the studio
-  { u: 0.1,  t: [0.07, 0.06, 0.1],      dist: 0.56, az: 28,  el: 13, fov: 27, sx: -0.12, sy: 0,    syPortrait: 0 },   //      approach
-  { u: 0.2,  t: [0.128, 0.064, 0.18],   dist: 0.2,  az: 30,  el: 9,  fov: 26, sx: 0,     sy: 0,    syPortrait: 0.1 },   //      macro: the right-hand lock releases
-  { u: 0.42, t: [0, 0.11, -0.01],       dist: 0.8,  az: -24, el: 21, fov: 27, sx: 0,     sy: 0,    syPortrait: 0.05 },  //      three-quarter: the lid lifts
-  { u: 0.8,  t: [0.03, 0.07, 0.0],      dist: 0.66, az: -14, el: 44, fov: 28, sx: 0,     sy: 0,    syPortrait: 0 },     //      overhead: the model rises
-  { u: 1.0,  t: [-0.137, 0.062, 0.004], dist: 0.3,  az: 36,  el: 40, fov: 27, sx: -0.3, sy: -0.2, syPortrait: -0.36 },  // II   capital engine
-  { u: 1.5,  t: [-0.02, 0.075, 0.02],   dist: 0.4,  az: 12,  el: 32, fov: 27, sx: -0.2,  sy: -0.1, syPortrait: -0.12 },
-  { u: 2.0,  t: [0.07, 0.1, 0.0],       dist: 0.58, az: -30, el: 27, fov: 27, sx: -0.34, sy: -0.12, syPortrait: -0.38 },   // III  investment city
-  { u: 2.5,  t: [0.04, 0.15, -0.09],    dist: 0.56, az: 8,   el: 18, fov: 27, sx: -0.2,  sy: -0.1, syPortrait: -0.14 },
-  { u: 3.0,  t: GAL,                    dist: 0.66, az: -3,  el: 24, fov: 27, sx: -0.22, sy: -0.24, syPortrait: -0.4 },  // IV   performance gallery (lid)
-  { u: 3.5,  t: [0, 0.13, -0.06],       dist: 0.98, az: 22,  el: 22, fov: 27, sx: -0.2,  sy: -0.12, syPortrait: -0.14 },
-  { u: 4.0,  t: [0, 0.11, -0.03],       dist: 1.34, az: -34, el: 23, fov: 27, sx: -0.24, sy: -0.16, syPortrait: -0.24 },  // V    final reveal
+  { u: 0.1,  t: [0.07, 0.06, 0.1],      dist: 0.56, az: 28,  el: 13, fov: 27, sx: -0.12, sy: 0,    syPortrait: 0 },      //      approach
+  { u: 0.2,  t: [0.128, 0.064, 0.18],   dist: 0.2,  az: 30,  el: 9,  fov: 26, sx: 0,     sy: 0,    syPortrait: 0.1 },    //      macro: the right-hand lock releases
+  { u: 0.42, t: [0, 0.11, -0.01],       dist: 0.8,  az: -24, el: 21, fov: 27, sx: 0,     sy: 0,    syPortrait: 0.05 },   //      three-quarter: the lid lifts
+  { u: 0.66, t: [0, 0.1, 0.0],          dist: 0.6,  az: -12, el: 38, fov: 28, sx: 0,     sy: 0,    syPortrait: 0 },      //      the exchange rises out of the case
+  { u: 0.8,  t: [0, 0.12, 0.006],       dist: 0.42, az: -6,  el: 56, fov: 30, sx: 0,     sy: 0,    syPortrait: 0 },      //      above the model: the descent begins
+  { u: 4.0,  t: [0, 0.11, -0.03],       dist: 1.34, az: -34, el: 23, fov: 27, sx: -0.24, sy: -0.16, syPortrait: -0.24 }, // V    final reveal
 ];
 
 /** Fritsch–Carlson monotone cubic through (xs, ys) evaluated at x */

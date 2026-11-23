@@ -7,3 +7,4 @@ out
 
 # Real portfolio data never gets committed
 data/*.private.json
+.cache

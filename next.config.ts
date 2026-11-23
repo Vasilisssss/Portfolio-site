@@ -10,6 +10,7 @@ const basePath = process.env.PAGES_BASE_PATH || "";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  env: { NEXT_PUBLIC_BASE_PATH: basePath }, // the 3D world loads its assets from <basePath>/exchange
   poweredByHeader: false,
   ...(isPages
     ? { output: "export", basePath, assetPrefix: basePath || undefined, trailingSlash: true, images: { unoptimized: true } }

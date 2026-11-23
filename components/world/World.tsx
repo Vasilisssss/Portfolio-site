@@ -4,7 +4,7 @@ import type { WorldData, LabelOut } from "./engine";
 
 export interface WorldLabel { id: string; title: string; lines: string[]; holdingId?: string; assetClass?: string }
 
-export const SCENES = ["The Reveal", "The Capital Engine", "The Investment City", "The Performance Gallery", "The Final Reveal"];
+export const SCENES = ["The Reveal", "The Capital Engine", "The Investment Gallery", "The Performance Gallery", "The Final Reveal"];
 const ROMAN = ["I", "II", "III", "IV", "V"];
 
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
