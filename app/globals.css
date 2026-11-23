@@ -100,3 +100,14 @@
 .headquarters-ground { position:absolute; inset:auto 0 0; height:20%; background:linear-gradient(180deg,transparent,#050708 75%),repeating-linear-gradient(95deg,transparent 0 110px,rgba(193,177,151,.035) 111px 112px); }
 @media(max-width:700px) { .headquarters-building { width:130vw; height:48%; right:-42%; bottom:29%; opacity:.78; transform:perspective(900px) rotateY(-10deg); } .headquarters-ground { height:32%; } .headquarters-hero:after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,rgba(5,8,10,.5),transparent 90%),linear-gradient(0deg,rgba(5,8,10,.8),transparent 75%); pointer-events:none; } }
 @media(prefers-reduced-motion:reduce) { .headquarters-hero * { scroll-behavior:auto!important; } }
+
+
+/* Stage 2 — real headquarters footage sequence */
+.headquarters-media { position:absolute; inset:0; overflow:hidden; background:#080b0d; }
+.headquarters-fallback { position:absolute; inset:0; background:radial-gradient(ellipse at 70% 38%,rgba(188,151,108,.22),transparent 35%),linear-gradient(115deg,#10191e,#263239 48%,#080b0d); }
+.headquarters-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%; opacity:0; transition:opacity 1.2s ease; }
+.headquarters-video.is-active { opacity:1; }
+.headquarters-vignette { position:absolute; inset:0; background:linear-gradient(90deg,rgba(4,7,9,.72) 0%,rgba(4,7,9,.38) 42%,rgba(4,7,9,.12) 100%),linear-gradient(0deg,rgba(4,7,9,.7),transparent 38%,rgba(4,7,9,.16)); pointer-events:none; }
+.headquarters-film-grain { position:absolute; inset:0; opacity:.09; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"); }
+@media(max-width:700px) { .headquarters-video { object-position:58% center; } .headquarters-vignette { background:linear-gradient(90deg,rgba(4,7,9,.62),rgba(4,7,9,.15)),linear-gradient(0deg,rgba(4,7,9,.82),transparent 62%); } }
+@media(prefers-reduced-motion:reduce) { .headquarters-video { display:none; } .headquarters-vignette { background:linear-gradient(0deg,rgba(4,7,9,.8),rgba(4,7,9,.25)); } }
