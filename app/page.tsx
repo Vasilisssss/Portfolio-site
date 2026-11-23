@@ -9,6 +9,7 @@ import Performance from "@/components/sections/Performance";
 import Strategy from "@/components/sections/Strategy";
 import Journal from "@/components/sections/Journal";
 import About from "@/components/sections/About";
+import Experience from "@/components/sections/Experience";
 import SectionHead from "@/components/ui/SectionHead";
 import SampleBadge from "@/components/ui/SampleBadge";
 import { Reveal } from "@/components/ui/Reveal";
@@ -120,6 +121,7 @@ export default function Home() {
         <Chapter index={4} roman="V" kicker="The Final Reveal" title={<>What I&apos;m <em>building.</em></>}
           note="How I think about money, risk and time — and where this portfolio is going next." />
         {on.strategy && <Strategy s={profile.strategy} />}
+        {on.experience && <Experience />}
         {on.about && <About />}
       </div>
     </>
