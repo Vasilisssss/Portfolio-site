@@ -1,0 +1,35 @@
+name: Cinematic redesign checks
+
+on:
+  push:
+    branches: [cinematic-redesign]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cinematic-redesign-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build static GitHub Pages output
+        run: npm run build:pages
+        env:
+          PAGES_BASE_PATH: /Portfolio-site
