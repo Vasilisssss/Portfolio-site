@@ -71,11 +71,13 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
             {h.id === "alphabet" ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_25%,rgba(66,133,244,.20),transparent_36%),radial-gradient(ellipse_at_20%_85%,rgba(52,168,83,.14),transparent_42%)]" />
-                <div className="relative flex items-center gap-7">
-                  <span className="font-sans text-[clamp(110px,18vw,220px)] font-semibold leading-none tracking-[-.1em]">
-                    <span className="text-[#4285F4]">G</span>
+                <div className="relative flex max-w-full flex-col items-center gap-5 sm:flex-row sm:gap-8">
+                  <span className="relative block font-sans text-[clamp(112px,18vw,190px)] font-semibold leading-none tracking-[-.12em] text-[#4285F4]" aria-label="Google">G
+                    <span className="absolute inset-0 text-[#EA4335] [clip-path:polygon(0_0,100%_0,100%_43%,0_43%)]">G</span>
+                    <span className="absolute inset-0 text-[#FBBC05] [clip-path:polygon(48%_0,100%_0,100%_55%,48%_55%)]">G</span>
+                    <span className="absolute inset-0 text-[#34A853] [clip-path:polygon(0_48%,48%_48%,48%_100%,0_100%)]">G</span>
                   </span>
-                  <span className="font-mono text-[10px] tracking-[.35em] text-white/45">ALPHABET INC. · CLASS C</span>
+                  <span className="font-mono text-[9px] tracking-[.25em] text-white/45 sm:text-[10px] sm:tracking-[.35em]">ALPHABET INC. · CLASS C</span>
                 </div>
               </div>
             ) : h.id === "anthropic" ? (
