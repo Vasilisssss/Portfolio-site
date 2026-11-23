@@ -1,0 +1,25 @@
+{
+ "lightmapScale": 29.590829849243164,
+ "panoramas": [
+  "hall",
+  "investment",
+  "performance"
+ ],
+ "anchors": {
+  "capital": [
+   0.0,
+   0.47,
+   2.0
+  ],
+  "holdings": [
+   -32.0,
+   0.0,
+   4.0
+  ],
+  "performance": [
+   39.7,
+   9.2,
+   4.0
+  ]
+ }
+}

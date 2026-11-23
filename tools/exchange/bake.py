@@ -99,7 +99,7 @@ except Exception: cam.cycles.panorama_type = "EQUIRECTANGULAR"
 co = bpy.data.objects.new("pano", cam); s.collection.objects.link(co); s.camera = co
 co.rotation_euler = (1.5708, 0, -1.5708)  # equirect centre looking +y (forward into the hall)
 s.render.resolution_x, s.render.resolution_y = 2048, 1024
-s.cycles.samples = max(64, SAMPLES // 2); s.cycles.use_denoising = True
+s.cycles.samples = int(os.environ.get("PANO_SAMPLES", max(64, SAMPLES // 2))); s.cycles.use_denoising = True
 s.render.image_settings.file_format = "HDR"
 s.view_settings.view_transform = "Standard"
 for name, loc in {"hall": (0, -4, 4.5), "investment": (-32, -4, 2.2), "performance": (32, -4, 9.2)}.items():

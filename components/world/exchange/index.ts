@@ -74,12 +74,14 @@ export async function loadExchange(renderer: THREE.WebGLRenderer, base: string, 
   const disposables: { dispose: () => void }[] = [];
   const board = mainBoard(data), ticker = tickerBand(data);
   disposables.push(board.texture, ticker.texture);
+  // screens in the glTF use glTF texture coordinates (origin top-left): no vertical flip
+  board.texture.flipY = false; ticker.texture.flipY = false;
   const boardMat = new THREE.MeshBasicMaterial({ map: board.texture, toneMapped: false, color: new THREE.Color(1.05, 1.05, 1.05) });
   const tickerMat = new THREE.MeshBasicMaterial({ map: ticker.texture, toneMapped: false });
   const deskMats: THREE.MeshBasicMaterial[] = [];
   const deskMat = (i: number) => {
     const k = i % 8;
-    if (!deskMats[k]) { const d = deskScreen(data, k); disposables.push(d.texture); deskMats[k] = new THREE.MeshBasicMaterial({ map: d.texture, toneMapped: false }); }
+    if (!deskMats[k]) { const d = deskScreen(data, k); d.texture.flipY = false; disposables.push(d.texture); deskMats[k] = new THREE.MeshBasicMaterial({ map: d.texture, toneMapped: false }); }
     return deskMats[k];
   };
   disposables.push(boardMat, tickerMat, glass, fixture, miniGlass, ...Object.values(mats), ...Object.values(miniMats), ...Object.values(ext));
