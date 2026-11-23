@@ -1,6 +1,8 @@
 import { privacy } from "@/content/privacy";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";\n\nconst ALL = [
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+const ALL = [
   { key: "overview", label: "Overview", href: `${basePath}/#overview` },
   { key: "investments", label: "Investments", href: `${basePath}/#investments` },
   { key: "allocation", label: "Allocation", href: `${basePath}/#allocation` },
