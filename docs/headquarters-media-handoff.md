@@ -1,16 +1,30 @@
 # Stage 2 media handoff
 
-The headquarters hero now sequences two same-origin MP4 sources:
+## Approved sequence
 
-1. `/media/headquarters-establishing.mp4` — use the second uploaded clip (wide exterior / financial-district establishing view).
-2. `/media/headquarters-arrival.mp4` — use the first uploaded clip (closer entrance / warm timber reveal).
+1. `headquarters-establishing.mp4` — the wider blue-hour exterior establishing view (source asset suffix `85bd09f5`).
+2. `headquarters-arrival.mp4` — the closer entrance view with the warm timber portal and trading floor reveal (source asset suffix `cd2003a7`).
 
-Place the files in `public/media/` with those exact names. The hero includes a CSS fallback if media is absent or autoplay is blocked. The video elements are muted and inline; the first clip advances to the second when it ends. The second clip holds on its final frame.
+Both original clips are 1280×720, 24 fps and approximately 7.9 seconds. The supplied source videos have been re-encoded as H.264 MP4 with fast-start metadata, no audio track, 24 fps and 1280×720 output. Poster frames have been extracted at 3.2s (establishing) and 4.0s (arrival).
 
-Optional poster files:
-- `public/media/headquarters-establishing.jpg`
-- `public/media/headquarters-arrival.jpg`
+## Files to place in `public/media/`
 
-Posters should be 16:9, compressed WebP/JPEG and composed with the building/entrance visible in the centre-safe area. For production, add an intentional mobile poster/crop and verify the footage with reduced-motion enabled.
+- `headquarters-establishing.mp4`
+- `headquarters-establishing.jpg`
+- `headquarters-arrival.mp4`
+- `headquarters-arrival.jpg`
 
-**Current limitation:** the attached MP4 files are available in this chat workspace, but the GitHub connector used for these edits exposes text-file writes and does not provide a binary upload action for the multi-megabyte MP4s. Therefore the component references the intended paths, but the videos themselves have not yet been committed to the repository. Do not treat the media sequence as live until both MP4s are present at those paths and the site is tested.
+The site component uses `NEXT_PUBLIC_BASE_PATH` for GitHub Pages compatibility. The first clip advances to the second on `ended`. If autoplay is blocked or reduced motion is enabled, the static establishing poster remains visible. The video remains muted and inline.
+
+## Local package
+
+The prepared archive `headquarters-media-package.zip` contains all four files under the `public/media/` folder structure. Upload/extract it into the repository root so the final paths match the list above.
+
+## Verification still required
+
+The GitHub connector available for this work exposes text-file writes and Git objects, but not a direct binary upload from the attached-file workspace. The prepared media package is therefore not yet committed to the repository. Once the four files are added, run:
+
+- `npm run typecheck`
+- `npm run build:pages`
+
+Then visually verify the sequence on desktop and mobile, autoplay rejection, reduced motion, poster fallback, and the `/Portfolio-site` base path. Do not publish or deploy until those checks pass and the owner separately approves publication.
