@@ -15,7 +15,7 @@ export const profile = {
   hero: {
     eyebrow: "Investor · CFA Level III Candidate",
     lines: ["My capital,", "in the long run."],
-    body: "Risk Analyst at Argus Management Ltd., with previous experience in portfolio performance at Albourne. A finance professional documenting investment research, portfolio thinking and a continued commitment to the CFA Program.",
+    body: "A finance professional with experience across risk and investment analysis, portfolio performance and financial research, alongside continued professional development through the CFA Program.",
   },
 
   strategy: {
