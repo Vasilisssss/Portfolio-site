@@ -37,8 +37,11 @@ export default function World({ data, labels }: { data: WorldData; labels: World
     let gate = 1; // 3D labels show while a scene's chapter card is on screen, then step back for the content
     const progress = () => {
       const y = window.scrollY, vh = window.innerHeight;
-      let u = 0;
-      document.querySelectorAll<HTMLElement>("[data-chapter]").forEach((ch) => {
+      let u = 1; // the headquarters video sequence replaces the old case-opening scene (u = 0)
+      const chapters = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
+      // Chapter II is the arrival/hold inside the exchange. Subsequent chapters scrub the
+      // existing continuous camera path: trading floor → investment gallery → performance wall → final reveal.
+      chapters.slice(1).forEach((ch) => {
         const top = ch.getBoundingClientRect().top + y;
         u += clamp((y - (top - vh)) / vh);
       });
@@ -127,7 +130,7 @@ export default function World({ data, labels }: { data: WorldData; labels: World
             <div key={l.id} ref={(n) => { if (n) labelEls.current.set(l.id, n); else labelEls.current.delete(l.id); }}
               className="absolute left-0 top-0 hidden whitespace-nowrap md:block" style={{ opacity: 0, visibility: "hidden" }}>
               <div className={`flex flex-col items-center gap-1 transition-transform duration-300 ${hovered && l.holdingId === hovered ? "scale-110" : ""}`}>
-                <span className={`rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] backdrop-blur-md ${hovered && l.holdingId === hovered ? "border-lime bg-lime text-black" : "border-white/15 bg-black/55 text-graphite"}`}>{l.title}</span>
+                <span className={`rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] backdrop-blur-md ${hovered && l.holdingId === hovered ? "border-[#d9c09b] bg-[#d9c09b] text-black" : "border-white/15 bg-black/55 text-graphite"}`}>{l.title}</span>
                 {l.lines.map((ln, i) => <span key={i} className="font-mono text-[11px] tracking-[0.08em] text-graphite-2 [text-shadow:0_1px_8px_#000]">{ln}</span>)}
                 <span className="mt-1 h-6 w-px bg-gradient-to-b from-white/50 to-transparent" />
               </div>
@@ -141,13 +144,13 @@ export default function World({ data, labels }: { data: WorldData; labels: World
           <button key={s} type="button" onClick={() => go(i)} aria-current={active === i ? "step" : undefined}
             className="group flex items-center justify-end gap-3 text-right">
             <span className={`font-mono text-[10px] uppercase tracking-[0.2em] transition-all duration-500 ${active === i ? "text-graphite opacity-100" : "translate-x-2 text-mute opacity-0 group-hover:translate-x-0 group-hover:opacity-100"}`}>{s}</span>
-            <span className={`font-mono text-[10px] tracking-[0.1em] ${active === i ? "text-lime" : "text-mute"}`}>{ROMAN[i]}</span>
-            <span className={`block h-px transition-all duration-500 ${active === i ? "w-10 bg-lime" : "w-4 bg-white/30 group-hover:w-6"}`} />
+            <span className={`font-mono text-[10px] tracking-[0.1em] ${active === i ? "text-[#d9c09b]" : "text-mute"}`}>{ROMAN[i]}</span>
+            <span className={`block h-px transition-all duration-500 ${active === i ? "w-10 bg-[#d9c09b]" : "w-4 bg-white/30 group-hover:w-6"}`} />
           </button>
         ))}
       </nav>
       <div aria-hidden className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-white/10 bg-black/60 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-graphite-2 backdrop-blur-md lg:hidden">
-        <span className="text-lime">{ROMAN[active]}</span> · {SCENES[active]}
+        <span className="text-[#d9c09b]">{ROMAN[active]}</span> · {SCENES[active]}
       </div>
     </>
   );
