@@ -14,8 +14,6 @@ import SampleBadge from "@/components/ui/SampleBadge";
 import { Reveal } from "@/components/ui/Reveal";
 import Marquee, { type MarqueeItem } from "@/components/ui/Marquee";
 import Chapter from "@/components/world/Chapter";
-import WorldMount from "@/components/world/WorldMount";
-import { worldFromView } from "@/lib/world-data";
 import { dateLong, money, moneySigned, monthYear, pct } from "@/lib/format";
 
 export default function Home() {
@@ -28,7 +26,6 @@ export default function Home() {
   const tone = (x: number | null | undefined) => (x == null || Math.abs(x) < 0.0005 ? "flat" : x > 0 ? "gain" : "loss") as "flat" | "gain" | "loss";
 
   // ---- the world gets the same privacy-filtered view as the page: amounts only when the privacy settings show them
-  const { data: worldData, labels } = worldFromView(view);
 
   const tickerRows: MarqueeItem[][] = [
     view.holdings.map((h): MarqueeItem => ({ label: h.ticker ?? h.name, value: h.returnPct == null ? undefined : pct(h.returnPct, true), tone: tone(h.returnPct) })),
@@ -41,27 +38,26 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <WorldMount data={worldData} labels={labels} />
 
-      {/* I — THE REVEAL */}
+      {/* I — HEADQUARTERS */}
       <div data-scene="0" id="capital-engine" className="relative">
         <Hero name={profile.name} eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
           figure={amounts ? { value: money(s.value!, cur), label: `Portfolio value · ${dateLong(view.asOf)}` } : s.returnPct != null ? { value: pct(s.returnPct, true), label: "Total return" } : undefined}
           showInvestments={on.investments && view.holdings.length > 0} />
       </div>
 
-      {/* II — THE CAPITAL ENGINE */}
+      {/* II — THE TRADING FLOOR */}
       <div data-scene="1" className="relative">
         <Chapter index={1} roman="II" kicker="The Capital Engine" title={<>Every euro <em>flows</em> through here.</>}
           stats={amounts
             ? [{ value: money(s.invested!, cur), label: "In — invested capital" }, { value: money(s.value!, cur), label: "Now — portfolio value" }, { value: moneySigned(s.pnl!, cur), label: "Profit / loss", tone: tone(s.pnl) }]
             : s.returnPct != null ? [{ value: pct(s.returnPct, true), label: "Total return", tone: tone(s.returnPct) }] : []}
-          note="Inside the case is a trading hall. Its video wall and every desk screen carry the portfolio exactly as it stands: value, invested capital, profit and loss, and the month-end index." />
+          note="A closer look at the investment operation: the portfolio overview, capital flows and the decisions behind each position." />
         {tickerRows.length > 0 && <Marquee rows={tickerRows} />}
         {on.overview && <Overview view={view} />}
       </div>
 
-      {/* III — THE INVESTMENT GALLERY */}
+      {/* III — THE INVESTMENT COLLECTION */}
       <div data-scene="2" className="relative">
         <Chapter index={2} roman="III" kicker="The Investment Gallery" title={<>A gallery of <em>positions.</em></>}
           stats={[
@@ -69,7 +65,7 @@ export default function Home() {
             { value: String(s.classes), label: "Asset classes" },
             ...(largest ? [{ value: `${largest.ticker ?? largest.name} ${pct(largest.weight)}`, label: "Largest position" }] : []),
           ]}
-          note="One brushed-steel monolith per holding, its height proportional to its share of my capital. The band near the top glows lime above cost and coral below." />
+          note="A clear view of every position, its weight in the portfolio and the role it plays in the wider allocation." />
         {on.investments && view.holdings.length > 0 && (
           <section id="investments" aria-labelledby="investments-title" className="container-x relative flex flex-col gap-14 py-24">
             <SectionHead index="02" eyebrow="My investments" id="investments-title" aside={<SampleBadge show={view.sample} />}>
@@ -89,14 +85,14 @@ export default function Home() {
         )}
       </div>
 
-      {/* IV — THE PERFORMANCE GALLERY */}
+      {/* IV — PERFORMANCE AND JOURNAL */}
       <div data-scene="3" className="relative">
         <Chapter index={3} roman="IV" kicker="The Performance Gallery" title={<>Looking back, <em>honestly.</em></>}
           stats={perf ? [
             { value: pct(perf.twr, true), label: "Time-weighted return", tone: tone(perf.twr) },
             { value: `${monthYear(perf.points[0].date)} → ${monthYear(perf.points[perf.points.length - 1].date)}`, label: "Period" },
           ] : []}
-          note="On the walnut wall, a steel line traces my real month-end index, rebased to 100. Each month's ring glows lime for a gain and coral for a loss; the thin rod marks 100." />
+          note="A transparent record of portfolio performance, measured over time and distinguished from deposits and withdrawals."'s ring glows lime for a gain and coral for a loss; the thin rod marks 100." />
         {on.performance && (
           <section id="performance" aria-labelledby="performance-title" className="container-x relative flex flex-col gap-14 py-24">
             <SectionHead index="04" eyebrow="Performance" id="performance-title" aside={<SampleBadge show={view.sample} />}>
@@ -113,7 +109,7 @@ export default function Home() {
         {on.journal && <Journal entries={journal} />}
       </div>
 
-      {/* V — THE FINAL REVEAL */}
+      {/* V — INVESTMENT PHILOSOPHY AND ABOUT */}
       <div data-scene="4" className="relative">
         <Chapter index={4} roman="V" kicker="The Final Reveal" title={<>What I&apos;m <em>building.</em></>}
           note="How I think about money, risk and time — and where this portfolio is going next." />
