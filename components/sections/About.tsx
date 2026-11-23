@@ -7,7 +7,7 @@ export default function About() {
   const blocks = [
     { label: "My approach", text: a.approach },
     { label: "Long-term vision", text: a.vision },
-    { label: "Investing since", text: a.started },
+    { label: "Professional development", text: a.started },
   ];
   return (
     <section id="about" aria-labelledby="about-title" className="relative">
