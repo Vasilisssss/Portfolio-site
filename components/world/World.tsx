@@ -10,10 +10,10 @@ const ROMAN = ["II", "III", "IV"];
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
 
 /**
- * Fixed full-screen film behind the home page (path-traced in Blender, tools/film). Scroll position drives the camera:
- * while chapter i (a full-height title card, [data-chapter=i]) scrolls into view, the camera travels from scene i-1 to scene i
- * (from 0 to 1 the case unlocks, opens and its model rises).
- * While the content of a scene is read, the camera drifts gently around it.
+ * Fixed full-screen exchange film behind the home page (path-traced in Blender, tools/film).
+ * The headquarters hero owns the opening sequence; the exchange camera starts at u=1 and
+ * follows the trading floor, investment gallery and performance wall as their chapter cards arrive.
+ * While a scene is read, the camera drifts gently around its still.
  */
 export default function World({ data, labels }: { data: WorldData; labels: WorldLabel[] }) {
   const host = useRef<HTMLDivElement>(null);
@@ -40,7 +40,7 @@ export default function World({ data, labels }: { data: WorldData; labels: World
       let u = 1; // the headquarters video sequence replaces the old case-opening scene (u = 0)
       const chapters = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
       // Chapter II is the arrival/hold inside the exchange. Subsequent chapters scrub the
-      // existing continuous camera path: trading floor → investment gallery → performance wall → final reveal.
+      // existing continuous camera path: trading floor → investment gallery → performance wall.
       chapters.slice(1, 3).forEach((ch) => {
         const top = ch.getBoundingClientRect().top + y;
         u += clamp((y - (top - vh)) / vh);
