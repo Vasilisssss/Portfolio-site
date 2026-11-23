@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { getPublicView, getPublicHolding } from "@/lib/public";
 import { dateLong, money, moneySigned, num, pct } from "@/lib/format";
 import { classColor } from "@/lib/palette";
-import CardArt from "@/components/ui/CardArt";
 import SampleBadge from "@/components/ui/SampleBadge";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
 
@@ -63,13 +62,48 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
 
       <header className="flex flex-col gap-6">
         <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-1.5 text-[10px] uppercase tracking-[0.22em] text-graphite-2"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}{h.ticker && ` · ${h.ticker}`}</span>
-        <RevealText as="h1" onLoad className="display text-[clamp(52px,8vw,140px)] leading-[0.92]">{h.name}</RevealText>
+        <RevealText as="h1" onLoad className="display max-w-[12ch] text-[clamp(42px,7vw,104px)] leading-[0.96]">{h.name}</RevealText>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Reveal>
           <div className="glass relative h-[clamp(300px,40vw,520px)] overflow-hidden rounded-[28px]" style={{ background: `radial-gradient(120% 100% at 75% 0%, ${color}66, transparent 65%), linear-gradient(160deg, rgba(22,24,27,.85), rgba(10,11,13,.75))` }}>
-            <CardArt assetClass={h.assetClass} seed={i + 1} accent={color} className="absolute inset-0 h-full w-full" />
+            {h.id === "alphabet" ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_25%,rgba(66,133,244,.20),transparent_36%),radial-gradient(ellipse_at_20%_85%,rgba(52,168,83,.14),transparent_42%)]" />
+                <div className="relative flex items-center gap-7">
+                  <span className="font-sans text-[clamp(110px,18vw,220px)] font-semibold leading-none tracking-[-.1em]">
+                    <span className="text-[#4285F4]">G</span>
+                  </span>
+                  <span className="font-mono text-[10px] tracking-[.35em] text-white/45">ALPHABET INC. · CLASS C</span>
+                </div>
+              </div>
+            ) : h.id === "anthropic" ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_75%_25%,rgba(217,154,116,.2),transparent_42%)]">
+                <div className="relative flex items-center gap-8">
+                  <svg viewBox="0 0 120 120" className="h-40 w-40" fill="none" aria-hidden="true">
+                    {Array.from({ length: 16 }, (_, n) => <path key={n} d="M60 8 L66 48 L60 60 L54 48 Z" fill="#D99A74" transform={`rotate(${n * 22.5} 60 60)`} />)}
+                    <circle cx="60" cy="60" r="6" fill="#E8C3A8" />
+                  </svg>
+                  <span className="font-sans text-[11px] tracking-[.35em] text-[#E8C3A8]/75">ANTHROPIC</span>
+                </div>
+              </div>
+            ) : h.assetClass === "ETFs" ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_70%_20%,rgba(215,255,63,.13),transparent_45%)]">
+                <div className="flex items-center gap-8">
+                  <span className="font-serif text-[clamp(100px,16vw,190px)] italic text-white/80">ETF</span>
+                  <span className="font-mono text-[10px] tracking-[.3em] text-white/45">EXCHANGE TRADED FUND</span>
+                </div>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 72% 24%, ${color}44, transparent 48%)` }} />
+                <div className="relative text-center">
+                  <span className="block font-serif text-[clamp(100px,18vw,210px)] italic leading-none text-white/75">{h.ticker ?? h.assetClass.slice(0, 2).toUpperCase()}</span>
+                  <span className="mt-5 block font-mono text-[10px] tracking-[.35em] text-white/40">{h.assetClass.toUpperCase()} · POSITION {String(i + 1).padStart(2, "0")}</span>
+                </div>
+              </div>
+            )}
           </div>
         </Reveal>
         <Reveal delay={0.1}>
@@ -92,11 +126,11 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
         </Reveal>
       </div>
 
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[28px] bg-white/[0.06] md:grid-cols-3 xl:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[24px] bg-white/[0.06] md:grid-cols-3 xl:grid-cols-4">
         {fields.map((f) => (
-          <div key={f.label} className="flex flex-col gap-2.5 bg-pearl/90 p-6 backdrop-blur">
+          <div key={f.label} className="flex min-w-0 flex-col gap-2.5 bg-[#101315] p-4 sm:p-6 backdrop-blur">
             <dt className="label">{f.label}</dt>
-            <dd className={`tnum font-serif text-[clamp(24px,2.2vw,32px)] leading-tight ${f.tone == null ? "" : f.tone >= 0 ? "text-gain" : "text-loss"}`}>{f.value}</dd>
+            <dd className={`tnum break-words font-serif text-[clamp(19px,2.2vw,30px)] leading-tight text-[#f0eee8] ${f.tone == null ? "" : f.tone >= 0 ? "text-gain" : "text-loss"}`}>{f.value}</dd>
           </div>
         ))}
       </dl>
