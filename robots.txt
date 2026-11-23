@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://vasilisssss.github.io/Portfolio-site/sitemap.xml
