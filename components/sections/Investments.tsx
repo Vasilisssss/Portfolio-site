@@ -25,26 +25,66 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
   }, { scope: ref });
 
   const color = classColor(h.assetClass);
+  const isStock = h.assetClass === "Stocks";
   return (
     <Link ref={ref} href={`/investments/${h.id}`} data-cursor="View" data-card
-      className="glass group flex h-full flex-col overflow-hidden rounded-[24px] transition-[box-shadow,border-color] duration-500 hover:border-lime/25 hover:shadow-[0_40px_80px_-40px_rgba(215,255,63,0.22)]">
-      <div className="relative h-[210px] overflow-hidden" style={{ background: `radial-gradient(120% 90% at 70% 10%, ${color}55, transparent 70%)` }}>
-        <div ref={art} className="absolute -inset-3">
-          <CardArt assetClass={h.assetClass} seed={i + 1} accent={color} className="h-full w-full transition-transform duration-[1.1s] ease-[var(--ease-expo)] group-hover:scale-[1.06]" />
-        </div>
-        <div className="absolute inset-x-5 top-4 flex items-center justify-between">
-          <span className="inline-flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-graphite-2 backdrop-blur"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}</span>
-          {h.ticker && <span className="tnum text-[11px] tracking-[0.2em] text-graphite-2">{h.ticker}</span>}
-        </div>
-      </div>
-      <div className="flex flex-1 flex-col justify-between gap-6 p-6">
-        <h3 className="font-serif text-[28px] leading-[1.05] transition-colors group-hover:text-lavender-deep">{h.name}</h3>
-        <dl className="grid grid-cols-3 gap-3 text-[10px] uppercase tracking-[0.18em] text-mute">
-          <div className="flex flex-col gap-1.5"><dt>Weight</dt><dd className="tnum text-[15px] normal-case tracking-normal text-graphite">{pct(h.weight)}</dd></div>
-          <div className="flex flex-col gap-1.5"><dt>Return</dt><dd className={`tnum text-[15px] normal-case tracking-normal ${h.returnPct == null ? "text-mute" : h.returnPct >= 0 ? "text-gain" : "text-loss"}`}>{h.returnPct == null ? "—" : pct(h.returnPct, true)}</dd></div>
-          {h.value != null && <div className="flex flex-col gap-1.5"><dt>Value</dt><dd className="tnum text-[15px] normal-case tracking-normal text-graphite">{moneyCompact(h.value, cur)}</dd></div>}
-        </dl>
-      </div>
+      className={`group relative flex h-full min-h-[390px] flex-col overflow-hidden rounded-[22px] border transition-all duration-700 ${isStock ? "border-[#d9c09b]/15 bg-[#111315] hover:border-[#d9c09b]/45 hover:shadow-[0_32px_90px_-42px_rgba(217,192,155,.28)]" : "glass border-white/[.08] hover:border-lime/25"}`}>
+      {isStock ? (
+        <>
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div ref={art} className="absolute -right-12 -top-7 h-[250px] w-[78%] opacity-[.22] transition-all duration-1000 group-hover:opacity-[.42]">
+              <CardArt assetClass={h.assetClass} seed={i + 1} accent="#d9c09b" className="h-full w-full transition-transform duration-[1.2s] ease-[var(--ease-expo)] group-hover:scale-110" />
+            </div>
+            <div className="absolute inset-0 bg-[linear-gradient(118deg,#111315_5%,rgba(17,19,21,.92)_42%,rgba(17,19,21,.28)_100%)]" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c09b]/55 to-transparent" />
+            <div className="absolute -right-3 top-10 select-none font-mono text-[clamp(84px,12vw,148px)] font-light leading-none tracking-[-.1em] text-white/[.035]">{h.ticker ?? "—"}</div>
+          </div>
+          <div className="relative flex flex-1 flex-col p-7 sm:p-8">
+            <div className="flex items-center justify-between gap-3">
+              <span className="eyebrow flex items-center gap-3 text-[#d9c09b]/80"><span className="h-1.5 w-1.5 rounded-full bg-[#d9c09b] shadow-[0_0_12px_rgba(217,192,155,.8)]" /> Equity position</span>
+              <span className="font-mono text-[10px] tracking-[.18em] text-white/35">NO. {String(i + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="mt-10 flex items-end justify-between gap-4">
+              <div className="min-w-0">
+                <p className="font-mono text-[12px] tracking-[.24em] text-[#d9c09b]">{h.ticker ?? "PUBLIC EQUITY"}</p>
+                <h3 className="mt-3 max-w-[13ch] font-serif text-[clamp(30px,3vw,42px)] leading-[.98] tracking-[-.025em] text-[#f0eee8] transition-colors duration-500 group-hover:text-[#e4cda9]">{h.name}</h3>
+              </div>
+              <span className="mb-1 shrink-0 text-[10px] uppercase tracking-[.18em] text-white/35 transition-transform duration-500 group-hover:translate-x-1">↗</span>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[.09] pt-4 font-mono text-[9px] uppercase tracking-[.16em] text-white/38">
+              {h.industry && <span>{h.industry}</span>}
+              {h.geography && <span>{h.geography}</span>}
+              {!h.industry && !h.geography && <span>Long-term holding</span>}
+            </div>
+            <div className="mt-auto grid grid-cols-3 gap-3 border-t border-white/[.09] pt-6">
+              <div className="flex flex-col gap-2"><span className="label text-white/35">Portfolio weight</span><strong className="tnum text-[clamp(19px,2vw,25px)] font-light tracking-[-.04em] text-[#f0eee8]">{pct(h.weight)}</strong></div>
+              <div className="flex flex-col gap-2"><span className="label text-white/35">Total return</span><strong className={`tnum text-[clamp(19px,2vw,25px)] font-light tracking-[-.04em] ${h.returnPct == null ? "text-white/45" : h.returnPct >= 0 ? "text-[#d9c09b]" : "text-[#d99a91]"}`}>{h.returnPct == null ? "—" : pct(h.returnPct, true)}</strong></div>
+              {h.value != null && <div className="flex flex-col gap-2"><span className="label text-white/35">Market value</span><strong className="tnum text-[clamp(16px,1.7vw,22px)] font-light tracking-[-.04em] text-[#f0eee8]">{moneyCompact(h.value, cur)}</strong></div>}
+            </div>
+            <div className="mt-6 flex items-center justify-between text-[9px] uppercase tracking-[.2em] text-[#d9c09b]/55">
+              <span>Position details</span><span className="h-px w-12 bg-[#d9c09b]/40 transition-all duration-500 group-hover:w-20" />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="relative h-[210px] overflow-hidden" style={{ background: `radial-gradient(120% 90% at 70% 10%, ${color}55, transparent 70%)` }}>
+            <div ref={art} className="absolute -inset-3"><CardArt assetClass={h.assetClass} seed={i + 1} accent={color} className="h-full w-full transition-transform duration-[1.1s] ease-[var(--ease-expo)] group-hover:scale-[1.06]" /></div>
+            <div className="absolute inset-x-5 top-4 flex items-center justify-between">
+              <span className="inline-flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-graphite-2 backdrop-blur"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}</span>
+              {h.ticker && <span className="tnum text-[11px] tracking-[0.2em] text-graphite-2">{h.ticker}</span>}
+            </div>
+          </div>
+          <div className="flex flex-1 flex-col justify-between gap-6 p-6">
+            <h3 className="font-serif text-[28px] leading-[1.05] transition-colors group-hover:text-lavender-deep">{h.name}</h3>
+            <dl className="grid grid-cols-3 gap-3 text-[10px] uppercase tracking-[0.18em] text-mute">
+              <div className="flex flex-col gap-1.5"><dt>Weight</dt><dd className="tnum text-[15px] normal-case tracking-normal text-graphite">{pct(h.weight)}</dd></div>
+              <div className="flex flex-col gap-1.5"><dt>Return</dt><dd className={`tnum text-[15px] normal-case tracking-normal ${h.returnPct == null ? "text-mute" : h.returnPct >= 0 ? "text-gain" : "text-loss"}`}>{h.returnPct == null ? "—" : pct(h.returnPct, true)}</dd></div>
+              {h.value != null && <div className="flex flex-col gap-1.5"><dt>Value</dt><dd className="tnum text-[15px] normal-case tracking-normal text-graphite">{moneyCompact(h.value, cur)}</dd></div>}
+            </dl>
+          </div>
+        </>
+      )}
     </Link>
   );
 }
