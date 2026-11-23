@@ -41,7 +41,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
   const seqBlobs = new Map<number, Blob>();
   const seqBitmaps = new Map<number, ImageBitmap>();
   const decoding = new Set<number>();
-  let uTarget = 0, uNow = 0, drift = 0, driftNow = 0, dirty = true, stopped = false, manual = false;
+  let uTarget = 1, uNow = 1, drift = 0, driftNow = 0, dirty = true, stopped = false, manual = false;
   const abort = new AbortController();
 
   // ---------- sizing: native device resolution (capped at 2×) so the stills stay sharp
