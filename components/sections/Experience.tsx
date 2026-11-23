@@ -40,7 +40,18 @@ export default function Experience() {
                       </div>
                       <p className="mt-2 text-[15px] text-graphite-2">{r.firm}</p>
                       <p className="mt-1 text-xs text-mute">{r.place}</p>
-                      <p className="mt-4 text-sm leading-relaxed text-mute">{r.detail}</p>
+                      {r.current ? (
+                        <p className="mt-4 text-sm leading-relaxed text-mute">{r.detail}</p>
+                      ) : (
+                        <details className="group mt-4">
+                          <summary className="flex w-fit cursor-pointer list-none items-center gap-3 text-[11px] uppercase tracking-[.18em] text-lime marker:hidden">
+                            Explore role <span aria-hidden className="transition-transform group-open:rotate-45">+</span>
+                          </summary>
+                          <div className="mt-4 max-w-xl border-l border-lime/30 pl-5">
+                            <p className="text-sm leading-[1.8] text-mute">Portfolio performance analysis across hedge funds and private markets, including performance monitoring, risk metrics, client reporting and reconciliation of investment data.</p>
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </article>
                 </Reveal>
