@@ -35,8 +35,12 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
             <div className={`absolute inset-0 ${h.id === "alphabet" ? "bg-[radial-gradient(ellipse_at_78%_28%,rgba(66,133,244,.18),transparent_34%),radial-gradient(ellipse_at_22%_82%,rgba(52,168,83,.10),transparent_42%),linear-gradient(135deg,#15191e_0%,#101214_60%,#0b0d0f_100%)]" : h.id === "anthropic" ? "bg-[radial-gradient(ellipse_at_78%_25%,rgba(217,154,116,.18),transparent_38%),linear-gradient(135deg,#211915_0%,#141211_60%,#0b0d0f_100%)]" : "bg-[linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]"}`} style={h.id === "alphabet" || h.id === "anthropic" ? undefined : { backgroundImage: `radial-gradient(ellipse at 82% 18%, ${color}30, transparent 44%), linear-gradient(135deg,#17191a 0%,#101214 58%,#0b0d0f 100%)` }} />
             <div className="absolute inset-y-0 right-0 w-[42%] border-l border-white/[.045] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.025))]" />
             {h.id === "alphabet" ? (
-              <div className="absolute -right-2 top-7 select-none font-sans text-[clamp(72px,10vw,118px)] font-semibold leading-none tracking-[-.1em] opacity-90 transition-transform duration-700 group-hover:-translate-x-2 group-hover:scale-105" aria-hidden="true">
-                <span className="text-[#4285F4]">G</span><span className="absolute inset-0 text-[#EA4335] [clip-path:polygon(0_0,48%_0,48%_48%,0_48%)]">G</span><span className="absolute inset-0 text-[#FBBC05] [clip-path:polygon(48%_0,100%_0,100%_48%,48%_48%)]">G</span><span className="absolute inset-0 text-[#34A853] [clip-path:polygon(0_48%,48%_48%,48%_100%,0_100%)]">G</span>
+              <div className="absolute right-5 top-7 flex h-28 w-28 items-center justify-center select-none opacity-95 transition-transform duration-700 group-hover:scale-105 sm:right-7 sm:h-32 sm:w-32" aria-hidden="true">
+                <span className="relative block font-sans text-[112px] font-semibold leading-none tracking-[-.12em] text-[#4285F4]">G
+                  <span className="absolute inset-0 text-[#EA4335] [clip-path:polygon(0_0,100%_0,100%_43%,0_43%)]">G</span>
+                  <span className="absolute inset-0 text-[#FBBC05] [clip-path:polygon(48%_0,100%_0,100%_55%,48%_55%)]">G</span>
+                  <span className="absolute inset-0 text-[#34A853] [clip-path:polygon(0_48%,48%_48%,48%_100%,0_100%)]">G</span>
+                </span>
               </div>
             ) : h.id === "anthropic" ? (
               <div className="absolute right-9 top-10 flex h-32 w-32 items-center justify-center opacity-80 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">
