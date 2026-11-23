@@ -49,9 +49,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
       const distance = Math.max(1, section.offsetHeight - window.innerHeight);
       const progress = Math.min(1, Math.max(0, -rect.top / distance));
       const visible = rect.bottom > 0 && rect.top < window.innerHeight;
-      if (mediaLayer.current) {
-        mediaLayer.current.style.opacity = String(1 - Math.min(1, Math.max(0, (progress - 0.9) / 0.1)));
-      }
+      if (mediaLayer.current) mediaLayer.current.style.opacity = "1";
       const nextShot: 0 | 1 = progress < 0.5 ? 0 : 1;
       setShot(nextShot);
       const video = nextShot === 0 ? first : second;
@@ -98,7 +96,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
   }, []);
 
   return (
-    <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate min-h-[200svh]">
+    <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate min-h-[100svh]">
       <div ref={mediaLayer} className="headquarters-media" aria-hidden="true">
         <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" fetchPriority="high" decoding="async" /></div>
         <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline loop preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
@@ -107,7 +105,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
         <div className="headquarters-film-grain" />
       </div>
 
-      <div className="absolute inset-x-0 top-0 z-10 flex min-h-[100svh] w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
+      <div className="relative z-10 flex min-h-[100svh] w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
         <div className="flex items-center justify-between gap-6">
           <p className="eyebrow flex items-center gap-4 text-white/75">
             <span className="h-px w-10 bg-[#c7a77a]" />
