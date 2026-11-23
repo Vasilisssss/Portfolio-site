@@ -34,10 +34,10 @@ export const profile = {
   },
 
   about: {
-    intro: "[A short introduction: who you are, in a sentence or two.]",
-    approach: "[Your approach to investing, in your own words.]",
-    vision: "[Your long-term financial vision.]",
-    started: "[Year you started investing]",
+    intro: "I’m Vasilis Mavroudes — an investor and CFA Level III candidate, documenting my investment portfolio and professional journey.",
+    approach: "An evolving, research-led approach to understanding businesses, valuation and risk.",
+    vision: "Build lasting investment knowledge, sound judgement and a disciplined process over time.",
+    started: "CFA Program · Level III Candidate",
   },
 
   closing: ["Think long term.", "Build with conviction."],
