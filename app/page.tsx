@@ -1,7 +1,7 @@
 import { getPublicView } from "@/lib/public";
 import { profile } from "@/content/profile";
 import { journal } from "@/content/journal";
-import Hero from "@/components/hero/Hero";
+import Hero from "@/components/hero/HeadquartersHero";
 import Overview from "@/components/sections/Overview";
 import Investments from "@/components/sections/Investments";
 import Allocation from "@/components/sections/Allocation";
@@ -44,7 +44,7 @@ export default function Home() {
       <WorldMount data={worldData} labels={labels} />
 
       {/* I — THE REVEAL */}
-      <div data-scene="0" className="relative">
+      <div data-scene="0" id="capital-engine" className="relative">
         <Hero name={profile.name} eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
           figure={amounts ? { value: money(s.value!, cur), label: `Portfolio value · ${dateLong(view.asOf)}` } : s.returnPct != null ? { value: pct(s.returnPct, true), label: "Total return" } : undefined}
           showInvestments={on.investments && view.holdings.length > 0} />
