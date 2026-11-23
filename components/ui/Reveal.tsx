@@ -13,8 +13,8 @@ type Tag = "h1" | "h2" | "h3" | "p" | "div" | "span";
  * Masked line-by-line text reveal on scroll (or immediately with `onLoad`).
  * Text is fully present in server HTML; JS only animates it.
  */
-export function RevealText({ as = "div", children, className, delay = 0, onLoad = false, stagger = 0.09 }: {
-  as?: Tag; children: React.ReactNode; className?: string; delay?: number; onLoad?: boolean; stagger?: number;
+export function RevealText({ as = "div", children, className, id, delay = 0, onLoad = false, stagger = 0.09 }: {
+  as?: Tag; children: React.ReactNode; className?: string; id?: string; delay?: number; onLoad?: boolean; stagger?: number;
 }) {
   const ref = useRef<HTMLElement>(null);
   useGSAP(() => {
@@ -49,7 +49,7 @@ export function RevealText({ as = "div", children, className, delay = 0, onLoad 
     return () => split?.revert();
   }, { scope: ref });
   const Comp = as as React.ElementType;
-  return <Comp ref={ref} className={className}>{children}</Comp>;
+  return <Comp ref={ref} id={id} className={className}>{children}</Comp>;
 }
 
 /** Fade-and-rise block reveal. */
