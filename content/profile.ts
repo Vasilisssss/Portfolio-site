@@ -19,28 +19,16 @@ export const profile = {
   },
 
   strategy: {
-    draft: true,
-    headline: ["I", "don’t", "chase", "the", "market.", "I", "study", "the", "future."],
-    italicFrom: 5,
-    intro: "How I think about money, risk and time. Rewrite every line below in your own words.",
+    draft: false,
+    headline: ["A broader", "lens.", "A disciplined", "process."],
+    italicFrom: 1,
+    intro: "My investment perspective brings together fundamental research, valuation, portfolio construction, macro context and quantitative analysis. Different lenses help frame a decision; risk and evidence remain central to evaluating it.",
     principles: [
-      { title: "Time is my edge", body: "[Draft] I only invest money I won’t need for years, so short-term prices don’t force my hand." },
-      { title: "Avoid the big loss", body: "[Draft] I size positions so that no single mistake can set me back more than I can recover from." },
-      { title: "Own what I understand", body: "[Draft] If I can’t explain why I own something in two sentences, I don’t own it." },
-      { title: "Keep dry powder", body: "[Draft] Cash is an option on future opportunities, not a wasted asset." },
-      { title: "Automate the boring part", body: "[Draft] Regular contributions happen on schedule; my judgement goes into the rest." },
-      { title: "Write it down", body: "[Draft] Every decision gets a journal entry, so I can learn from my reasoning, not just my results." },
+      { title: "Fundamental research", body: "Understand the business, its economics and the drivers behind its long-term prospects." },
+      { title: "Valuation", body: "Assess what an investment may be worth, and consider the relationship between price, expectations and uncertainty." },
+      { title: "Portfolio construction", body: "Consider each position in the context of the wider portfolio, its exposures and its contribution to overall risk." },
+      { title: "Risk perspective", body: "Look beyond expected return to consider downside, concentration, liquidity and the assumptions that could prove wrong." },
+      { title: "Macro context", body: "Take account of the economic and market environment without losing sight of the characteristics of the underlying investment." },
+      { title: "Quantitative evidence", body: "Use data and analytical methods to test assumptions, identify patterns and support—not replace—judgement." },
     ],
   },
-
-  about: {
-    intro: "I’m Vasilis Mavroudes, a finance professional working across risk and portfolio analysis, with experience spanning hedge funds and private markets.",
-    approach: "My work has focused on portfolio performance, risk monitoring, client reporting and investment data. I hold an MSc in Finance from the University of Groningen, where my thesis examined machine-learning-based predictive modelling of M&A outcomes.",
-    vision: "I am continuing my professional development through the CFA Program, having completed Levels I and II and currently pursuing Level III.",
-    started: "Risk Analyst · Argus Management Ltd.",
-  },
-
-  closing: ["Think long term.", "Build with conviction."],
-  disclaimer:
-    "This is a personal record of my own investments, shared for transparency. It is not investment advice, a recommendation or an offer of any kind. Past performance does not predict future results.",
-};
