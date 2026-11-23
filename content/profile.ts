@@ -3,20 +3,19 @@
  * Strategy statements marked `draft: true` show a small "Draft" tag on the site until you rewrite them.
  */
 export const profile = {
-  name: "[Your Name]",
+  name: "Vasilis Mavroudes",
   /** shown in the browser tab and search results */
-  siteTitle: "[Your Name] — Personal portfolio",
+  siteTitle: "Vasilis Mavroudes — Investor & CFA Level III Candidate",
   url: process.env.SITE_URL || "https://vasilisssss.github.io/Portfolio-site",
-  email: "you@example.com",
+  email: "vmavro01@gmail.com",
   socials: [
-    { label: "LinkedIn", href: "https://www.linkedin.com" },
-    { label: "X", href: "https://x.com" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/vasilismavroudes1997/" },
   ],
 
   hero: {
-    eyebrow: "A personal investment portfolio",
+    eyebrow: "Investor · CFA Level III Candidate",
     lines: ["My capital,", "in the long run."],
-    body: "What I own, why I own it, and how it is doing — shared openly, in percentages or in full, as I choose.",
+    body: "A personal investment portfolio and professional profile — documenting the companies I invest in, the principles behind my decisions and my journey as a CFA Level III candidate.",
   },
 
   strategy: {
