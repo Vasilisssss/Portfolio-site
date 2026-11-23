@@ -92,7 +92,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* IV — PERFORMANCE AND JOURNAL */}
+      {/* IV — PERFORMANCE */}
       <div data-scene="3" className="relative">
         <Chapter index={3} roman="IV" kicker="The Performance Gallery" title={<>Looking back, <em>honestly.</em></>}
           stats={perf ? [
