@@ -190,3 +190,19 @@
     opacity: .5;
   }
 }
+
+
+/* Mobile composition correction: keep the chapter reveal close to its architectural scene. */
+@media (max-width: 700px) {
+  .trading-floor-scene [data-chapter="1"] {
+    min-height: 68svh;
+    align-items: flex-end;
+  }
+  .trading-floor-scene [data-chapter="1"] .container-x {
+    padding-bottom: 8svh;
+  }
+  .trading-floor-atmosphere {
+    height: 68svh;
+    opacity: .72;
+  }
+}
