@@ -1,7 +1,7 @@
 import type { LabelOut, WorldCallbacks, WorldData } from "./types";
 
 /**
- * THE WORLD INSIDE A BRIEFCASE — the photographic version.
+ * THE PHOTOGRAPHIC INVESTMENT EXCHANGE — scroll-driven cinematic film.
  *
  * The world is a path-traced film (Blender Cycles, tools/film): one continuous camera move from a closed
  * aluminium briefcase in a dark studio, into the 1 : 110 trading hall inside it, down to eye level, through the
@@ -87,7 +87,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
     manifest = (await r.json()) as Manifest;
     const m = manifest;
     labelIds = [...new Set([...m.holds.flatMap((h) => Object.keys(h.labels)), ...m.seq.frames.flatMap((f) => Object.keys(f.labels))])];
-    const order = [...m.holds].sort((a, b) => Math.abs(a.u - uTarget) - Math.abs(b.u - uTarget));
+    const order = m.holds.filter((h) => h.u >= 1 && h.u <= 3).sort((a, b) => Math.abs(a.u - uTarget) - Math.abs(b.u - uTarget));
     for (const h of order) {
       const blob = await fetchBlob(opts.low ? h.lo : h.hi);
       const bmp = await createImageBitmap(blob);
@@ -96,7 +96,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
     }
     if (opts.reduce) return;
     // motion frames: nearest the playhead first, four requests in flight
-    const queue = m.seq.frames.map((_, i) => i);
+    const queue = m.seq.frames.map((f, i) => ({ f, i })).filter(({ f }) => f.u >= 1 && f.u <= 3).map(({ i }) => i);
     const pending = new Set(queue);
     const next = () => {
       if (!pending.size) return -1;
@@ -218,7 +218,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
       ready: () => !!manifest && holdBitmaps.size === manifest.holds.length,
       seqReady: () => !!manifest && seqBlobs.size === manifest.seq.frames.length,
       manual(on: boolean) { manual = on; },
-      setU(u: number) { uTarget = u; },
+      setU(u: number) { uTarget = Math.min(3, Math.max(1, u)); },
       /** jump the playhead to the target, decode what it needs, then draw */
       async settle(u?: number) {
         if (u != null) uTarget = u;
@@ -236,7 +236,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
 
   const api = {
     setProgress(u: number, d: number) {
-      uTarget = opts.reduce ? Math.round(u) : Math.min(4, Math.max(0, u));
+      uTarget = opts.reduce ? Math.round(u) : Math.min(3, Math.max(1, u));
       drift = opts.reduce ? 0 : d;
     },
     dispose() {
