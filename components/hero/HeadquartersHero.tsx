@@ -86,7 +86,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
         <div className="headquarters-film-grain" />
       </div>
 
-      <div className="relative z-10 flex min-h-[100svh] w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
+      <div className="absolute inset-x-0 top-0 z-10 flex min-h-[100svh] w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
         <div className="flex items-center justify-between gap-6">
           <p className="eyebrow flex items-center gap-4 text-white/75">
             <span className="h-px w-10 bg-[#c7a77a]" />
