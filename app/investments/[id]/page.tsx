@@ -2,13 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicView, getPublicHolding } from "@/lib/public";
-import { journal } from "@/content/journal";
 import { dateLong, money, moneySigned, num, pct } from "@/lib/format";
 import { classColor } from "@/lib/palette";
 import CardArt from "@/components/ui/CardArt";
 import SampleBadge from "@/components/ui/SampleBadge";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
-import { Kind } from "@/components/sections/Journal";
 
 export const dynamicParams = false;
 
@@ -51,7 +49,6 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
   if (h.industry) fields.push({ label: "Industry", value: h.industry });
   if (h.currency !== cur) fields.push({ label: "Trading currency", value: h.currency });
 
-  const related = journal.filter((e) => e.holdings?.includes(h.id));
 
   return (
     <article className="container-x flex flex-col gap-14 pb-32 pt-36">
@@ -111,16 +108,6 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
         </section>
       )}
 
-      {related.length > 0 && (
-        <section aria-labelledby="related" className="flex flex-col gap-5">
-          <h2 id="related" className="eyebrow text-ice-deep">From my journal</h2>
-          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {related.map((e) => (
-              <li key={e.slug}><Link href={`/journal/${e.slug}`} data-cursor="Read" className="glass group flex flex-col gap-3 rounded-[24px] p-6"><Kind k={e.kind} /><span className="font-serif text-[26px] leading-[1.1] group-hover:text-lavender-deep">{e.title}</span></Link></li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {list.length > 1 && (
         <nav aria-label="More investments" className="grid grid-cols-1 gap-4 md:grid-cols-2">
