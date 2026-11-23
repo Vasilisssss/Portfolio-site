@@ -12,18 +12,18 @@
   --color-line: #202328;
   --color-line-2: #2e3238;
   --color-ice: #1b1f14;          /* lime-tinted dark fill */
-  --color-ice-deep: #d7ff3f;     /* acid lime accent */
+  --color-ice-deep: #d9c09b;     /* acid lime accent */
   --color-lavender: #1a1c1f;
-  --color-lavender-deep: #d7ff3f;
+  --color-lavender-deep: #d9c09b;
   --color-blush: #1f1a1a;
   --color-mint: #171c14;
-  --color-aqua-deep: #d7ff3f;
+  --color-aqua-deep: #d9c09b;
   --color-graphite: #f3f2ed;     /* soft white — primary text */
   --color-graphite-2: #c8c9c3;
   --color-mute: #898d8c;
   --color-gain: #d7ff3f;
   --color-loss: #ff7a66;
-  --color-lime: #d7ff3f;
+  --color-lime: #d9c09b;
   --font-serif: var(--font-instrument), "Instrument Serif", Georgia, serif;
   --font-sans: var(--font-geist), "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -38,7 +38,7 @@
   body { background: var(--color-pearl); color: var(--color-graphite); font-family: var(--font-sans); font-weight: 400; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; font-kerning: normal; font-optical-sizing: auto; font-synthesis: none; }
   /* vector graphics: keep curves anti-aliased precisely; crisp-edged gridlines opt in per element */
   svg { shape-rendering: geometricPrecision; }
-  ::selection { background: var(--color-lime); color: #08090a; }
+  ::selection { background: var(--color-lime); color: #11110f; }
   a { color: inherit; text-decoration: none; }
   :focus-visible { outline: 1.5px solid var(--color-lime); outline-offset: 4px; }
 }
@@ -61,15 +61,15 @@
     backdrop-filter: blur(22px) saturate(1.2);
   }
   /* accent text: soft white into lime */
-  .iris-text { background: linear-gradient(100deg, #f3f2ed 0%, #f3f2ed 35%, #d7ff3f 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .iris-line { background: linear-gradient(90deg, #d7ff3f, rgba(215, 255, 63, 0.25)); }
+  .iris-text { background: linear-gradient(100deg, #f3f2ed 0%, #f3f2ed 35%, #d9c09b 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .iris-line { background: linear-gradient(90deg, #d7ff3f, rgba(217, 192, 155, 0.25)); }
   .hairline { border-color: var(--color-line); }
-  .lime-glow { text-shadow: 0 0 40px rgba(215, 255, 63, 0.35); }
+  .lime-glow { text-shadow: 0 0 40px rgba(217, 192, 155, 0.28); }
 }
 
 /* atmosphere when WebGL is unavailable or loading: a single, faint lime horizon */
 .aura { position: fixed; inset: 0; z-index: 0; pointer-events: none; background:
-  radial-gradient(120% 60% at 50% 115%, rgba(215, 255, 63, 0.10), transparent 60%),
+  radial-gradient(120% 60% at 50% 115%, rgba(217, 192, 155, 0.08), transparent 60%),
   radial-gradient(80% 50% at 50% -10%, rgba(243, 242, 237, 0.05), transparent 70%); }
 .aura span { display: none; }
 
@@ -116,3 +116,13 @@
 .headquarters-fallback { background:#080b0d; }
 .headquarters-fallback:after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,rgba(4,7,9,.55),rgba(4,7,9,.08)),linear-gradient(0deg,rgba(4,7,9,.42),transparent 55%); }
 @media(max-width:700px) { .headquarters-fallback img { object-position:58% center; } }
+
+
+/* Stage 3 foundation — quiet architectural atmosphere for editorial chapters */
+.chapter-arrival { isolation:isolate; }
+.chapter-arrival:before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(ellipse at 82% 38%,rgba(180,145,105,.085),transparent 42%),linear-gradient(180deg,rgba(8,11,13,.05),rgba(8,11,13,.45)); }
+[data-scene] { position:relative; isolation:isolate; }
+[data-scene]:not(:first-of-type) { border-top:1px solid rgba(217,192,155,.08); }
+[data-scene="1"],[data-scene="3"] { background:linear-gradient(180deg,rgba(20,26,29,.45),rgba(8,11,13,.96) 45%,#080b0d); }
+[data-scene="2"],[data-scene="4"] { background:linear-gradient(180deg,#080b0d,rgba(17,21,23,.92) 55%,#080b0d); }
+.glass { border-color:rgba(217,192,155,.12); background:linear-gradient(155deg,rgba(28,30,31,.82),rgba(9,12,14,.82)); box-shadow:0 1px 0 rgba(243,242,237,.055) inset,0 35px 90px -45px rgba(0,0,0,.9); }
