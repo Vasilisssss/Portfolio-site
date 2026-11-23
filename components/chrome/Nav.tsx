@@ -70,23 +70,23 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
         {open && (
           <motion.div
             id="site-menu" role="dialog" aria-modal="true" aria-label="Site menu"
-            className="fixed inset-0 z-[90] flex flex-col justify-between overflow-y-auto bg-pearl px-[clamp(20px,3vw,32px)] pb-10 pt-6"
+            className="fixed inset-0 z-[90] flex flex-col justify-between overflow-y-auto bg-[#090d10] px-[clamp(20px,3vw,32px)] pb-10 pt-6 text-[#f4f1eb]"
             initial={{ clipPath: "circle(0% at calc(100% - 80px) 44px)" }}
             animate={{ clipPath: "circle(150% at calc(100% - 80px) 44px)", transition: { duration: 1, ease: [0.7, 0, 0.2, 1] } }}
             exit={{ clipPath: "circle(0% at calc(100% - 80px) 44px)", transition: { duration: 0.8, ease: [0.7, 0, 0.2, 1] } }}
           >
-            <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[620px] w-[620px] rounded-full bg-[radial-gradient(closest-side,rgba(215,255,63,0.18),transparent)] opacity-80 blur-2xl" />
+            <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[620px] w-[620px] rounded-full bg-[radial-gradient(closest-side,rgba(201,167,121,0.16),transparent)] opacity-80 blur-2xl" />
             <div className="relative flex items-center justify-between">
-              <span className="text-[10px] tracking-[0.32em] text-mute">{name.toUpperCase()}</span>
+              <span className="text-[10px] tracking-[0.32em] text-white/45">{name.toUpperCase()}</span>
               <button ref={closeBtn} type="button" onClick={() => { setOpen(false); openBtn.current?.focus(); }}
-                className="h-11 rounded-full border border-line-2 px-[18px] text-[11px] tracking-[0.24em] hover:border-lavender-deep">CLOSE ✕</button>
+                className="h-11 rounded-full border border-white/25 px-[18px] text-[11px] tracking-[0.24em] text-white hover:border-[#c9a779]">CLOSE ✕</button>
             </div>
             <nav aria-label="Menu" className="relative flex flex-col">
               {items.map((n, i) => (
-                <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="group flex items-baseline gap-7 overflow-hidden border-b border-line py-1.5">
-                  <span className="tnum w-8 text-[11px] tracking-[0.2em] text-ice-deep">{pad2(i + 1)}</span>
+                <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="group flex items-baseline gap-7 overflow-hidden border-b border-white/10 py-1.5">
+                  <span className="tnum w-8 text-[11px] tracking-[0.2em] text-[#c9a779]/70">{pad2(i + 1)}</span>
                   <motion.span
-                    className="display block text-[clamp(40px,6.4vw,96px)] leading-[1.04] transition-[color,transform] duration-500 group-hover:translate-x-4 group-hover:text-lavender-deep"
+                    className="display block text-[clamp(40px,6.4vw,96px)] leading-[1.04] text-[#f4f1eb] transition-[color,transform] duration-500 group-hover:translate-x-4 group-hover:text-[#d9c09b]"
                     initial={{ y: "110%" }} animate={{ y: 0, transition: { delay: 0.25 + i * 0.05, duration: 1, ease: [0.2, 0.8, 0.2, 1] } }} exit={{ y: "110%", transition: { duration: 0.4 } }}
                   >
                     {n.label}
@@ -94,7 +94,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
                 </Link>
               ))}
             </nav>
-            <div className="relative flex flex-wrap justify-between gap-x-10 gap-y-4 text-xs text-mute">
+            <div className="relative flex flex-wrap justify-between gap-x-10 gap-y-4 text-xs text-white/45">
               <a href={`mailto:${email}`}>{email}</a>
               <span>{closing}</span>
             </div>
