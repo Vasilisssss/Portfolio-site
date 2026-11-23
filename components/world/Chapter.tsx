@@ -9,9 +9,9 @@ export default function Chapter({ index, roman, title, kicker, stats, note }: {
   stats?: { value: string; label: string; tone?: "gain" | "loss" | "flat" }[]; note?: string;
 }) {
   return (
-    <div data-chapter={index} className="chapter-arrival relative flex min-h-[100svh] items-end">
+    <div data-chapter={index} className="chapter-arrival relative flex min-h-[78svh] items-end">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(to_top,rgba(5,7,8,0.9),rgba(5,7,8,0.48)_45%,transparent)] md:bg-[radial-gradient(90%_75%_at_0%_100%,rgba(5,5,6,0.85),rgba(5,5,6,0.3)_55%,transparent_80%)]" />
-      <div className="container-x relative w-full pb-[14vh]">
+      <div className="container-x relative w-full pb-[8vh]">
         <div className="flex flex-col gap-8">
           <span className="eyebrow flex items-center gap-4 text-[#d9c09b]">
             <span className="whitespace-nowrap">Chapter {roman}</span><span className="block h-px w-10 shrink-0 bg-[#d9c09b]/60 md:w-16" /><span className="text-[#d9c09b]/70">{kicker}</span>
