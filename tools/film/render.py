@@ -51,6 +51,8 @@ KEYS = [
     (4.00, studio(0.36, -1.48, 0.60), studio(-0.16, 0.08, 0.075), 50),
 ]
 HOLDS = [0.0, 1.0, 2.0, 3.0, 4.0]
+# portrait crops in the hall: the video wall's headline figure (1), the tallest monolith and its neighbours (2)
+HALL_FX = {1.0: 0.4, 2.0: 0.62}
 # motion frames per scene transition; denser where the move is fastest (the descent)
 SEG_FRAMES = [56, 32, 24, 44]
 
@@ -105,7 +107,7 @@ def setup(u):
     cam.data.dof.focus_distance = max(0.05, d.length)
     ceiling.hide_render = pos.z > H - 0.05
     # without its roof the hall would take the whole sky: the daylight is kept to what the glass admits
-    k = min(1.0, max(0.0, (pos.z - (H - 1.0)) / 9.0)); k = k * k * (3 - 2 * k)
+    k = min(1.0, max(0.0, (pos.z - (H - 0.4)) / 3.5)); k = k * k * (3 - 2 * k)
     WORLD_BG.inputs["Strength"].default_value = SKY * (1 - 0.6 * k)
     for L, e in HALL_LIGHTS: L.energy = e * (1 - k)
     for o in void: o.hide_render = not (inside and pos.z > H + 0.5)
@@ -118,7 +120,7 @@ def project(u):
     bpy.context.view_layer.update()
     # where the subject is across the frame: narrow (portrait) screens crop around it
     focus = Vector(CT) if not inside else None
-    fx = round(world_to_camera_view(scene, cam, focus).x, 4) if focus is not None else 0.5
+    fx = round(world_to_camera_view(scene, cam, focus).x, 4) if focus is not None else HALL_FX.get(round(u, 3), 0.5)
     out["__fx"] = fx
     for k, a in META["anchors"].items():
         w = Vector(a) if inside else MO + Vector(a) * S

@@ -138,7 +138,7 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
       const { i0, i1, a } = seqIndexAt(uNow);
       const f0 = m.seq.frames[i0]?.fx ?? 0.5, f1 = m.seq.frames[i1]?.fx ?? 0.5;
       const hf = m.holds.find((h) => h.u === k)?.fx ?? 0.5;
-      const sf = f0 + (f1 - f0) * a, w = smooth(HOLD_RADIUS, 0, dh);
+      const sf = f0 + (f1 - f0) * a, w = smooth(0.3, 0, dh);   // the crop eases toward the scene's subject on arrival
       fxNow = m.seq.frames.length > 1 ? sf * (1 - w) + hf * w : hf;
     }
     const holdW = opts.reduce ? 1 : smooth(HOLD_RADIUS, HOLD_RADIUS * 0.25, dh);
