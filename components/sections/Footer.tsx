@@ -7,7 +7,7 @@ import Magnetic from "@/components/ui/Magnetic";
 export default function Footer() {
   return (
     <footer id="contact" className="relative z-[1] overflow-hidden border-t border-white/[0.06] bg-gradient-to-b from-pearl to-[#0d0f11]">
-      <div aria-hidden className="pointer-events-none absolute -bottom-60 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(215,255,63,0.16),transparent)] opacity-80 blur-2xl" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-60 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(217,192,155,0.12),transparent)] opacity-80 blur-2xl" />
       <div className="container-x relative flex flex-col gap-24 pb-10 pt-40">
         <h2 className="display text-[clamp(56px,10vw,184px)] leading-[0.88] tracking-[-0.035em]">
           <RevealText as="span" className="block">{profile.closing[0]}</RevealText>
