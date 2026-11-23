@@ -26,29 +26,62 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
   const secondVideo = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const section = document.getElementById("top");
     const first = firstVideo.current;
-    if (!first) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { first.pause(); return; }
-    const play = first.play();
-    if (play) play.catch(() => setMediaReady(false));
-  }, []);
+    const second = secondVideo.current;
+    if (!section || !first || !second) return;
 
-  const advance = () => {
-    if (shot !== 0) return;
-    setShot(1);
-    const next = secondVideo.current;
-    if (next) {
-      next.currentTime = 0;
-      next.play().catch(() => setMediaReady(false));
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      first.pause();
+      second.pause();
+      setMediaReady(false);
+      return;
     }
-  };
+
+    let raf = 0;
+    let lastTime = -1;
+    const sync = () => {
+      raf = 0;
+      const rect = section.getBoundingClientRect();
+      const distance = Math.max(1, section.offsetHeight);
+      const progress = Math.min(1, Math.max(0, -rect.top / distance));
+      const nextShot: 0 | 1 = progress < 0.5 ? 0 : 1;
+      setShot(nextShot);
+
+      const video = nextShot === 0 ? first : second;
+      const other = nextShot === 0 ? second : first;
+      other.pause();
+      if (video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0) {
+        const local = nextShot === 0 ? progress * 2 : (progress - 0.5) * 2;
+        const time = Math.min(video.duration - 0.04, Math.max(0, local * video.duration));
+        if (Math.abs(time - lastTime) > 0.035 || video !== (lastTime < 0 ? null : video)) {
+          try { video.currentTime = time; lastTime = time; } catch { /* metadata may still be settling */ }
+        }
+      }
+      video.pause();
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(sync); };
+    first.addEventListener("loadedmetadata", schedule);
+    second.addEventListener("loadedmetadata", schedule);
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    schedule();
+    return () => {
+      cancelAnimationFrame(raf);
+      first.removeEventListener("loadedmetadata", schedule);
+      second.removeEventListener("loadedmetadata", schedule);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
 
   return (
     <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden">
       <div className="headquarters-media" aria-hidden="true">
         <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" fetchPriority="high" decoding="async" /></div>
-        <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline autoPlay preload="metadata" onCanPlay={() => setMediaReady(true)} onError={() => setMediaReady(false)} onEnded={advance} />
-        <video ref={secondVideo} className={`headquarters-video ${shot === 1 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-arrival.mp4`} poster={`${basePath}/media/headquarters-arrival.jpg`} muted playsInline preload="metadata" onCanPlay={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
+        <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline autoPlay preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
+        <video ref={secondVideo} className={`headquarters-video ${shot === 1 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-arrival.mp4`} poster={`${basePath}/media/headquarters-arrival.jpg`} muted playsInline preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
         <div className="headquarters-vignette" />
         <div className="headquarters-film-grain" />
       </div>
