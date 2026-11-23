@@ -32,9 +32,24 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
       {isStock ? (
         <>
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_82%_18%,rgba(217,192,155,.12),transparent_44%),linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]" />
-            <div className="absolute inset-y-0 right-0 w-[42%] border-l border-white/[.035] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.018))]" />
-            <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] font-normal italic leading-[.8] tracking-[-.09em] text-[#d9c09b]/[.075] transition-all duration-700 group-hover:text-[#d9c09b]/[.14]">{(h.ticker ?? h.name.slice(0, 3)).slice(0, 4)}</div>
+            <div className={`absolute inset-0 ${h.id === "alphabet" ? "bg-[radial-gradient(ellipse_at_78%_28%,rgba(66,133,244,.18),transparent_34%),radial-gradient(ellipse_at_22%_82%,rgba(52,168,83,.10),transparent_42%),linear-gradient(135deg,#15191e_0%,#101214_60%,#0b0d0f_100%)]" : h.id === "anthropic" ? "bg-[radial-gradient(ellipse_at_78%_25%,rgba(217,154,116,.18),transparent_38%),linear-gradient(135deg,#211915_0%,#141211_60%,#0b0d0f_100%)]" : "bg-[radial-gradient(ellipse_at_82%_18%,rgba(217,192,155,.12),transparent_44%),linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]"}`} />
+            <div className="absolute inset-y-0 right-0 w-[42%] border-l border-white/[.045] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.025))]" />
+            {h.id === "alphabet" ? (
+              <div className="absolute right-7 top-8 flex items-center gap-3 opacity-90 transition-transform duration-700 group-hover:scale-105">
+                <span className="font-sans text-[clamp(76px,11vw,132px)] font-semibold leading-none tracking-[-.1em]">
+                  <span className="text-[#4285F4]">G</span>
+                </span>
+              </div>
+            ) : h.id === "anthropic" ? (
+              <div className="absolute right-9 top-10 flex h-32 w-32 items-center justify-center opacity-80 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">
+                <svg viewBox="0 0 100 100" className="h-full w-full" fill="none" aria-hidden="true">
+                  {Array.from({ length: 16 }, (_, n) => <path key={n} d="M50 8 L54 42 L50 50 L46 42 Z" fill="#D99A74" transform={`rotate(${n * 22.5} 50 50)`} />)}
+                  <circle cx="50" cy="50" r="5" fill="#E8C3A8" />
+                </svg>
+              </div>
+            ) : (
+              <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] italic leading-[.8] tracking-[-.09em] text-[#d9c09b]/[.075]">{(h.ticker ?? h.name.slice(0, 3)).slice(0, 4)}</div>
+            )}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c09b]/50 to-transparent" />
             <div className="absolute bottom-[34%] left-8 right-8 h-px bg-white/[.07]" />
           </div>
@@ -45,6 +60,14 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
             </div>
             <div className="mt-10 flex items-end justify-between gap-4">
               <div className="min-w-0">
+                {h.id === "alphabet" ? (
+                  <p className="mb-2 flex items-center gap-1 font-sans text-[21px] font-medium tracking-[-.06em]">
+                    <span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span>
+                    <span className="ml-2 font-mono text-[9px] font-normal uppercase tracking-[.18em] text-white/35">via Alphabet</span>
+                  </p>
+                ) : h.id === "anthropic" ? (
+                  <p className="mb-2 font-sans text-[18px] font-medium tracking-[.08em] text-[#E8C3A8]">ANTHROPIC</p>
+                ) : null}
                 <p className="font-mono text-[12px] tracking-[.24em] text-[#d9c09b]">{h.ticker ?? "PUBLIC EQUITY"}</p>
                 <h3 className="mt-3 max-w-[13ch] font-serif text-[clamp(30px,3vw,42px)] leading-[.98] tracking-[-.025em] text-[#f0eee8] transition-colors duration-500 group-hover:text-[#e4cda9]">{h.name}</h3>
               </div>
