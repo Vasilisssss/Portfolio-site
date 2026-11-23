@@ -103,7 +103,7 @@
 
 
 /* Stage 2 — real headquarters footage sequence */
-.headquarters-media { position:absolute; inset:0; overflow:hidden; background:#080b0d; }
+.headquarters-media { position:sticky; top:0; height:100svh; width:100%; overflow:hidden; background:#080b0d; }
 .headquarters-fallback { position:absolute; inset:0; background:radial-gradient(ellipse at 70% 38%,rgba(188,151,108,.22),transparent 35%),linear-gradient(115deg,#10191e,#263239 48%,#080b0d); }
 .headquarters-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%; opacity:0; transition:opacity 1.2s ease; }
 .headquarters-video.is-active { opacity:1; }
