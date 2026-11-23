@@ -15,9 +15,8 @@ type Props = {
 /**
  * Headquarters hero: establishing clip followed by the entrance/arrival clip.
  * Media paths are intentionally local and same-origin for GitHub Pages export.
- * Add the owner-provided MP4 files at:
- * public/media/headquarters-establishing.mp4
- * public/media/headquarters-arrival.mp4
+ * Optimized owner-approved MP4 files and poster frames are committed in public/media.
+ * Keep the base-path prefix so the same component works on GitHub Pages exports.
  */
 export default function HeadquartersHero({ name, eyebrow, lines, body, figure, showInvestments }: Props) {
   const [shot, setShot] = useState<0 | 1>(0);
@@ -47,7 +46,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
   return (
     <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden">
       <div className="headquarters-media" aria-hidden="true">
-        <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" /></div>
+        <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" fetchPriority="high" decoding="async" /></div>
         <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline autoPlay preload="metadata" onCanPlay={() => setMediaReady(true)} onError={() => setMediaReady(false)} onEnded={advance} />
         <video ref={secondVideo} className={`headquarters-video ${shot === 1 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-arrival.mp4`} poster={`${basePath}/media/headquarters-arrival.jpg`} muted playsInline preload="metadata" onCanPlay={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
         <div className="headquarters-vignette" />
