@@ -215,8 +215,8 @@ export function createWorld(host: HTMLElement, _data: WorldData, opts: { low: bo
 
   if (QA) {
     const qa = {
-      ready: () => !!manifest && holdBitmaps.size === manifest.holds.length,
-      seqReady: () => !!manifest && seqBlobs.size === manifest.seq.frames.length,
+      ready: () => !!manifest && holdBitmaps.size === manifest.holds.filter((h) => h.u >= 1 && h.u <= 3).length,
+      seqReady: () => !!manifest && seqBlobs.size === manifest.seq.frames.filter((f) => f.u >= 1 && f.u <= 3).length,
       manual(on: boolean) { manual = on; },
       setU(u: number) { uTarget = Math.min(3, Math.max(1, u)); },
       /** jump the playhead to the target, decode what it needs, then draw */
