@@ -37,30 +37,30 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
 
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500 ${scrolled ? "border-line bg-pearl/70 backdrop-blur-xl" : "border-transparent"}`}>
+      <header className={`hq-nav fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500 ${scrolled ? "border-white/10 bg-[#090d10]/85 backdrop-blur-xl" : "border-transparent bg-gradient-to-b from-black/35 to-transparent"}`}>
         <span aria-hidden ref={progress} className="absolute inset-x-0 bottom-[-1px] block h-[2px] origin-left scale-x-0 iris-line" />
         <div className="container-x flex items-center justify-between gap-6 py-5">
           <Link href="/#top" aria-label={`${name} Portfolio — home`} className="flex items-center gap-3.5">
             <Monogram draw />
             <span className="flex flex-col leading-[1.1]">
-              <span className="font-serif text-[22px] font-medium tracking-[0.01em]">{name}</span>
-              <span className="text-[10px] tracking-[0.32em] text-mute">PORTFOLIO</span>
+              <span className="font-serif text-[22px] font-medium tracking-[0.01em] text-[#f4f1eb]">{name}</span>
+              <span className="text-[10px] tracking-[0.32em] text-white/45">PORTFOLIO</span>
             </span>
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-8 text-[11px] tracking-[0.22em] xl:flex">
             {items.map((n) => (
-              <Link key={n.href} href={n.href} className="group relative py-2 uppercase text-graphite-2 hover:text-graphite">
+              <Link key={n.href} href={n.href} className="group relative py-2 uppercase text-white/70 hover:text-[#e3c79d]">
                 {n.label}
-                <span className="absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-lavender-deep transition-transform duration-500 ease-[var(--ease-expo)] group-hover:origin-left group-hover:scale-x-100" />
+                <span className="absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-[#c9a779] transition-transform duration-500 ease-[var(--ease-expo)] group-hover:origin-left group-hover:scale-x-100" />
               </Link>
             ))}
           </nav>
           <div className="flex items-center gap-5">
             <MarketClock />
             <button ref={openBtn} type="button" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="site-menu"
-              className="flex h-11 items-center gap-2.5 rounded-full border border-line-2 bg-black/30 px-[18px] text-[11px] tracking-[0.24em] backdrop-blur transition-colors hover:border-lavender-deep">
+              className="flex h-11 items-center gap-2.5 rounded-full border border-white/25 bg-black/25 px-[18px] text-[11px] tracking-[0.24em] text-white backdrop-blur transition-colors hover:border-[#c9a779]">
               MENU
-              <span aria-hidden className="flex flex-col gap-1"><span className="block h-px w-4 bg-graphite" /><span className="block h-px w-2.5 bg-lavender-deep" /></span>
+              <span aria-hidden className="flex flex-col gap-1"><span className="block h-px w-4 bg-white" /><span className="block h-px w-2.5 bg-[#c9a779]" /></span>
             </button>
           </div>
         </div>
