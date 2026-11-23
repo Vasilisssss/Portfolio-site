@@ -28,3 +28,13 @@ The GitHub connector available for this work exposes text-file writes and Git ob
 - `npm run build:pages`
 
 Then visually verify the sequence on desktop and mobile, autoplay rejection, reduced motion, poster fallback, and the `/Portfolio-site` base path. Do not publish or deploy until those checks pass and the owner separately approves publication.
+
+
+## Integration status and remaining work
+
+- The hero component references the two MP4 paths above and uses `NEXT_PUBLIC_BASE_PATH` so the paths work under the GitHub Pages project subpath.
+- The first clip advances to the arrival clip on `ended`; both are muted and inline. The CSS fallback remains visible if the files are missing or autoplay is blocked.
+- The prepared media package has been transcoded to H.264/yuv420p with fast-start metadata and includes poster JPEGs. It is supplied separately as `headquarters-media-package.zip`.
+- The GitHub connector can create binary Git blobs when given base64 content, but the current tool session cannot read the local ZIP bytes directly. Therefore the actual binary media still requires a repository upload; the code must not be described as fully media-integrated until that upload is verified.
+- The existing fixed background film in `components/world/World.tsx` and `components/world/film.ts` still represents the former briefcase concept. It must be replaced or re-authored as the headquarters/trading-floor cinematic environment before the scroll journey is considered complete. Merely changing the hero does not replace the old film.
+- No browser preview, build, typecheck or mobile-device QA has been run in this connector session. Run these checks after the media is committed and before any release.
