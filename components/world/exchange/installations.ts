@@ -39,7 +39,7 @@ export function buildInstallations(d: ScreenData, M: InstallMaterials, anchors: 
 
   // ---------------- CAPITAL RING ----------------
   const cap = new THREE.Group(); cap.position.set(...(anchors.capital ?? [0, 0.47, 2])); root.add(cap);
-  const R0 = 3.9, R1 = 5.4, RH = 0.85;
+  const R0 = 3.9, R1 = 5.4, RH = 0.42;
   cap.add(part(G(new THREE.CylinderGeometry(1.0, 1.05, 0.25, 96)), M.satin));
   const col = part(G(new THREE.CylinderGeometry(0.72, 0.72, 2.3, 96)), M.glass); col.position.y = 1.4; cap.add(col);
   for (const y of [0.25, 2.55]) { const r = part(G(new THREE.TorusGeometry(0.74, 0.04, 16, 96)), M.steel); r.rotation.x = Math.PI / 2; r.position.y = y; cap.add(r); }
@@ -57,7 +57,7 @@ export function buildInstallations(d: ScreenData, M: InstallMaterials, anchors: 
   const raw = holdings.map((h) => Math.max(minA, h.weight * avail)); const k = avail / raw.reduce((s, a) => s + a, 0);
   let a = -Math.PI / 2 - (raw[0] * k) / 2; // largest arc faces the visitor (towards the entrance, +z)
   const railG = G(new THREE.CylinderGeometry(0.05, 0.05, 1, 16)); railG.rotateZ(Math.PI / 2); railG.translate(0.5, 0, 0);
-  const RA = 0.8, RB = R0 + 0.05, RAIL_OFF = 0.17, RAIL_Y = 0.12;
+  const RA = 0.8, RB = R0 + 0.05, RAIL_OFF = 0.17, RAIL_Y = 0.07;
   const channels: { dir: THREE.Vector3; axis: THREE.Vector3; count: number; phase: number; mesh: THREE.InstancedMesh }[] = [];
   holdings.forEach((h, i) => {
     const span = raw[i] * k, a0 = a, a1 = a + span; a = a1 + gap;
@@ -66,7 +66,7 @@ export function buildInstallations(d: ScreenData, M: InstallMaterials, anchors: 
     const inlay = part(G(annularSector(R1 - 0.22, R1 - 0.1, a0 + inset, a1 - inset, 0.03, 0)), tone(h.returnPct)); inlay.position.y = RH - 0.005; inlay.userData.id = h.id; cap.add(inlay);
     const am = (a0 + a1) / 2, dir = new THREE.Vector3(Math.cos(am), 0, -Math.sin(am)), side = new THREE.Vector3(dir.z, 0, -dir.x);
     for (const s of [-1, 1]) {
-      const rail = part(railG, M.steel); rail.position.copy(dir.clone().multiplyScalar(RA)).addScaledVector(side, s * RAIL_OFF); rail.position.y = RAIL_Y + 0.25;
+      const rail = part(railG, M.steel); rail.position.copy(dir.clone().multiplyScalar(RA)).addScaledVector(side, s * RAIL_OFF); rail.position.y = RAIL_Y;
       rail.scale.set(RB - RA, 1, 1); rail.rotation.y = Math.atan2(-dir.z, dir.x); cap.add(rail);
     }
     const count = Math.max(1, Math.round(1 + 7 * h.weight));
@@ -75,7 +75,7 @@ export function buildInstallations(d: ScreenData, M: InstallMaterials, anchors: 
     const lab = new THREE.Object3D(); lab.position.copy(dir.clone().multiplyScalar(R1 + 0.4)); lab.position.y = RH + 1.6; cap.add(lab);
     out.push({ id: `engine:${h.id}`, obj: lab, scene: 1 });
   });
-  const ballY = 0.25 + RAIL_Y + Math.sqrt((BALL + 0.05) ** 2 - RAIL_OFF ** 2);
+  const ballY = RAIL_Y + Math.sqrt((BALL + 0.05) ** 2 - RAIL_OFF ** 2); // rolls into a port in the ring face
   const q = new THREE.Quaternion(), mtx = new THREE.Matrix4(), pos = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1), zero = new THREE.Vector3(1e-4, 1e-4, 1e-4);
   let travel = 0;
   const updateBalls = (dt: number) => {

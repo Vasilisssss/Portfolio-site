@@ -11,7 +11,7 @@ export interface ExchangeTextures { lightmap: THREE.Texture; lightmapScale: numb
 
 /** surface definitions: scanned set, physical size of one texture tile (m), finish */
 export const SURFACES: Record<string, { slug?: string; tile: number; color?: number; rough: number; metal?: number; normal?: number }> = {
-  granite: { slug: "granite_tile", tile: 2.4, rough: 0.42, normal: 0.6 },          // polished dark granite floor
+  granite: { slug: "granite_tile", tile: 2.4, rough: 0.24, normal: 0.45 },          // polished dark granite floor
   marble: { slug: "marble_01", tile: 3.0, rough: 0.62, normal: 0.7 },              // honed stone cladding
   concrete: { slug: "brushed_concrete", tile: 2.0, rough: 0.95, normal: 0.8 },     // architectural concrete
   veneer: { slug: "flamed_black_veneer", tile: 1.2, rough: 0.55, normal: 0.5 },    // trading desks

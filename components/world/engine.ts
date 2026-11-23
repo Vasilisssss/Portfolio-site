@@ -128,6 +128,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
         if (stopped) { e.dispose(); return; }
         e.miniature.position.y = PLATE_H; kase.platform.add(e.miniature);
         ex = e; mark("exchange loaded");
+        resize(); if (!low) e.reflection.setEnabled(level < 1);
         renderer.compileAsync(e.scene, camB).catch(() => undefined);
       })
       .catch((err) => { exFailed = true; console.error("The exchange could not be loaded; the journey stays with the briefcase.", err); });
@@ -161,7 +162,9 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     if (mm !== mode) {
       mode = mm;
       if (gtao) { const a = AO[mm]; gtao.updateGtaoMaterial({ radius: a.radius, thickness: a.thickness }); gtao.blendIntensity = a.blend; }
-      renderer.toneMappingExposure = mm === "A" ? 1.06 : 1.0;
+      // studio: Khronos neutral (keeps the lime pure); inside: AgX, the same film response as the Cycles references
+      renderer.toneMapping = mm === "A" ? THREE.NeutralToneMapping : THREE.AgXToneMapping;
+      renderer.toneMappingExposure = mm === "A" ? 1.06 : 1.08;
     }
   };
 
@@ -210,16 +213,18 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
     const pr = renderer.getPixelRatio();
     composer.setPixelRatio(pr);
     composer.setSize(w, h);
+    ex?.reflection.setSize(w * pr, h * pr);
   };
   resize();
   const ro = new ResizeObserver(resize);
   ro.observe(host);
 
   // ---------- adaptive quality: effects make way before resolution (see ./quality.ts)
-  const LEVELS = ["full quality", "ambient occlusion off", "depth of field off", "lighter anti-aliasing, bloom off", "softer shadow map"];
+  const LEVELS = ["full quality", "floor reflections and ambient occlusion off", "depth of field off", "lighter anti-aliasing, bloom off", "softer shadow map"];
   const applyQuality = (l: number) => {
     level = l;
     if (gtao) gtao.enabled = level < 1;
+    if (ex && !low) ex.reflection.setEnabled(level < 1);
     if (bokeh) bokeh.enabled = level < 2;
     bloom.enabled = level < 3;
     const samples = level >= 3 ? (native >= 2 ? 0 : 2) : MSAA;
@@ -354,7 +359,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       }
       const t = smoother((uNow - U_DIVE) / (1 - U_DIVE));
       descent.curve.getPointAt(t, posB);
-      const sculpture = new THREE.Vector3(0, 1.2, 2);
+      const sculpture = new THREE.Vector3(0, 0.8, 2);
       lookB.copy(descent.look0).lerp(sculpture, smooth(0.15, 0.5, t)).lerp(STOPS.capital.look, smooth(0.62, 1, t));
       const fov = THREE.MathUtils.lerp(rig.fov, walkFov(aspect), smooth(0.3, 0.85, t));
       if (posB.y > LANTERN_GLASS_H) { placeAFromB(posB, lookB, fov); setMode("A"); }
@@ -408,6 +413,7 @@ export function createWorld(host: HTMLElement, data: WorldData, opts: { low: boo
       const inFront = v3.z < 1 && Math.abs(v3.x) < 1.05 && Math.abs(v3.y) < 1.05;
       return { id: a.id, x: ((v3.x + 1) / 2) * w, y: ((1 - v3.y) / 2) * h, opacity: inFront ? near : 0 };
     }));
+    if (mode === "B" && ex) ex.reflection.update(renderer, ex.scene, camB);
     composer.render();
     frames++;
   };

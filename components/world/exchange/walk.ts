@@ -15,7 +15,7 @@ export interface Stop { u: number; pos: THREE.Vector3; look: THREE.Vector3 }
 interface Leg { u0: number; u1: number; curve: THREE.CatmullRomCurve3; look0: THREE.Vector3; look1: THREE.Vector3; length: number; stride: number }
 
 export const STOPS = {
-  capital: { pos: P(0, -16, EYE), look: P(0, -2, 2.4) },
+  capital: { pos: P(0, -10.6, EYE), look: P(0, -1.2, 0.6) },
   holdings: { pos: P(-27.2, -10.5, EYE), look: P(-33, -1, 1.3) },
   performance: { pos: P(27.8, 7.5, 7 + EYE), look: P(39.6, -6, 9.3) },
   overlook: { pos: P(21.2, -22.4, 7 + EYE), look: P(6, -40, 6) },
@@ -28,7 +28,7 @@ function leg(u0: number, u1: number, pts: THREE.Vector3[], look0: THREE.Vector3,
 
 /** route between the stops (u = 1 capital, 2 holdings, 3 performance, then towards the façade) */
 export const LEGS: Leg[] = [
-  leg(1, 2, [STOPS.capital.pos, P(-1.5, -11.5, EYE), P(-6.5, -9.1, EYE), P(-14, -8.5, EYE), P(-20.5, -5.2, EYE), P(-24, -4, EYE), P(-26.4, -6.4, EYE), STOPS.holdings.pos],
+  leg(1, 2, [STOPS.capital.pos, P(-3.5, -10.4, EYE), P(-8.5, -8.8, EYE), P(-14, -8.2, EYE), P(-20.5, -5.2, EYE), P(-24, -4, EYE), P(-26.4, -6.4, EYE), STOPS.holdings.pos],
     STOPS.capital.look, STOPS.holdings.look),
   leg(2, 3, [
     STOPS.holdings.pos, P(-26.2, -5.2, EYE), P(-23, -4, EYE), P(-14.5, -0.8, EYE), P(-7.4, 3.2, EYE), P(-2, 4.3, EYE), P(0, 5, EYE),
@@ -85,7 +85,7 @@ export function sampleWalk(u: number, bob = 1, out: WalkSample = { pos: new THRE
 
 /** start of the descent in building space is provided by the engine (the case camera mapped into the model) */
 export const DESCENT = (start: THREE.Vector3, startLook: THREE.Vector3) => ({
-  curve: new THREE.CatmullRomCurve3([start, P(0, -2, 46), P(0, -2.5, 30), P(0, -3, 19), P(0, -9, 7.5), P(0, -14, 2.6), STOPS.capital.pos], false, "centripetal", 0.5),
+  curve: new THREE.CatmullRomCurve3([start, P(0, -2, 46), P(0, -2.5, 30), P(0, -3.5, 18), P(0, -7.5, 8), P(0, -10, 3.2), STOPS.capital.pos], false, "centripetal", 0.5),
   look0: startLook,
 });
 export const LANTERN_GLASS_H = 26.7; // below this height the camera is inside the building

@@ -5,6 +5,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { createExchangeMaterials, fixtureMaterial, glassMaterial, prepareGeometry, SURFACES } from "./materials";
 import { createInstallMaterials, buildInstallations, type Anchor } from "./installations";
 import { deskScreen, mainBoard, tickerBand, type ScreenData } from "./screens";
+import { createFloorReflection } from "./reflection";
 
 /**
  * Loads the baked exchange (geometry, lightmap, scanned materials, reflection panoramas, city backdrop) and builds:
@@ -19,6 +20,7 @@ export interface Exchange {
   miniature: THREE.Group;
   anchors: Anchor[];
   pickables: THREE.Object3D[];
+  reflection: ReturnType<typeof createFloorReflection>;
   setZone(z: Zone): void;
   update(dt: number): void;
   dispose(): void;
@@ -60,6 +62,8 @@ export async function loadExchange(renderer: THREE.WebGLRenderer, base: string, 
   const lmIntensity = (meta.lightmapIntensity ?? Math.PI) * meta.lightmapScale;
   const mats = createExchangeMaterials({ lightmap, lightmapScale: meta.lightmapScale, maps: Object.fromEntries(maps) }, hallEnv, lmIntensity);
   const glass = glassMaterial(hallEnv), fixture = fixtureMaterial();
+  const reflection = createFloorReflection([mats.granite], { strength: 0.85 });
+  if (low) reflection.setEnabled(false);
   // the miniature: same lightmapped surfaces (so its interior shows the same daylight), studio reflections outside
   const miniMats = createExchangeMaterials({ lightmap, lightmapScale: meta.lightmapScale, maps: Object.fromEntries(maps) }, opts.studioEnv, lmIntensity);
   Object.values(miniMats).forEach((m) => { m.envMapIntensity = 0.35; });
@@ -131,14 +135,14 @@ export async function loadExchange(renderer: THREE.WebGLRenderer, base: string, 
 
   let zone: Zone = "hall";
   return {
-    scene, miniature, anchors: inst.anchors, pickables: inst.pickables,
+    scene, miniature, anchors: inst.anchors, pickables: inst.pickables, reflection,
     setZone(z) {
       if (z === zone || !envs[z]) return; zone = z;
       Object.values(mats).forEach((m) => { m.envMap = envs[z]!; }); glass.envMap = envs[z]!; scene.environment = envs[z]!;
     },
     update(dt) { inst.update(dt); ticker.texture.offset.x = (ticker.texture.offset.x + dt * 0.012) % 1; },
     dispose() {
-      inst.dispose(); disposables.forEach((d) => d.dispose());
+      inst.dispose(); reflection.dispose(); disposables.forEach((d) => d.dispose());
       Object.values(zoneMats).forEach((z) => Object.values(z).forEach((m) => m.dispose()));
       Object.values(envs).forEach((e) => e?.dispose()); lightmap.dispose(); backdrop.dispose();
       maps.forEach(([, t]) => { t.map.dispose(); t.normal.dispose(); t.rough.dispose(); });
