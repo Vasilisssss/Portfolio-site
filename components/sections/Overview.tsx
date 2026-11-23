@@ -1,4 +1,5 @@
-import Link from "next/link";\nconst basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+import Link from "next/link";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 import type { PublicView } from "@/lib/public";
 import { dateLong, moneySigned, pct } from "@/lib/format";
 import SectionHead from "@/components/ui/SectionHead";
