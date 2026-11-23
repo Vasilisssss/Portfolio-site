@@ -1,13 +1,11 @@
 import { getPublicView } from "@/lib/public";
 import { profile } from "@/content/profile";
-import { journal } from "@/content/journal";
 import Hero from "@/components/hero/HeadquartersHero";
 import Overview from "@/components/sections/Overview";
 import Investments from "@/components/sections/Investments";
 import Allocation from "@/components/sections/Allocation";
 import Performance from "@/components/sections/Performance";
 import Strategy from "@/components/sections/Strategy";
-import Journal from "@/components/sections/Journal";
 import About from "@/components/sections/About";
 import Experience from "@/components/sections/Experience";
 import SectionHead from "@/components/ui/SectionHead";
@@ -113,7 +111,6 @@ export default function Home() {
             <p className="font-mono text-[11px] tracking-[0.06em] text-mute">Data as of {dateLong(view.asOf)}{view.source ? ` · ${view.source}` : ""}.</p>
           </section>
         )}
-        {on.journal && <Journal entries={journal} />}
       </div>
 
       {/* V — INVESTMENT PHILOSOPHY AND ABOUT */}
