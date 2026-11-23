@@ -146,3 +146,47 @@
 .trading-floor-scene [data-chapter="1"] .display { max-width:10ch; }
 @media(max-width:700px) { .trading-floor-atmosphere { height:74svh; opacity:.55; } .trading-floor-gallery { left:2%; right:2%; top:13%; height:23%; } .trading-floor-deskline { left:1%; right:1%; top:48%; gap:3px; } .trading-floor-deskline i { padding:3px 1px; } }
 @media(prefers-reduced-motion:reduce) { .trading-floor-atmosphere * { animation:none!important; transition:none!important; } }
+
+
+/* Investment gallery chapter — replace the dead black interval with a quiet,
+   dimensional exhibition space. Keep the chapter shorter on phones. */
+[data-scene="2"] [data-chapter="2"] {
+  min-height: clamp(620px, 82svh, 980px);
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 74% 24%, rgba(217,192,155,.12), transparent 34%),
+    radial-gradient(ellipse at 22% 62%, rgba(115,137,140,.09), transparent 42%),
+    linear-gradient(180deg, rgba(20,25,27,.72), rgba(8,11,13,.88) 78%);
+}
+[data-scene="2"] [data-chapter="2"]::before {
+  background:
+    linear-gradient(180deg, rgba(7,10,12,.12), rgba(7,10,12,.18) 42%, rgba(7,10,12,.88)),
+    repeating-linear-gradient(90deg, transparent 0 12.2%, rgba(217,192,155,.075) 12.28%, transparent 12.42%),
+    radial-gradient(ellipse at 72% 28%, rgba(217,192,155,.13), transparent 38%);
+}
+[data-scene="2"] [data-chapter="2"]::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 12% 3% 0;
+  pointer-events: none;
+  border-top: 1px solid rgba(217,192,155,.2);
+  background:
+    linear-gradient(90deg, transparent, rgba(217,192,155,.08) 50%, transparent),
+    repeating-linear-gradient(90deg, transparent 0 24.7%, rgba(217,192,155,.12) 24.85%, transparent 25%),
+    linear-gradient(180deg, rgba(23,31,34,.42), transparent 62%);
+  clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
+  opacity: .72;
+}
+[data-scene="2"] [data-chapter="2"] .container-x {
+  padding-bottom: clamp(64px, 10vh, 120px);
+}
+@media (max-width: 700px) {
+  [data-scene="2"] [data-chapter="2"] {
+    min-height: clamp(540px, 72svh, 720px);
+  }
+  [data-scene="2"] [data-chapter="2"]::after {
+    inset: 8% 0 0;
+    opacity: .5;
+  }
+}
