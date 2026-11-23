@@ -25,14 +25,14 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
   }, { scope: ref });
 
   const color = classColor(h.assetClass);
-  const isStock = h.assetClass === "Stocks";
+  const isStock = true;
   return (
     <Link ref={ref} href={`/investments/${h.id}`} data-cursor="View" data-card
       className={`group relative flex h-full min-h-[390px] flex-col overflow-hidden rounded-[22px] border transition-all duration-700 ${isStock ? "border-[#d9c09b]/15 bg-[#111315] hover:border-[#d9c09b]/45 hover:shadow-[0_32px_90px_-42px_rgba(217,192,155,.28)]" : "glass border-white/[.08] hover:border-lime/25"}`}>
       {isStock ? (
         <>
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className={`absolute inset-0 ${h.id === "alphabet" ? "bg-[radial-gradient(ellipse_at_78%_28%,rgba(66,133,244,.18),transparent_34%),radial-gradient(ellipse_at_22%_82%,rgba(52,168,83,.10),transparent_42%),linear-gradient(135deg,#15191e_0%,#101214_60%,#0b0d0f_100%)]" : h.id === "anthropic" ? "bg-[radial-gradient(ellipse_at_78%_25%,rgba(217,154,116,.18),transparent_38%),linear-gradient(135deg,#211915_0%,#141211_60%,#0b0d0f_100%)]" : "bg-[radial-gradient(ellipse_at_82%_18%,rgba(217,192,155,.12),transparent_44%),linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]"}`} />
+            <div className={`absolute inset-0 ${h.id === "alphabet" ? "bg-[radial-gradient(ellipse_at_78%_28%,rgba(66,133,244,.18),transparent_34%),radial-gradient(ellipse_at_22%_82%,rgba(52,168,83,.10),transparent_42%),linear-gradient(135deg,#15191e_0%,#101214_60%,#0b0d0f_100%)]" : h.id === "anthropic" ? "bg-[radial-gradient(ellipse_at_78%_25%,rgba(217,154,116,.18),transparent_38%),linear-gradient(135deg,#211915_0%,#141211_60%,#0b0d0f_100%)]" : "bg-[linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]"}`} style={h.id === "alphabet" || h.id === "anthropic" ? undefined : { backgroundImage: `radial-gradient(ellipse at 82% 18%, ${color}30, transparent 44%), linear-gradient(135deg,#17191a 0%,#101214 58%,#0b0d0f 100%)` }} />
             <div className="absolute inset-y-0 right-0 w-[42%] border-l border-white/[.045] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.025))]" />
             {h.id === "alphabet" ? (
               <div className="absolute -right-2 top-7 select-none font-sans text-[clamp(72px,10vw,118px)] font-semibold leading-none tracking-[-.1em] opacity-90 transition-transform duration-700 group-hover:-translate-x-2 group-hover:scale-105" aria-hidden="true">
@@ -46,14 +46,14 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
                 </svg>
               </div>
             ) : (
-              <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] italic leading-[.8] tracking-[-.09em] text-[#d9c09b]/[.075]">{(h.ticker ?? h.name.slice(0, 3)).slice(0, 4)}</div>
+              <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] italic leading-[.8] tracking-[-.09em] text-[color:var(--holding-accent)] opacity-[.16]">{(h.ticker ?? h.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").map((w) => w[0]).join("").slice(0, 4)).slice(0, 4)}</div>
             )}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c09b]/50 to-transparent" />
             <div className="absolute bottom-[34%] left-8 right-8 h-px bg-white/[.07]" />
           </div>
           <div className="relative flex flex-1 flex-col p-7 sm:p-8">
             <div className="flex items-center justify-between gap-3">
-              <span className="eyebrow flex items-center gap-3 text-[#d9c09b]/80"><span className="h-1.5 w-1.5 rounded-full bg-[#d9c09b] shadow-[0_0_12px_rgba(217,192,155,.8)]" /> Equity position</span>
+              <span className="eyebrow flex items-center gap-3 text-[#d9c09b]/80"><span className="h-1.5 w-1.5 rounded-full" style={{ background: color, boxShadow: `0 0 12px ${color}99` }} /> {h.assetClass} position</span>
               <span className="font-mono text-[10px] tracking-[.18em] text-white/35">NO. {String(i + 1).padStart(2, "0")}</span>
             </div>
             <div className="mt-10 flex items-end justify-between gap-4">
@@ -70,7 +70,7 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
                     <span className="font-sans text-[16px] font-medium tracking-[.12em] text-[#E8C3A8]">ANTHROPIC</span>
                   </p>
                 ) : null}
-                <p className="font-mono text-[12px] tracking-[.24em] text-[#d9c09b]">{h.ticker ?? "PUBLIC EQUITY"}</p>
+                <p className="font-mono text-[12px] tracking-[.24em] text-[#d9c09b]">{h.ticker ?? h.assetClass.toUpperCase()}</p>
                 <h3 className="mt-3 max-w-[13ch] font-serif text-[clamp(30px,3vw,42px)] leading-[.98] tracking-[-.025em] text-[#f0eee8] transition-colors duration-500 group-hover:text-[#e4cda9]">{h.name}</h3>
               </div>
               <span className="mb-1 shrink-0 text-[10px] uppercase tracking-[.18em] text-white/35 transition-transform duration-500 group-hover:translate-x-1">↗</span>
