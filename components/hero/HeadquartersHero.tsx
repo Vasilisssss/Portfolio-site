@@ -29,6 +29,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
   useEffect(() => {
     const first = firstVideo.current;
     if (!first) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { first.pause(); return; }
     const play = first.play();
     if (play) play.catch(() => setMediaReady(false));
   }, []);
@@ -46,7 +47,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
   return (
     <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden">
       <div className="headquarters-media" aria-hidden="true">
-        <div className="headquarters-fallback" />
+        <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" /></div>
         <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline autoPlay preload="metadata" onCanPlay={() => setMediaReady(true)} onError={() => setMediaReady(false)} onEnded={advance} />
         <video ref={secondVideo} className={`headquarters-video ${shot === 1 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-arrival.mp4`} poster={`${basePath}/media/headquarters-arrival.jpg`} muted playsInline preload="metadata" onCanPlay={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
         <div className="headquarters-vignette" />
