@@ -14,6 +14,7 @@ import SampleBadge from "@/components/ui/SampleBadge";
 import { Reveal } from "@/components/ui/Reveal";
 import Marquee, { type MarqueeItem } from "@/components/ui/Marquee";
 import Chapter from "@/components/world/Chapter";
+import TradingFloorAtmosphere from "@/components/world/TradingFloorAtmosphere";
 import { dateLong, money, moneySigned, monthYear, pct } from "@/lib/format";
 
 export default function Home() {
@@ -47,7 +48,8 @@ export default function Home() {
       </div>
 
       {/* II — THE TRADING FLOOR */}
-      <div data-scene="1" className="relative">
+      <div data-scene="1" className="trading-floor-scene relative">
+        <TradingFloorAtmosphere />
         <Chapter index={1} roman="II" kicker="The Capital Engine" title={<>Every euro <em>flows</em> through here.</>}
           stats={amounts
             ? [{ value: money(s.invested!, cur), label: "In — invested capital" }, { value: money(s.value!, cur), label: "Now — portfolio value" }, { value: moneySigned(s.pnl!, cur), label: "Profit / loss", tone: tone(s.pnl) }]
