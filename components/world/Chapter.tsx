@@ -18,11 +18,11 @@ export default function Chapter({ index, roman, title, kicker, stats, note }: {
           </span>
           <RevealText as="h2" className="display max-w-[11ch] text-[clamp(44px,6.4vw,120px)] leading-[0.88] [text-shadow:0_4px_50px_rgba(0,0,0,0.6)]">{title}</RevealText>
           {stats && stats.length > 0 && (
-            <dl className="mt-4 flex flex-wrap gap-x-16 gap-y-8">
+            <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-7 sm:flex sm:flex-wrap sm:gap-x-16 sm:gap-y-8">
               {stats.map((s) => (
-                <div key={s.label} className="flex flex-col gap-2">
+                <div key={s.label} className="flex min-w-0 flex-col gap-2 first:col-span-2 sm:first:col-span-1">
                   <dt className="label">{s.label}</dt>
-                  <dd className={`tnum display text-[clamp(32px,3.6vw,60px)] leading-none ${s.tone === "gain" ? "text-[#d9c09b]" : s.tone === "loss" ? "text-[#d99a91]" : ""}`}>{s.value}</dd>
+                  <dd className={`tnum display text-[clamp(27px,7vw,42px)] sm:text-[clamp(32px,3.6vw,60px)] leading-none ${s.tone === "gain" ? "text-[#d9c09b]" : s.tone === "loss" ? "text-[#d99a91]" : ""}`}>{s.value}</dd>
                 </div>
               ))}
             </dl>
