@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next/link";\nconst basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 import type { PublicView } from "@/lib/public";
 import { dateLong, moneySigned, pct } from "@/lib/format";
 import SectionHead from "@/components/ui/SectionHead";
@@ -50,7 +50,7 @@ export default function Overview({ view }: { view: PublicView }) {
                 )}
               </div>
               {perf && (
-                <Link href="/#performance" className="group flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-graphite-2 hover:text-lavender-deep">
+                <Link href={`${basePath}/#performance`} className="group flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-graphite-2 hover:text-lavender-deep">
                   Full performance history
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden className="transition-transform group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                 </Link>
