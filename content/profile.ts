@@ -31,4 +31,4 @@ export const profile = {
       { title: "Macro context", body: "Take account of the economic and market environment without losing sight of the characteristics of the underlying investment." },
       { title: "Quantitative evidence", body: "Use data and analytical methods to test assumptions, identify patterns and support—not replace—judgement." },
     ],
-  },
+  }};
