@@ -22,7 +22,7 @@ export default function Chapter({ index, roman, title, kicker, stats, note }: {
               {stats.map((s) => (
                 <div key={s.label} className="flex flex-col gap-2">
                   <dt className="label">{s.label}</dt>
-                  <dd className={`tnum display text-[clamp(32px,3.6vw,60px)] leading-none ${s.tone === "gain" ? "text-lime" : s.tone === "loss" ? "text-loss" : ""}`}>{s.value}</dd>
+                  <dd className={`tnum display text-[clamp(32px,3.6vw,60px)] leading-none ${s.tone === "gain" ? "text-[#d9c09b]" : s.tone === "loss" ? "text-[#d99a91]" : ""}`}>{s.value}</dd>
                 </div>
               ))}
             </dl>
