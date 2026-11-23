@@ -92,7 +92,7 @@ export default function Home() {
             { value: pct(perf.twr, true), label: "Time-weighted return", tone: tone(perf.twr) },
             { value: `${monthYear(perf.points[0].date)} → ${monthYear(perf.points[perf.points.length - 1].date)}`, label: "Period" },
           ] : []}
-          note="A transparent record of portfolio performance, measured over time and distinguished from deposits and withdrawals."'s ring glows lime for a gain and coral for a loss; the thin rod marks 100." />
+          note="A transparent record of portfolio performance, measured over time and distinguished from deposits and withdrawals." />
         {on.performance && (
           <section id="performance" aria-labelledby="performance-title" className="container-x relative flex flex-col gap-14 py-24">
             <SectionHead index="04" eyebrow="Performance" id="performance-title" aside={<SampleBadge show={view.sample} />}>
