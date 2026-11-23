@@ -45,8 +45,25 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
                   <circle cx="50" cy="50" r="5" fill="#E8C3A8" />
                 </svg>
               </div>
+            ) : h.assetClass === "ETFs" ? (
+              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 bg-white/[.025] font-serif text-[76px] italic tracking-[-.1em] text-white/75 transition-transform duration-700 group-hover:rotate-[-8deg] group-hover:scale-105">
+                <span className="translate-x-[-3px]">V</span><span className="absolute right-5 top-5 h-2 w-2 rounded-full" style={{ background: color }} />
+              </div>
+            ) : h.assetClass === "Cash" ? (
+              <div className="absolute -right-1 top-2 select-none font-serif text-[clamp(150px,19vw,230px)] font-light italic leading-none tracking-[-.1em] text-white/[.12] transition-transform duration-700 group-hover:-translate-y-2">€</div>
+            ) : h.assetClass === "Cryptocurrency" ? (
+              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 bg-white/[.025] font-sans text-[72px] font-light text-white/70 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">₿</div>
+            ) : h.assetClass === "Real Estate" ? (
+              <svg viewBox="0 0 160 160" className="absolute right-7 top-7 h-32 w-32 text-white/65 transition-transform duration-700 group-hover:-translate-y-2" fill="none" stroke="currentColor" strokeWidth="1.1" aria-hidden="true">
+                <path d="M22 138V54L80 20L138 54V138H22Z M48 138V78H112V138 M65 78V98H95V78 M58 49H102 M80 20V138" opacity=".75" />
+                <path d="M12 138H148 M35 54L80 8L125 54" stroke={color} />
+              </svg>
+            ) : h.assetClass === "Bonds" ? (
+              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 text-[68px] font-light text-white/65 transition-transform duration-700 group-hover:scale-105">§</div>
+            ) : h.assetClass === "Precious Metals" ? (
+              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 bg-white/[.025] font-serif text-[72px] italic text-white/70 transition-transform duration-700 group-hover:rotate-[-8deg] group-hover:scale-105">Au</div>
             ) : (
-              <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] italic leading-[.8] tracking-[-.09em] text-[color:var(--holding-accent)] opacity-[.16]">{(h.ticker ?? h.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").map((w) => w[0]).join("").slice(0, 4)).slice(0, 4)}</div>
+              <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] italic leading-[.8] tracking-[-.09em] text-white/[.14] transition-transform duration-700 group-hover:-translate-x-2">{(h.ticker ?? h.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").map((w) => w[0]).join("").slice(0, 4)).slice(0, 4)}</div>
             )}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c09b]/50 to-transparent" />
             <div className="absolute bottom-[34%] left-8 right-8 h-px bg-white/[.07]" />
@@ -69,7 +86,21 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#D99A74]/35 bg-[#D99A74]/10 font-serif text-[16px] text-[#E8C3A8]">A</span>
                     <span className="font-sans text-[16px] font-medium tracking-[.12em] text-[#E8C3A8]">ANTHROPIC</span>
                   </p>
-                ) : null}
+                ) : h.assetClass === "ETFs" ? (
+                  <p className="mb-2 flex items-center gap-2 font-sans text-[13px] font-semibold tracking-[.12em] text-white/85"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/20 text-[13px]">V</span> VANGUARD <span className="font-mono text-[8px] font-normal tracking-[.16em] text-white/35">FUND POSITION</span></p>
+                ) : h.assetClass === "Cash" ? (
+                  <p className="mb-2 font-mono text-[9px] uppercase tracking-[.22em] text-white/55">LIQUID RESERVE · {h.currency}</p>
+                ) : h.assetClass === "Cryptocurrency" ? (
+                  <p className="mb-2 font-mono text-[9px] uppercase tracking-[.22em] text-white/55">DIGITAL ASSET</p>
+                ) : h.assetClass === "Real Estate" ? (
+                  <p className="mb-2 font-mono text-[9px] uppercase tracking-[.22em] text-white/55">PROPERTY HOLDING</p>
+                ) : h.assetClass === "Bonds" ? (
+                  <p className="mb-2 font-mono text-[9px] uppercase tracking-[.22em] text-white/55">FIXED INCOME</p>
+                ) : h.assetClass === "Precious Metals" ? (
+                  <p className="mb-2 font-mono text-[9px] uppercase tracking-[.22em] text-white/55">PRECIOUS METAL</p>
+                ) : (
+                  <p className="mb-2 font-mono text-[9px] uppercase tracking-[.22em] text-white/55">{h.assetClass.toUpperCase()}</p>
+                )}
                 <p className="font-mono text-[12px] tracking-[.24em] text-[#d9c09b]">{h.ticker ?? h.assetClass.toUpperCase()}</p>
                 <h3 className="mt-3 max-w-[13ch] font-serif text-[clamp(30px,3vw,42px)] leading-[.98] tracking-[-.025em] text-[#f0eee8] transition-colors duration-500 group-hover:text-[#e4cda9]">{h.name}</h3>
               </div>
