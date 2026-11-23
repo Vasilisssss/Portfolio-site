@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 
 const roles = [
-  { period: "NOV 2026 — PRESENT", year: "2026", role: "Risk Analyst", firm: "Argus Management Ltd.", place: "Nicosia, Cyprus", detail: "Risk analysis", current: true, mark: "A" },
-  { period: "SEP 2023 — OCT 2026", year: "2023", role: "Portfolio Performance Analyst", firm: "Albourne", place: "Nicosia, Cyprus", detail: "Portfolio performance · Hedge funds · Private markets", mark: "AL" },
+  { period: "CURRENT FOCUS", role: "Risk & Investment Analysis", firm: "Investment management", place: "Risk assessment · Investment research", detail: "Risk analysis", current: true, mark: "01" },
+  { period: "PREVIOUS EXPERIENCE", role: "Portfolio Performance Analysis", firm: "Portfolio analytics", place: "Performance monitoring · Portfolio analysis", detail: "Portfolio performance", mark: "02" },
 ];
 const education = [
   { period: "2022 — 2023", degree: "MSc Finance", school: "University of Groningen", detail: "Grade: 7/10 · Thesis: machine-learning-based predictive modelling of M&A outcomes", mark: "RUG" },
@@ -33,7 +33,7 @@ export default function Experience() {
             <RevealText as="h2" id="experience-title" className="display max-w-[1000px] text-[clamp(48px,7vw,112px)] leading-[.92] tracking-[-.035em]">A career in <em className="text-lime">perspective.</em></RevealText>
           </div>
           <div className="flex flex-col gap-5 lg:pb-2">
-            <p className="max-w-md text-sm leading-[1.9] text-mute">A professional path shaped by portfolio performance, risk analysis and a continuing commitment to financial education.</p>
+            <p className="max-w-md text-sm leading-[1.9] text-mute">A professional background spanning investment and risk analysis, portfolio performance and continued financial education.</p>
             <div className="flex flex-wrap gap-3">
               <span className="rounded-full border border-white/10 px-4 py-2 font-mono text-[9px] tracking-[.16em] text-white/60">NICOSIA · CYPRUS</span>
               <span className="rounded-full border border-lime/25 px-4 py-2 font-mono text-[9px] tracking-[.16em] text-lime">CFA LEVEL III CANDIDATE</span>
@@ -74,8 +74,8 @@ export default function Experience() {
                             </button>
                           )}
                         </div>
-                        {r.current && <p className="mt-4 text-sm leading-[1.8] text-mute">Current position in risk analysis.</p>}
-                        {!r.current && <div className={`grid transition-[grid-template-rows,opacity] duration-500 ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}><div className="overflow-hidden"><div className="mt-5 border-l border-lime/30 pl-5"><p className="max-w-xl text-sm leading-[1.9] text-mute">Portfolio performance analysis across hedge funds and private markets, including performance monitoring, risk metrics, client reporting and reconciliation of investment data.</p><div className="mt-5 flex flex-wrap gap-2">{["Portfolio performance","Hedge funds","Private markets","Risk metrics","Client reporting"].map(tag => <span key={tag} className="rounded-full border border-white/10 px-3 py-1.5 text-[9px] tracking-[.1em] text-white/45">{tag}</span>)}</div></div></div></div>}
+                        {r.current && <p className="mt-4 text-sm leading-[1.8] text-mute">Current professional focus across risk assessment and investment analysis.</p>}
+                        {!r.current && <div className={`grid transition-[grid-template-rows,opacity] duration-500 ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}><div className="overflow-hidden"><div className="mt-5 border-l border-lime/30 pl-5"><p className="max-w-xl text-sm leading-[1.9] text-mute">Portfolio performance analysis, monitoring and evaluation of investment portfolios.</p><div className="mt-5 flex flex-wrap gap-2">{["Portfolio performance","Investment analysis","Performance monitoring"].map(tag => <span key={tag} className="rounded-full border border-white/10 px-3 py-1.5 text-[9px] tracking-[.1em] text-white/45">{tag}</span>)}</div></div></div></div>}
                       </div>
                     </div>
                   </article>
