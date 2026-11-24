@@ -60,7 +60,7 @@ Every section reads these values. Nothing is estimated, and fields that aren't i
 ## Updating the data
 
 **Automatic (daily, free):** `.github/workflows/ibkr-daily.yml` reads an IBKR Flex Query every Tuesday–Saturday at
-06:17 UTC (the previous US trading day's close), updates `data/portfolio.json` with `tools/ibkr/flex-update.mjs` and
+06:17 UTC, with a backup run at 10:17 UTC (the previous US trading day's close), updates `data/portfolio.json` with `tools/ibkr/flex-update.mjs` and
 redeploys. Trades, deposits and anything that does not add up are never published automatically: the run opens an
 issue instead. One-time setup: `docs/ibkr-flex-setup.md`.
 
