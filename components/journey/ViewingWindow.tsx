@@ -130,7 +130,7 @@ export default function ViewingWindow({ frames, closing }: { frames: WindowFrame
   );
 
   return (
-    <section ref={root} id="window" aria-label="The Window: the journey seen through one frame" data-cursor="Look" className="viewing-window relative z-[3]">
+    <section ref={root} id="window" aria-label="The Window: the journey seen through one frame" className="viewing-window relative z-[3]">
       <a href="#strategy" onClick={(e) => { e.preventDefault(); const t = document.getElementById("strategy"); if (t) { scrollToTarget(t, false); t.setAttribute("tabindex", "-1"); t.focus({ preventScroll: true }); } }}
         className="sr-only z-[30] focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded-full focus:bg-ice-deep focus:px-4 focus:py-3 focus:font-mono focus:text-[11px] focus:uppercase focus:tracking-[0.2em] focus:text-snow">
         Skip the window
