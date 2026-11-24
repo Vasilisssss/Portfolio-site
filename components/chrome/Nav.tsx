@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { pad2 } from "@/lib/format";
-import { gsap, lenis, scrollToTarget } from "@/components/motion/gsap";
+import { lenis, scrollToTarget } from "@/components/motion/gsap";
 import RollText from "@/components/motion/RollText";
 import Monogram from "./Monogram";
 import MarketClock from "./MarketClock";
@@ -31,19 +31,12 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
   const closeBtn = useRef<HTMLButtonElement>(null);
   const openBtn = useRef<HTMLButtonElement>(null);
 
-  // hides on the way down, returns on the way up; gains its blurred backdrop once past the hero
-  const header = useRef<HTMLElement>(null);
+  // always on screen; gains its blurred backdrop once past the hero
   useEffect(() => {
-    let lastY = window.scrollY, hidden = false;
     const on = () => {
       const y = window.scrollY;
       const hero = document.querySelector<HTMLElement>("[data-walk]");
-      const past = hero ? y > hero.offsetTop + hero.offsetHeight - window.innerHeight * 0.9 : y > 40;
-      setScrolled(past);
-      const down = y > lastY + 2, up = y < lastY - 2;
-      if (down && y > 140 && !hidden) { hidden = true; gsap.to(header.current, { yPercent: -110, duration: 0.6, ease: "power3.inOut" }); }
-      if ((up || y < 140) && hidden) { hidden = false; gsap.to(header.current, { yPercent: 0, duration: 0.7, ease: "expo.out" }); }
-      lastY = y;
+      setScrolled(hero ? y > hero.offsetTop + hero.offsetHeight - window.innerHeight * 0.9 : y > 40);
       const max = document.documentElement.scrollHeight - window.innerHeight;
       if (progress.current) progress.current.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
     };
@@ -77,7 +70,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
     <>
       {/* scroll progress: a thin champagne line across the very top of the viewport */}
       <span aria-hidden ref={progress} className="pointer-events-none fixed inset-x-0 top-0 z-[60] block h-px origin-left scale-x-0 bg-ice-deep" />
-      <header ref={header} className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${scrolled ? "border-white/10 bg-[#090d10]/80 backdrop-blur-xl" : "border-transparent bg-gradient-to-b from-black/35 to-transparent"}`}>
+      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${scrolled ? "border-white/10 bg-[#090d10]/80 backdrop-blur-xl" : "border-transparent bg-gradient-to-b from-black/35 to-transparent"}`}>
         <div className="container-x flex items-center justify-between gap-6 py-5">
           <Link href="/#top" onClick={(e) => onAnchor(e, "/#top")} className="flex items-center gap-3.5">
             <Monogram draw />
