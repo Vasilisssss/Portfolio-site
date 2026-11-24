@@ -5,7 +5,7 @@
 export const profile = {
   name: "Vasilis Mavroudes",
   /** shown in the browser tab and search results */
-  siteTitle: "Vasilis Mavroudes — Investor & CFA Level III Candidate",
+  siteTitle: "Vasilis Mavroudes — Retail Investor",
   url: process.env.SITE_URL || "https://vasilisssss.github.io/Portfolio-site",
   email: "vmavro01@gmail.com",
   socials: [
