@@ -4,7 +4,7 @@
   "baseCurrency": "EUR",
   "fx": {
     "EUR": 1,
-    "USD": 0.91323455
+    "USD": 0.91286585
   },
   "asOf": "2026-11-24",
   "holdings": [
@@ -15,7 +15,7 @@
       "assetClass": "Stocks",
       "quantity": 2,
       "avgPrice": 96.79485,
-      "currentPrice": 84.13739775,
+      "currentPrice": 83.0699997,
       "currency": "USD",
       "purchaseDate": "2026-11-19",
       "geography": "North America",
@@ -28,7 +28,7 @@
       "assetClass": "Stocks",
       "quantity": 0.0829,
       "avgPrice": 280.00241255,
-      "currentPrice": 278.1499939,
+      "currentPrice": 277.0499878,
       "currency": "USD",
       "purchaseDate": "2026-11-19",
       "geography": "North America",
@@ -114,9 +114,9 @@
     },
     {
       "date": "2026-11-24",
-      "value": 182.2383,
+      "value": 180.14571,
       "netContributions": 206.625,
-      "twr": -0.23607269
+      "twr": -0.24484465
     }
   ]
 }
