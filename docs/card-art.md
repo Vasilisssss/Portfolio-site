@@ -13,24 +13,14 @@ A card without a logo yet shows no artwork. Its brand name and glow colour come 
 
 ## Claude adds the logo
 
-When the daily IBKR update adds a new position, it starts `.github/workflows/card-art.yml`. Claude
-(`anthropics/claude-code-action`) fetches the official logo (Wikimedia Commons or the company's own site; redrawn
-faithfully as vector paths only if no official file exists), cleans it, and sets `brand`, `accent` (and `industry`
-if missing) in `data/holdings.json`. The workflow then checks the file (a single SVG, no scripts, text, images or
-external links, under 40 KB), publishes it and notifies you with an issue showing the logo.
+A Claude scheduled task, **"Portfolio logos"** (on the owner's Claude account, Tuesday–Saturday 11:47 UTC, after
+the morning IBKR update), looks at the live site for positions without a logo. For each, it fetches the company's
+current official logo (Wikimedia Commons or the company's own site; a faithful redraw only if no official file
+exists), checks the file (a single SVG, no scripts, text, images or external links, under 40 KB), sets `brand`,
+`accent` (and `industry` if missing) in `data/holdings.json`, and publishes it. When every position has a logo it
+stops straight away. No key is stored in GitHub.
 
-To redo one: **Actions → Card artwork → Run workflow** with the position's id (as in `/investments/<id>`), its
-name, ticker and your wishes (e.g. "use the white version", "symbol only").
-
-## One-time setup
-
-One repository secret (Settings → Secrets and variables → Actions → New repository secret):
-
-- **`CLAUDE_CODE_OAUTH_TOKEN`**: uses your Claude Pro or Max subscription. On a computer with Claude Code, run
-  `claude setup-token` and paste the token it prints; or
-- **`ANTHROPIC_API_KEY`**: pay per use, from console.anthropic.com.
-
-Without it, the Card artwork workflow fails and nothing else is affected: the card simply has no logo yet.
+To redo a logo: delete `public/brand/<id>.svg` (the next run adds it again), or ask Claude.
 
 ## Adding a logo by hand
 
