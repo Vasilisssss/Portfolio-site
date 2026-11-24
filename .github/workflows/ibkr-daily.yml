@@ -2,8 +2,10 @@
 # Checks five times a night (Mon–Fri 22:17, Tue–Sat 01:17, 04:17, 06:17, 10:17 UTC): IBKR refreshes Activity
 # statements once a day, after New York closes, and the first check that finds the new one publishes it. It updates
 # data/portfolio.json on cinematic-redesign and starts the release workflow (which builds, checks and deploys).
-# Anything unusual (a trade, a deposit, a new position, numbers that do not add up) publishes nothing and opens an
-# issue instead; after checking, run this workflow by hand with "accept changes" ticked.
+# Trades, deposits and new or sold positions are published automatically, with a notification (an issue opened and
+# closed at once, listing what changed, never amounts). Only anomalies (totals that do not add up, a jump in return,
+# the wrong statement period) publish nothing and open an issue instead; after checking, run it by hand with
+# "publish anyway" ticked (the statement period can never be overridden).
 # Setup: docs/ibkr-flex-setup.md (secrets IBKR_FLEX_TOKEN and IBKR_FLEX_QUERY_ID). Without them it does nothing.
 # With PRIVATE_VIEW_PASSWORD the data file is kept encrypted (docs/private-view.md).
 # Scheduled workflows run from the default branch, so this file must also be on main.
@@ -20,8 +22,8 @@ on:
     - cron: "17 10 * * 2-6"
   workflow_dispatch:
     inputs:
-      accept_changes:
-        description: "Accept a trade, deposit or withdrawal reported in the statement (only after checking it)"
+      publish_anyway:
+        description: "Publish even though the last run flagged the totals or the return as odd (only after checking them)"
         type: boolean
         default: false
 
@@ -69,7 +71,8 @@ jobs:
         env:
           IBKR_FLEX_TOKEN: ${{ secrets.IBKR_FLEX_TOKEN }}
           IBKR_FLEX_QUERY_ID: ${{ secrets.IBKR_FLEX_QUERY_ID }}
-          ACCEPT_CHANGES: ${{ inputs.accept_changes && 'true' || 'false' }}
+          CHANGES_FILE: ${{ runner.temp }}/changes.txt
+          FORCE: ${{ inputs.publish_anyway && 'true' || 'false' }}
         run: |
           set +e
           node tools/ibkr/flex-update.mjs > "$RUNNER_TEMP/flex.txt" 2>&1
@@ -100,6 +103,11 @@ jobs:
           for i in 1 2 3 4; do git push origin HEAD:cinematic-redesign && break; sleep $((i * 10)); done
           # a push made with the workflow token does not start other workflows: start the release explicitly
           gh workflow run cinematic-redesign-checks.yml --ref cinematic-redesign
+          # trades, deposits, new or sold positions: notify (an issue opened and closed at once; no amounts)
+          if [ -s "$RUNNER_TEMP/changes.txt" ]; then
+            url=$(gh issue create --title "IBKR update: portfolio changes published ($(date -u +%F))" --body-file "$RUNNER_TEMP/changes.txt")
+            gh issue close "$url" --reason completed
+          fi
 
       - name: Needs review
         if: steps.flex.outputs.code == '2'
