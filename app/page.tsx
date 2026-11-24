@@ -19,6 +19,8 @@ import Chapter, { type ChapterStat } from "@/components/journey/Chapter";
 import ViewingWindow, { type WindowFrame } from "@/components/journey/ViewingWindow";
 import { ROOMS, CLOSING, WALK, walkSrc } from "@/components/journey/scenes";
 import { dateLong, money, moneySigned, monthYear, pct } from "@/lib/format";
+import { existsSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 export default function Home() {
   const view = getPublicView();
@@ -56,6 +58,15 @@ export default function Home() {
       figure: perf ? { label: `Time-weighted · ${period}`, value: pct(perf.twr, true) } : undefined },
     { kind: "room", id: "skyline", alt: room("skyline").alt, focusX: room("skyline").focusX, roman: "V", name: "The Final Reveal" },
   ];
+
+  // strategy downloads: a card links to its file only once the file is in public/ (checked at build time)
+  const documents = profile.strategy.documents.map((d) => {
+    const path = join(process.cwd(), "public", d.file);
+    const ready = existsSync(path);
+    const kb = ready ? statSync(path).size / 1024 : 0;
+    return { title: d.title, body: d.body, format: d.format, href: ready ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${d.file}` : undefined,
+      size: ready ? (kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(kb))} KB`) : undefined };
+  });
 
   const jsonLd = { "@context": "https://schema.org", "@type": "ProfilePage", name: profile.siteTitle, description: profile.hero.body, url: profile.url };
 
@@ -154,7 +165,7 @@ export default function Home() {
           note="How I think about money, risk and time, and where this portfolio goes next." />
         <ViewingWindow frames={windowFrames} closing={{ id: CLOSING.id, alt: CLOSING.alt, focusX: CLOSING.focusX }} />
         <Stack>
-          {on.strategy && <Sheet><Strategy s={profile.strategy} /></Sheet>}
+          {on.strategy && <Sheet><Strategy s={profile.strategy} documents={documents} /></Sheet>}
           {on.experience && <Sheet><Experience /></Sheet>}
           {on.about && <Sheet><About /></Sheet>}
         </Stack>

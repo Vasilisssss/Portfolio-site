@@ -11,14 +11,19 @@ export interface StrategyContent {
   principles: { title: string; body: string }[];
 }
 
+/** a strategy download; `href` is set only once the file exists */
+export interface StrategyDocument { title: string; body: string; format: string; href?: string; size?: string }
+
 /**
  * 05 — STRATEGY. Personal philosophy as a held card stack.
  * Choreography: the manifesto lights up word by word as it crosses the viewport (scrubbed). Then a sticky stage
  * (one viewport, held for ~70svh per principle): the six principles sit in one place; each new card slides up over
  * the previous one (yPercent 115 → 0, expo-like), the card beneath settles back (scale 0.94, dims, lifts 4%), and the
  * big counter on the left rolls to the card's number. Reduced motion: the principles as a plain list.
+ * After the deck: the documents (Investment Policy Statement, portfolio model) as download cards that rise in; a
+ * document that is not published yet shows "In preparation" and no link.
  */
-export default function Strategy({ s }: { s: StrategyContent }) {
+export default function Strategy({ s, documents = [] }: { s: StrategyContent; documents?: StrategyDocument[] }) {
   const root = useRef<HTMLElement>(null);
   const n = s.principles.length;
 
@@ -30,6 +35,7 @@ export default function Strategy({ s }: { s: StrategyContent }) {
       opacity: 1, stagger: 0.12, ease: "none",
       scrollTrigger: { trigger: q("[data-manifesto]")[0], start: "top 82%", end: "bottom 40%", scrub: 0.6 },
     });
+    if (q("[data-doc]").length) gsap.from(q("[data-doc]"), { y: 32, autoAlpha: 0, duration: 1.1, stagger: 0.1, ease: "expo.out", scrollTrigger: { trigger: q("[data-docs]")[0], start: "top 85%", once: true } });
     gsap.from(q("[data-intro]"), { y: 24, autoAlpha: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: q("[data-intro]")[0], start: "top 88%", once: true } });
     const cards = q("[data-card]") as HTMLElement[];
     // waiting cards park just below the screen (measured, so it holds on any viewport)
@@ -85,6 +91,42 @@ export default function Strategy({ s }: { s: StrategyContent }) {
           </div>
         </div>
       </div>
+
+      {documents.length > 0 && (
+        <div data-docs className="container-x flex flex-col gap-8 pb-32 lg:-mt-[12svh]">
+          <span className="eyebrow flex items-center gap-4 text-ice-deep"><span className="block h-px w-10 iris-line" />Documents</span>
+          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {documents.map((d) => {
+              const inner = (
+                <>
+                  <span aria-hidden className="flex h-14 w-11 shrink-0 items-end justify-start rounded-[6px] border border-white/15 bg-white/[0.03] p-1.5 font-mono text-[8px] tracking-[0.12em] text-ice-deep [clip-path:polygon(0_0,72%_0,100%_22%,100%_100%,0_100%)]">
+                    {d.format === "Excel" ? "XLSX" : d.format.toUpperCase()}
+                  </span>
+                  <span className="flex flex-col gap-3">
+                    <span className="font-serif text-[clamp(28px,2.6vw,40px)] leading-[1.05]">{d.title}</span>
+                    <span className="max-w-[460px] text-[15px] leading-[1.7] text-graphite-2">{d.body}</span>
+                  </span>
+                  <span className="mt-auto flex flex-wrap items-center justify-between gap-4">
+                    <span className="tnum font-mono text-[10px] uppercase tracking-[0.18em] text-mute">{d.format}{d.size ? ` · ${d.size}` : ""}</span>
+                    {d.href
+                      ? <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ice-deep">Download <span aria-hidden className="transition-transform duration-500 group-hover:translate-y-1">↓</span></span>
+                      : <span className="rounded-full border border-white/15 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-mute">In preparation</span>}
+                  </span>
+                </>
+              );
+              const cls = "glass flex h-full flex-col gap-8 rounded-[28px] p-8 md:p-10";
+              return (
+                <li key={d.title} data-doc>
+                  {d.href
+                    ? <a href={d.href} download data-cursor="Download" aria-label={`Download ${d.title} (${d.format}${d.size ? `, ${d.size}` : ""})`}
+                        className={`${cls} group transition-colors duration-500 hover:border-ice-deep/40 hover:bg-white/[0.04]`}>{inner}</a>
+                    : <div className={`${cls} opacity-70`} aria-label={`${d.title} (${d.format}): in preparation`}>{inner}</div>}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
