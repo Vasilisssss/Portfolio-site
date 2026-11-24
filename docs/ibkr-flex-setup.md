@@ -51,7 +51,7 @@ Secrets are encrypted and never shown in logs or on the site.
 ## Describing your positions: data/holdings.json
 
 Each position's public description (display name, asset class, region, industry, a note, purchase date, the
-`brand` and `accent` colour shown on its card, and `"public": false` to show it only as "Undisclosed") lives in `data/holdings.json`, a plain file with **no amounts**.
+`brand`, `accent` colour and `art` style (burst, rings, orbit, petals, facets, dots, waves) of its card, and `"public": false` to show it only as "Undisclosed") lives in `data/holdings.json`, a plain file with **no amounts**.
 Edit it on GitHub (switch to the `cinematic-redesign` branch, open the file, ✏️, commit); the site rebuilds by itself.
 The amounts stay in the encrypted data file.
 

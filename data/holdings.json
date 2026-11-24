@@ -1,5 +1,5 @@
 {
-  "_comment": "PUBLIC descriptive details per position (never amounts). Keys are holding ids, as in /investments/<id>. Any field set here overrides the encrypted data: name, assetClass (Stocks, ETFs, Cryptocurrency, Real Estate, Bonds, Cash, Precious Metals, Private Investments, Other Assets), geography, industry, note, purchaseDate (YYYY-MM-DD), brand (shown on the card, e.g. \"iShares\"), accent (card colour, e.g. \"#76B900\"), public (false = shown only as 'Undisclosed'). Edit on GitHub; the site rebuilds on commit.",
+  "_comment": "PUBLIC descriptive details per position (never amounts). Keys are holding ids, as in /investments/<id>. Any field set here overrides the encrypted data: name, assetClass (Stocks, ETFs, Cryptocurrency, Real Estate, Bonds, Cash, Precious Metals, Private Investments, Other Assets), geography, industry, note, purchaseDate (YYYY-MM-DD), brand (shown on the card, e.g. \"iShares\"), accent (card colour, e.g. \"#76B900\"), art (card artwork: burst, rings, orbit, petals, facets, dots or waves; default chosen from the ticker), public (false = shown only as 'Undisclosed'). Edit on GitHub; the site rebuilds on commit.",
   "anthropic": {
     "name": "Anthropic PBC (Class A)",
     "assetClass": "Stocks",

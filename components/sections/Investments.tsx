@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import type { PublicHolding } from "@/lib/public";
 import { moneyCompact, pct } from "@/lib/format";
 import { classColor } from "@/lib/palette";
+import Emblem from "@/components/ui/Emblem";
 
 /** the brand on a card: set in data/holdings.json, else the first word of the name ("NVIDIA Corp" → "NVIDIA") */
 const brandOf = (h: PublicHolding) => (h.brand ?? h.name.replace(/[^\p{L}\p{N}\s&.-]/gu, " ").trim().split(/\s+/)[0] ?? h.name).trim();
@@ -53,8 +54,9 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
                 </svg>
               </div>
             ) : listed ? (
-              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 bg-white/[.025] font-serif text-[76px] italic tracking-[-.1em] text-white/75 transition-transform duration-700 group-hover:rotate-[-8deg] group-hover:scale-105">
-                <span className="translate-x-[-3px]">{initialOf(brand)}</span><span className="absolute right-5 top-5 h-2 w-2 rounded-full" style={{ background: color, boxShadow: `0 0 10px ${color}aa` }} />
+              // generated artwork in the manner of the Anthropic burst, unique per ticker (components/ui/Emblem)
+              <div className="absolute right-9 top-10 flex h-32 w-32 items-center justify-center opacity-85 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">
+                <Emblem seed={h.ticker ?? h.id} color={color} art={h.art} className="h-full w-full" />
               </div>
             ) : h.assetClass === "Cash" ? (
               <div className="absolute -right-1 top-2 select-none font-serif text-[clamp(150px,19vw,230px)] font-light italic leading-none tracking-[-.1em] text-white/[.12] transition-transform duration-700 group-hover:-translate-y-2">€</div>
