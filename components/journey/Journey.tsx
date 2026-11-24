@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap, lenis, reducedMotion, finePointer, scrollToTarget } from "@/components/motion/gsap";
 import { loadSequence, type Sequence } from "./sequence";
 import { createStage, toScreen, type Layer, type Stage, type StageFrame } from "./stage";
+import { reportWarm } from "@/components/chrome/warmup";
 import { ROOMS, FLOOR, sceneSrc, walkSrc, base, type Variant } from "./scenes";
 
 /**
@@ -101,24 +102,37 @@ export default function Journey() {
         rooms.get(s.id)?.close(); rooms.set(s.id, bmp); dirty = true;
       }));
     };
-    // media waits for the intro curtain and an idle moment: text and data always come first
+    // media starts at once, behind the opening curtain: the first stretch of the walk is fetched, decoded and drawn
+    // before the curtain lifts, so the first scroll never waits on the network or the decoder. The curtain follows
+    // this progress (components/chrome/warmup.ts); the trading floor and the rooms keep loading afterwards.
+    const WARM_FRAMES = 30;
+    reportWarm(0);
+    let warmed = false;
+    const warmTick = () => {
+      if (warmed || stopped) return;
+      const n = seq ? Math.min(seq.manifest.frames, WARM_FRAMES) : WARM_FRAMES;
+      const fetched = Math.min(seq?.loaded ?? 0, n) / n;
+      const decoded = seq ? Math.min(seq.decoded, 8) / 8 : 0;
+      const done = !!seq && fetched >= 1 && decoded >= 1 && !!floor && (readyFired || !shown);
+      if (done) { warmed = true; window.clearInterval(warmIv); reportWarm(1, true); }
+      else reportWarm(0.7 * fetched + 0.15 * decoded + (floor ? 0.1 : 0) + (readyFired ? 0.05 : 0));
+    };
+    const warmIv = window.setInterval(warmTick, 100);
     const start = async () => {
       try {
         seq = await loadSequence(`${base()}/media/journey`, low, ac.signal);
         seq.onChange(() => { dirty = true; });
         seq.seek(measure().walkP * (seq.manifest.frames - 1));
         floor = await loadImage(walkSrc(seq.manifest.last));
+        dirty = true;
         await loadRooms();
-      } catch (e) { if (!ac.signal.aborted) console.error("Journey media failed to load; the page stays readable without it.", e); }
+      } catch (e) {
+        if (!ac.signal.aborted) console.error("Journey media failed to load; the page stays readable without it.", e);
+        // never hold the curtain for media that is not coming
+        if (!warmed) { warmed = true; window.clearInterval(warmIv); reportWarm(1, true); }
+      }
     };
-    let begun = false;
-    const begin = () => {
-      if (begun) return; begun = true;
-      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-      if (ric) ric(() => void start(), { timeout: 1200 }); else window.setTimeout(() => void start(), 200);
-    };
-    if (document.documentElement.dataset.ready === "1") begin(); else window.addEventListener("intro:done", begin, { once: true });
-    const fallbackStart = window.setTimeout(begin, 3500);
+    void start();
 
     // pointer parallax (fine pointers only), eased
     const par = { x: 0, y: 0 };
@@ -221,8 +235,7 @@ export default function Journey() {
 
     return () => {
       stopped = true; ac.abort();
-      window.clearTimeout(fallbackStart);
-      window.removeEventListener("intro:done", begin);
+      window.clearInterval(warmIv);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", onResize);
       gsap.ticker.remove(tick);

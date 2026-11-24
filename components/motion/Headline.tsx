@@ -34,7 +34,7 @@ export default function Headline({ as = "h2", children, className, id, delay = 0
       gsap.set(el, { autoAlpha: 0 });
       let started = false;
       const go = () => { if (started) return; started = true; window.clearTimeout(fb); gsap.set(el, { autoAlpha: 1 }); run(); };
-      const fb = window.setTimeout(go, 2200);
+      const fb = window.setTimeout(go, 6000); // after the curtain's 5 s cap
       window.addEventListener("intro:done", go, { once: true });
       return () => { window.clearTimeout(fb); window.removeEventListener("intro:done", go); split?.revert(); tweens.forEach((t) => t.kill()); };
     }

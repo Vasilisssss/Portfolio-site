@@ -87,6 +87,9 @@ main { isolation: isolate; }
 .walk-bloom { pointer-events: none; background: radial-gradient(60% 55% at 50% 52%, rgba(255, 214, 160, .55), rgba(217, 192, 155, .18) 45%, transparent 72%); mix-blend-mode: screen; }
 @keyframes walk-cue { 0% { transform: translateY(-110%); } 100% { transform: translateY(330%); } }
 .walk-cue span { animation: walk-cue 2.2s var(--ease-curtain) infinite; }
+/* open-market pulse in the header clock */
+@keyframes market-ping { 0% { transform: scale(1); opacity: .55; } 80%, 100% { transform: scale(3.2); opacity: 0; } }
+.market-ping { animation: market-ping 2.4s cubic-bezier(0, 0, .2, 1) infinite; }
 
 /* chapter cards: a held window onto the next room */
 .chapter { height: 160svh; }
@@ -122,7 +125,7 @@ main { isolation: isolate; }
   .chapter-stage { position: relative; }
   .rm-only { display: block; }
   .journey-stage { display: none; }
-  .walk-cue span, .journey-pill-label { animation: none; }
+  .walk-cue span, .journey-pill-label, .market-ping { animation: none; }
   .roll-a, .roll-b { transition: none; }
 }
 
