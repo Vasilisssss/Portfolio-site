@@ -4,9 +4,10 @@ The public site shows returns and percentages only (`content/privacy.ts`). Two t
 
 1. **The private view**: `/private/` is the full site with every figure (value, invested capital, profit/loss,
    quantities, prices). It is published **encrypted** (AES-256-GCM, key derived from your password with PBKDF2-SHA256,
-   600 000 iterations). The footer's 🔒 *Private view* link opens an unlock page; the right password decrypts it in your
-   browser. Nothing is sent anywhere, and without the password the file is unreadable. **Lock** (bottom left) returns to
-   the public site.
+   600 000 iterations). There is no visible link: open it by **clicking three times quickly on the copyright line**
+   ("© 2026 …") at the very bottom of the page, or bookmark `/private/`. The unlock page decrypts it in your browser.
+   Nothing is sent anywhere, and without the password the file is unreadable. **Lock** (bottom left) returns to the
+   public site.
 2. **The data file**: `data/portfolio.json.enc` is the portfolio data encrypted with the same password. The release
    workflow decrypts it into a git-ignored copy (`data/portfolio.private.json`) to build the site; the daily IBKR
    workflow decrypts, updates and re-encrypts it.
