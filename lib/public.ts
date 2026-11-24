@@ -17,6 +17,8 @@ export interface PublicHolding {
   geography?: string;
   industry?: string;
   note?: string;
+  brand?: string;
+  accent?: string;
   purchaseDate?: string;
   weight: number;
   returnPct: number | null;
@@ -93,7 +95,8 @@ export function getPublicView({ reveal = false }: { reveal?: boolean } = {}): Pu
       const h = p.holding;
       return clean<PublicHolding>({
         id: h.id, name: h.name, ticker: h.ticker, assetClass: h.assetClass, currency: h.currency,
-        geography: h.geography, industry: h.industry, note: h.note,
+        geography: h.geography, industry: h.industry, note: h.note, brand: h.brand,
+        accent: h.accent && /^#[0-9a-f]{3,8}$/i.test(h.accent) ? h.accent : undefined,
         weight: p.weight, returnPct: p.returnPct,
         purchaseDate: privacy.showPurchaseDates ? h.purchaseDate : undefined,
         quantity: showQuantities ? h.quantity : undefined,

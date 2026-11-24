@@ -13,7 +13,7 @@ import { samplePortfolio } from "@/content/sample-portfolio";
  * data/holdings.json (public, no amounts) then overrides each holding's descriptive fields — name, class, region,
  * industry, note, purchase date, visibility — so they can be edited on GitHub while the data itself stays encrypted.
  */
-const DESCRIPTIVE = ["name", "assetClass", "geography", "industry", "note", "purchaseDate", "public"] as const;
+const DESCRIPTIVE = ["name", "assetClass", "geography", "industry", "note", "purchaseDate", "public", "brand", "accent"] as const;
 
 function withDescriptions<T extends { holdings?: Record<string, unknown>[] }>(raw: T): T {
   const file = path.join(process.cwd(), "data", "holdings.json");

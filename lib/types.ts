@@ -26,6 +26,10 @@ export interface Holding {
   industry?: string;
   /** your own note on why you hold it */
   note?: string;
+  /** brand shown on the position card (default: the first word of the name), e.g. "iShares" */
+  brand?: string;
+  /** accent colour for the position card, e.g. "#76B900" (default: the asset-class colour) */
+  accent?: string;
   /** false = never shown individually (still counted in totals and allocation, as "Undisclosed") */
   public?: boolean;
 }
