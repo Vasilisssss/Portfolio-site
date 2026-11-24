@@ -98,6 +98,9 @@ export function parseStatement(xml) {
 
 // ---------- update ----------
 const round = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
+// Flex statements sometimes use a different symbol from the one the site shows (same instrument, other listing name)
+const ALIASES = { VCAA: "VCSHA" };
+const canonical = (sym) => ALIASES[sym.toUpperCase()] ?? sym.toUpperCase();
 const monthOf = (d) => d.slice(0, 7);
 
 export function update(pf, s, { acceptChanges = false } = {}) {
@@ -105,15 +108,28 @@ export function update(pf, s, { acceptChanges = false } = {}) {
   if (!s.toDate || !s.fromDate || s.endingValue == null || s.cash == null) review.push("The statement is missing its period, ending NAV or cash.");
   if (review.length) return { pf, review, notes, changed: false };
 
+  const history0 = pf.history ?? [];
+  const last0 = history0[history0.length - 1];
+  // the query must cover the whole year so far, or deposits and returns cannot be cumulated
+  const yearStart = `${s.toDate.slice(0, 4)}-01-01`;
+  if (s.fromDate > yearStart && history0.some((p) => p.date >= yearStart && p.date < s.fromDate)) {
+    review.push(`The statement covers only ${s.fromDate} → ${s.toDate}. Set the Flex Query's Period to "Year to Date" (IBKR → Performance & Reports → Flex Queries → edit portfolio-site → Delivery Configuration).`);
+    return { pf, review, notes, changed: false };
+  }
+
+  // IBKR publishes a day's statement overnight: one older than what the site shows simply has nothing new yet
+  if (last0 && s.toDate < last0.date) {
+    notes.push(`The statement ends ${s.toDate}; the site already shows ${last0.date}. Nothing new yet.`);
+    return { pf, review, notes, changed: false };
+  }
   const next = structuredClone(pf);
   const history = next.history ?? [];
   const last = history[history.length - 1];
-  if (last && s.toDate < last.date) review.push(`The statement ends ${s.toDate}, before the latest point already published (${last.date}).`);
 
   // holdings
   const seen = new Set();
   for (const p of s.positions) {
-    const h = next.holdings.find((x) => x.ticker && x.ticker.toUpperCase() === p.symbol.toUpperCase());
+    const h = next.holdings.find((x) => x.ticker && canonical(x.ticker) === canonical(p.symbol));
     if (!h) { review.push(`New position ${p.symbol} (${p.quantity} @ ${p.price} ${p.currency}): add it to data/portfolio.json with its name, asset class, geography and industry, then re-run.`); continue; }
     seen.add(h.id);
     if (p.quantity == null || p.price == null) { review.push(`${p.symbol}: quantity or mark price missing.`); continue; }
