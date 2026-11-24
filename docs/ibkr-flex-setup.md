@@ -47,7 +47,8 @@ Secrets are encrypted and never shown in logs or on the site.
   position…). The issue says what. Once checked, run the workflow again with **accept changes** ticked. A new
   position also needs a line in `data/portfolio.json` with its name, asset class, geography and industry.
 
-From then on it runs by itself Tuesday–Saturday at 06:17 UTC with the previous US trading day's closing figures.
+From then on it runs by itself Tuesday–Saturday at 06:17 UTC, with a backup run at 10:17 UTC, and publishes the
+previous US trading day's closing figures.
 If IBKR has not finished the statement yet, the next run picks it up.
 
 ## What it changes
