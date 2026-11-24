@@ -7,9 +7,9 @@
  */
 export const privacy = {
   /** false → no currency amounts anywhere (values, invested, P/L, prices). Percentages and returns stay. */
-  showAmounts: true,
+  showAmounts: false,
   /** false → hide quantities / units held */
-  showQuantities: true,
+  showQuantities: false,
   /** false → hide average purchase and current prices */
   showPrices: true,
   /** false → hide purchase dates (shows year only when true and dates exist) */
