@@ -51,7 +51,7 @@ Trades, deposits and withdrawals, and new or sold positions are **published auto
 notifies you with an issue (opened and closed at once) listing what changed, never amounts. New positions get their
 name, class, currency and region from IBKR; give them a display name, industry and a note in `data/holdings.json`.
 
-From then on it runs by itself: five checks a night (Mon–Fri 22:17 UTC, Tue–Sat 01:17, 04:17, 06:17 and 10:17 UTC).
+From then on it runs by itself after the New York close: Mon–Fri 21:10, 21:20, 21:30, 21:40 and 22:17 UTC, then Tue–Sat 01:17, 04:17, 06:17 and 10:17 UTC.
 IBKR builds one statement per day, covering every market you hold, after New York closes; the first check that finds
 it publishes the day's closing figures.
 If IBKR has not finished the statement yet, the next run picks it up.
