@@ -31,6 +31,24 @@ export const profile = {
       { title: "Macro context", body: "Take account of the economic and market environment without losing sight of the characteristics of the underlying investment." },
       { title: "Quantitative evidence", body: "Use data and analytical methods to test assumptions, identify patterns and support—not replace—judgement." },
     ],
+    /**
+     * Downloads under the principles. Put each file in public/ at the path given (e.g. public/documents/…pdf): its card
+     * becomes a download link on the next deploy. Until then the card reads "In preparation".
+     */
+    documents: [
+      {
+        title: "Investment Policy Statement",
+        body: "My objectives, constraints, risk tolerance and the rules this portfolio follows.",
+        file: "documents/investment-policy-statement.pdf",
+        format: "PDF",
+      },
+      {
+        title: "Portfolio model",
+        body: "The spreadsheet behind the portfolio: the allocation, the assumptions and the analysis.",
+        file: "documents/portfolio-model.xlsx",
+        format: "Excel",
+      },
+    ],
   },
 
   about: {
