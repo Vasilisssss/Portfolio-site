@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useId, useMemo, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
+import { gsap, useGSAP, reducedMotion } from "@/components/motion/gsap";
+import Assemble from "@/components/motion/Assemble";
 import type { PublicHolding, PublicView } from "@/lib/public";
 import { money, moneyCompact, monthName, monthYear, pct } from "@/lib/format";
 import { linearPath, monotonePath, niceTicks, tickIndices, type Pt } from "@/lib/chart";
@@ -52,11 +52,38 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
     };
   }, [perf, range, mode, currency, w, h]);
 
+  // Choreography: the line draws left → right, scrubbed while the chart crosses the viewport; a champagne dot rides
+  // its leading edge with the value at that point updating live; the area, deposits and the end tag fade in last.
   useGSAP(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.fromTo("[data-draw]", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.8, ease: "power3.inOut", scrollTrigger: { trigger: root.current, start: "top 80%", once: true } });
-    gsap.fromTo("[data-fade]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2, delay: 0.4, scrollTrigger: { trigger: root.current, start: "top 80%", once: true } });
-  }, { scope: root, dependencies: [range, mode], revertOnUpdate: true });
+    const el = root.current;
+    if (!el || reducedMotion()) return;
+    const path = el.querySelector<SVGPathElement>("[data-draw]");
+    const rider = el.querySelector<SVGGElement>("[data-rider]");
+    const tag = el.querySelector<HTMLElement>("[data-rider-tag]");
+    if (!path || !rider || !tag) return;
+    const len = path.getTotalLength();
+    const n = v.rows.length, x0 = v.X(0), x1 = v.X(n - 1);
+    const valueAt = (x: number) => {
+      const f = Math.max(0, Math.min(n - 1, ((x - x0) / Math.max(1, x1 - x0)) * (n - 1)));
+      const i = Math.min(n - 2, Math.floor(f)), t = f - i;
+      const a = v.rows[i], b = v.rows[Math.min(n - 1, i + 1)];
+      return mode === "value" ? money((a.value ?? 0) + ((b.value ?? 0) - (a.value ?? 0)) * t, currency) : (a.idx + (b.idx - a.idx) * t).toFixed(1);
+    };
+    const st = { p: 0 };
+    const place = () => {
+      const pt = path.getPointAtLength(st.p * len);
+      rider.setAttribute("transform", `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
+      tag.style.transform = `translate(${pt.x.toFixed(1)}px, ${pt.y.toFixed(1)}px) translate(-50%, -150%)`;
+      tag.textContent = valueAt(pt.x);
+      const done = st.p > 0.995;
+      rider.style.opacity = done ? "0" : "1"; tag.style.opacity = done ? "0" : "1";
+    };
+    gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: el, start: "top 78%", end: "bottom 40%", scrub: 0.6, invalidateOnRefresh: true } })
+      .fromTo(path, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1 }, 0)
+      .fromTo(st, { p: 0 }, { p: 1, duration: 1, onUpdate: place }, 0)
+      .fromTo(el.querySelectorAll("[data-fade]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.02 }, 0.75);
+    place();
+  }, { scope: root, dependencies: [range, mode, w, h], revertOnUpdate: true });
 
   const hp = hover >= 0 ? v.rows[hover] : null;
   const hx = hp ? v.X(hover) : 0;
@@ -88,11 +115,11 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
           )}
           {mode === "value" ? (
             <>
-              <span className="flex items-center gap-2"><svg width="20" height="8" aria-hidden><path d="M1 4h18" stroke="#d7ff3f" strokeWidth="2" strokeLinecap="round" /></svg>Portfolio value</span>
+              <span className="flex items-center gap-2"><svg width="20" height="8" aria-hidden><path d="M1 4h18" stroke="#d9c09b" strokeWidth="2" strokeLinecap="round" /></svg>Portfolio value</span>
               <span className="flex items-center gap-2"><svg width="20" height="8" aria-hidden><path d="M1 4h18" stroke="#f3f2ed" strokeOpacity=".6" strokeWidth="1.25" strokeDasharray="3 3" /></svg>Net deposits</span>
             </>
           ) : (
-            <span className="flex items-center gap-2"><svg width="20" height="8" aria-hidden><path d="M1 4h18" stroke="#d7ff3f" strokeWidth="2" strokeLinecap="round" /></svg>Growth of 100, time-weighted</span>
+            <span className="flex items-center gap-2"><svg width="20" height="8" aria-hidden><path d="M1 4h18" stroke="#d9c09b" strokeWidth="2" strokeLinecap="round" /></svg>Growth of 100, time-weighted</span>
           )}
           <span className={`tnum rounded-full px-2.5 py-1 ring-1 ring-inset ${v.change >= 0 ? "text-gain ring-gain/30" : "text-loss ring-loss/30"}`}>{pct(v.change, true)} · {range}</span>
         </div>
@@ -109,8 +136,8 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
         className="relative h-[300px] cursor-crosshair select-none md:h-[420px]">
         <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden className="absolute inset-0 overflow-visible" shapeRendering="geometricPrecision">
           <defs>
-            <linearGradient id={`${uid}l`} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#f3f2ed" stopOpacity="0.85" /><stop offset="0.55" stopColor="#e6fb8c" /><stop offset="1" stopColor="#d7ff3f" /></linearGradient>
-            <linearGradient id={`${uid}f`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#d7ff3f" stopOpacity="0.20" /><stop offset="0.7" stopColor="#d7ff3f" stopOpacity="0.03" /><stop offset="1" stopColor="#d7ff3f" stopOpacity="0" /></linearGradient>
+            <linearGradient id={`${uid}l`} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#f3f2ed" stopOpacity="0.85" /><stop offset="0.55" stopColor="#e8d9c2" /><stop offset="1" stopColor="#d9c09b" /></linearGradient>
+            <linearGradient id={`${uid}f`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#d9c09b" stopOpacity="0.20" /><stop offset="0.7" stopColor="#d9c09b" stopOpacity="0.03" /><stop offset="1" stopColor="#d9c09b" stopOpacity="0" /></linearGradient>
           </defs>
           {v.grid.map((g) => <path key={g.v} d={`M0 ${g.y}H${w - v.padR + 8}`} stroke="#f3f2ed" strokeOpacity={g.v === 0 ? 0.16 : 0.07} strokeWidth={1} shapeRendering="crispEdges" />)}
           {v.xt.map((t) => <path key={t.i} d={`M${Math.round(t.x) + 0.5} ${v.bottom}v5`} stroke="#f3f2ed" strokeOpacity={0.25} shapeRendering="crispEdges" />)}
@@ -118,17 +145,21 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
           {mode === "value" && <path data-fade d={v.contribArea} fill="#f3f2ed" fillOpacity={0.045} />}
           {mode === "value" && <path data-fade d={v.contrib} fill="none" stroke="#f3f2ed" strokeOpacity={0.55} strokeWidth={1.25} strokeDasharray="3 4" strokeLinejoin="round" />}
           <path data-fade d={v.area} fill={`url(#${uid}f)`} />
-          <path data-fade d={v.main} fill="none" stroke="#d7ff3f" strokeOpacity={0.14} strokeWidth={7} strokeLinejoin="round" strokeLinecap="round" />
+          <path data-fade d={v.main} fill="none" stroke="#d9c09b" strokeOpacity={0.14} strokeWidth={7} strokeLinejoin="round" strokeLinecap="round" />
           <path data-draw d={v.main} fill="none" stroke={`url(#${uid}l)`} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" pathLength={1} strokeDasharray="1" />
+          <g data-rider aria-hidden style={{ opacity: 0 }}>
+            <circle r={14} fill="#d9c09b" fillOpacity={0.14} />
+            <circle r={4} fill="#d9c09b" stroke="#08090a" strokeWidth={1.5} />
+          </g>
           <g data-fade>
-            <circle cx={v.lastPt[0]} cy={v.lastPt[1]} r={9} fill="#d7ff3f" fillOpacity={0.14} />
-            <circle cx={v.lastPt[0]} cy={v.lastPt[1]} r={3.5} fill="#d7ff3f" stroke="#08090a" strokeWidth={1.5} />
+            <circle cx={v.lastPt[0]} cy={v.lastPt[1]} r={9} fill="#d9c09b" fillOpacity={0.14} />
+            <circle cx={v.lastPt[0]} cy={v.lastPt[1]} r={3.5} fill="#d9c09b" stroke="#08090a" strokeWidth={1.5} />
           </g>
           {hp && (
             <>
               <path d={`M${Math.round(hx) + 0.5} ${v.padT}V${v.bottom}`} stroke="#f3f2ed" strokeOpacity={0.28} shapeRendering="crispEdges" />
               <path d={`M0 ${Math.round(hy) + 0.5}H${w - v.padR + 8}`} stroke="#f3f2ed" strokeOpacity={0.12} strokeDasharray="2 3" shapeRendering="crispEdges" />
-              <circle cx={hx} cy={hy} r={6} fill="#08090a" stroke="#d7ff3f" strokeWidth={2} />
+              <circle cx={hx} cy={hy} r={6} fill="#08090a" stroke="#d9c09b" strokeWidth={2} />
             </>
           )}
         </svg>
@@ -136,6 +167,7 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
           <span key={g.v} aria-hidden className={`tnum absolute right-0 -translate-y-1/2 text-[11px] tracking-[0.04em] text-mute transition-opacity ${Math.abs(g.y - tagY) < 16 ? "opacity-0" : ""}`}
             style={{ top: g.y }}>{g.label}</span>
         ))}
+        <span data-rider-tag aria-hidden className="tnum pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-full border border-ice-deep/40 bg-pearl/80 px-2.5 py-1 text-[11px] text-ice-deep opacity-0 backdrop-blur-sm" />
         <span data-fade aria-hidden className="tnum absolute right-0 -translate-y-1/2 rounded-full bg-lime px-2 py-[3px] text-[11px] font-medium leading-none text-pearl" style={{ top: tagY }}>{v.lastLabel}</span>
         {v.xt.map((t, k) => (
           <span key={t.i} aria-hidden className={`tnum absolute whitespace-nowrap text-[11px] tracking-[0.04em] text-mute ${k === 0 ? "" : k === v.xt.length - 1 ? "-translate-x-full" : "-translate-x-1/2"}`}
@@ -170,20 +202,31 @@ function cellStyle(r: number): React.CSSProperties {
   const alpha = 0.14 + a * 0.72;
   const strong = alpha > 0.5; // dark ink on bright cells keeps contrast above 7:1
   return r > 0
-    ? { background: `rgba(215,255,63,${alpha.toFixed(3)})`, color: strong ? "#08090a" : "#f3f2ed" }
-    : { background: `rgba(255,122,102,${(alpha * 0.85).toFixed(3)})`, color: strong ? "#08090a" : "#f3f2ed" };
+    ? { background: `rgba(217,192,155,${alpha.toFixed(3)})`, color: strong ? "#08090a" : "#f3f2ed" }
+    : { background: `rgba(217,154,145,${(alpha * 0.85).toFixed(3)})`, color: strong ? "#08090a" : "#f3f2ed" };
 }
 
+/** Monthly returns. Choreography: rows fade in one by one as they enter; each month's cell starts neutral and tints to
+ *  its gain/loss colour in sequence, so the year reads left to right. */
 function Heatmap({ perf }: { perf: Perf }) {
   const years = perf.yearly.map((y) => y.year);
+  const root = useRef<HTMLDivElement>(null);
+  useGSAP(() => {
+    if (!root.current || reducedMotion()) return;
+    gsap.utils.toArray<HTMLElement>("tbody tr, thead tr", root.current).forEach((tr) => {
+      const tl = gsap.timeline({ scrollTrigger: { trigger: tr, start: "top 92%", once: true } });
+      tl.from(tr, { autoAlpha: 0, y: 14, duration: 0.9, ease: "expo.out" })
+        .from(tr.querySelectorAll("td[data-r]"), { backgroundColor: "rgba(243,242,237,0.05)", color: "#c8c9c3", duration: 0.7, ease: "power2.out", stagger: 0.05 }, 0.15);
+    });
+  }, { scope: root });
   const byKey = new Map(perf.monthly.map((m) => [m.date.slice(0, 7), m.r]));
   return (
-    <div className="glass overflow-x-auto rounded-[28px] p-5 md:p-8">
+    <div ref={root} className="glass overflow-x-auto rounded-[28px] p-5 md:p-8">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
         <h3 className="label">Monthly returns</h3>
         <span aria-hidden className="tnum flex items-center gap-2 text-[10px] tracking-[0.08em] text-mute">
           −10%
-          <span className="h-2 w-28 rounded-full bg-[linear-gradient(90deg,rgba(255,122,102,.73),rgba(255,122,102,.12)_45%,rgba(243,242,237,.08)_50%,rgba(215,255,63,.14)_55%,rgba(215,255,63,.86))]" />
+          <span className="h-2 w-28 rounded-full bg-[linear-gradient(90deg,rgba(217,154,145,.73),rgba(217,154,145,.12)_45%,rgba(243,242,237,.08)_50%,rgba(217,192,155,.14)_55%,rgba(217,192,155,.86))]" />
           +10%
         </span>
       </div>
@@ -207,7 +250,7 @@ function Heatmap({ perf }: { perf: Perf }) {
                   const r = byKey.get(`${y}-${String(m + 1).padStart(2, "0")}`);
                   return r == null
                     ? <td key={m} className="h-11 rounded-[10px] ring-1 ring-inset ring-white/[0.04]"><span className="sr-only">No data</span></td>
-                    : <td key={m} className="h-11 rounded-[10px] font-medium ring-1 ring-inset ring-white/[0.06]" style={cellStyle(r)}>{pct(r, true)}</td>;
+                    : <td key={m} data-r className="h-11 rounded-[10px] font-medium ring-1 ring-inset ring-white/[0.06]" style={cellStyle(r)}>{pct(r, true)}</td>;
                 })}
                 <td className={`h-11 rounded-[10px] bg-white/[0.03] text-[13px] font-medium ring-1 ring-inset ring-white/[0.08] ${tone(yr)}`}>{pct(yr, true)}</td>
               </tr>
@@ -224,7 +267,7 @@ function YearBars({ perf }: { perf: Perf }) {
   const { hi, ticks } = niceTicks(0, Math.max(...perf.yearly.map((y) => Math.abs(y.r)), 0.01), 2);
   useGSAP(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.from("[data-yb]", { scaleY: 0, duration: 1.2, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: root.current, start: "top 85%", once: true } });
+    gsap.from("[data-yb]", { scaleY: 0, ease: "none", stagger: 0.12, scrollTrigger: { trigger: root.current, start: "top 85%", end: "center 50%", scrub: 0.6 } });
   }, { scope: root });
   const H = 40; // % of the plot each half may use; leaves room for the value label
   const at = (v: number) => `${50 - (v / hi) * H}%`;
@@ -246,7 +289,7 @@ function YearBars({ perf }: { perf: Perf }) {
               const pos = y.r >= 0;
               return (
                 <div key={y.year} className="relative h-full flex-1">
-                  <span data-yb className={`absolute left-1/2 w-[56%] max-w-16 -translate-x-1/2 ring-1 ring-inset ring-white/10 ${pos ? "origin-bottom rounded-t-[6px] bg-gradient-to-t from-[#4f5f12] to-[#d7ff3f]" : "origin-top rounded-b-[6px] bg-gradient-to-b from-[#5a2a22] to-[#ff7a66]"}`}
+                  <span data-yb className={`absolute left-1/2 w-[56%] max-w-16 -translate-x-1/2 ring-1 ring-inset ring-white/10 ${pos ? "origin-bottom rounded-t-[6px] bg-gradient-to-t from-[#6f6252] to-[#d9c09b]" : "origin-top rounded-b-[6px] bg-gradient-to-b from-[#5e3f3b] to-[#d99a91]"}`}
                     style={pos ? { bottom: "50%", height: hgt } : { top: "50%", height: hgt }} />
                   <span className={`tnum absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[12px] font-medium ${tone(y.r)}`}
                     style={pos ? { bottom: `calc(50% + ${hgt} + 6px)` } : { top: `calc(50% + ${hgt} + 6px)` }}>{pct(y.r, true)}</span>
@@ -269,7 +312,7 @@ function HoldingBars({ holdings }: { holdings: PublicHolding[] }) {
   const max = Math.max(...rows.map((h) => Math.abs(h.returnPct!)), 0.01);
   useGSAP(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.from("[data-hb]", { scaleX: 0, duration: 1.2, ease: "expo.out", stagger: 0.04, scrollTrigger: { trigger: root.current, start: "top 85%", once: true } });
+    gsap.from("[data-hb]", { scaleX: 0, ease: "none", stagger: 0.1, scrollTrigger: { trigger: root.current, start: "top 85%", end: "center 50%", scrub: 0.6 } });
   }, { scope: root });
   if (!rows.length) return null;
   const hasNeg = rows.some((h) => h.returnPct! < 0);
@@ -291,7 +334,7 @@ function HoldingBars({ holdings }: { holdings: PublicHolding[] }) {
                 <span className="relative h-2.5 rounded-full bg-white/[0.05]">
                   <span aria-hidden className="absolute -inset-y-1 w-px bg-graphite/25" style={{ left: `calc(${zero}% - ${zero === 100 ? 1 : 0}px)` }} />
                   {Math.abs(r) >= ZERO && (
-                    <span data-hb className={`absolute top-0 h-full rounded-full ${r > 0 ? "origin-left bg-gradient-to-r from-[#4f5f12] to-[#d7ff3f]" : "origin-right bg-gradient-to-l from-[#5a2a22] to-[#ff7a66]"}`}
+                    <span data-hb className={`absolute top-0 h-full rounded-full ${r > 0 ? "origin-left bg-gradient-to-r from-[#6f6252] to-[#d9c09b]" : "origin-right bg-gradient-to-l from-[#5e3f3b] to-[#d99a91]"}`}
                       style={r > 0 ? { left: `${zero}%`, width: `${w}%` } : { right: `${100 - zero}%`, width: `${w}%` }} />
                   )}
                 </span>
@@ -316,14 +359,14 @@ export default function Performance({ perf, holdings, amounts, currency }: { per
   ];
   return (
     <div className="flex flex-col gap-6">
-      <dl className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-px overflow-hidden rounded-[28px] bg-white/[0.06]">
+      <Assemble as="dl" className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-px overflow-hidden rounded-[28px] bg-white/[0.06]">
         {kpis.map((k) => (
-          <div key={k.label} className="flex flex-col gap-2 bg-[#0e1012]/90 p-6 backdrop-blur">
+          <div key={k.label} data-tile className="flex flex-col gap-2 bg-[#0e1012] p-6">
             <dt className="label">{k.label}</dt>
             <dd className={`tnum font-serif text-[clamp(26px,2.4vw,34px)] leading-none ${k.tone > 0 ? "text-gain" : k.tone < 0 ? "text-loss" : ""}`}>{k.v}</dd>
           </div>
         ))}
-      </dl>
+      </Assemble>
       <p className="max-w-[720px] text-[13px] leading-[1.7] text-mute">
         {perf.method === "broker"
           ? "Returns are the time-weighted returns reported by my broker: money I deposit or withdraw never counts as performance."

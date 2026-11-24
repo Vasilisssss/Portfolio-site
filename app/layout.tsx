@@ -6,7 +6,6 @@ import { navItems } from "@/lib/nav";
 import SmoothScroll from "@/components/chrome/SmoothScroll";
 import Loader from "@/components/chrome/Loader";
 import Cursor from "@/components/chrome/Cursor";
-import Grain from "@/components/chrome/Grain";
 import Nav from "@/components/chrome/Nav";
 import Footer from "@/components/sections/Footer";
 
@@ -30,16 +29,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <body>
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-lime focus:px-4 focus:py-3 focus:text-black">Skip to content</a>
-        <Grain />
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-ice-deep focus:px-4 focus:py-3 focus:text-black">Skip to content</a>
         <SmoothScroll />
         <Loader line={profile.hero.lines.join(" ")} />
         <Nav name={profile.name} items={navItems()} email={profile.email} closing={profile.closing.join(" ")} />
-        <main id="main" className="relative z-[1]">{children}</main>
+        <main id="main" className="relative z-[1] bg-transparent">{children}</main>
         <Footer />
         <Cursor />
         {process.env.SITE_PREVIEW === "1" && (
-          <div className="pointer-events-none fixed left-4 top-[88px] z-[60] rounded-full border border-lime/40 bg-black/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-lime backdrop-blur">Preview · not live</div>
+          <div className="pointer-events-none fixed left-4 top-[88px] z-[60] rounded-full border border-ice-deep/40 bg-black/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ice-deep backdrop-blur">Preview · not live</div>
         )}
       </body>
     </html>

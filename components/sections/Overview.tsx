@@ -1,11 +1,11 @@
 import Link from "next/link";
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 import type { PublicView } from "@/lib/public";
 import { dateLong, moneySigned, pct } from "@/lib/format";
 import SectionHead from "@/components/ui/SectionHead";
 import SampleBadge from "@/components/ui/SampleBadge";
 import Ticker from "@/components/ui/Ticker";
-import { Reveal } from "@/components/ui/Reveal";
+import ClipReveal from "@/components/motion/ClipReveal";
+import Assemble from "@/components/motion/Assemble";
 import Sparkline from "@/components/ui/Sparkline";
 
 /** 01 — the whole portfolio at a glance. Only figures the privacy settings allow are present in `view`. */
@@ -34,14 +34,14 @@ export default function Overview({ view }: { view: PublicView }) {
         Where my capital <em>stands today.</em>
       </SectionHead>
 
-      <Reveal className="mt-16">
+      <ClipReveal className="mt-16 rounded-[28px]" parallax={0} scale={1.05}>
         <div className="glass overflow-hidden rounded-[28px]">
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
             <div className="flex flex-col justify-between gap-10 p-8 md:p-12">
               <div className="flex flex-col gap-4">
                 <span className="label">{amounts ? "Total portfolio value" : "Overall return"}</span>
                 <span className="display text-[clamp(56px,7.6vw,128px)] leading-[0.9]">
-                  {amounts ? <Ticker value={s.value!} kind="money" currency={cur} /> : ret != null ? <Ticker value={ret} kind="pctSigned" /> : "—"}
+                  {amounts ? <Ticker value={s.value!} kind="money" currency={cur} delay={0.3} /> : ret != null ? <Ticker value={ret} kind="pctSigned" delay={0.3} /> : "—"}
                 </span>
                 <span className="text-[13px] text-mute">As of {dateLong(view.asOf)}{view.source && ` · ${view.source}`}{!amounts && " · amounts kept private"}</span>
                 {recon && (
@@ -51,7 +51,7 @@ export default function Overview({ view }: { view: PublicView }) {
                 )}
               </div>
               {perf && (
-                <Link href={`${basePath}/#performance`} className="group flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-graphite-2 hover:text-lavender-deep">
+                <Link href="/#performance" className="roll-host group flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-graphite-2 hover:text-lavender-deep">
                   Full performance history
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden className="transition-transform group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                 </Link>
@@ -65,17 +65,20 @@ export default function Overview({ view }: { view: PublicView }) {
               )}
             </div>
           </div>
-          <dl className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] border-t border-white/[0.06]">
-            {stats.map((st) => (
-              <div key={st.label} className="flex flex-col gap-2 border-b border-r border-white/[0.06] p-6 md:p-7">
+          <Assemble as="dl" className="relative grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+            <span data-hl aria-hidden className="absolute inset-x-0 top-0 h-px bg-white/[0.08]" />
+            {stats.map((st, i) => (
+              <div key={st.label} data-tile className="relative flex flex-col gap-2 p-6 md:p-7">
+                <span data-hl aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-white/[0.06]" />
+                {i < stats.length - 1 && <span data-vl aria-hidden className="absolute inset-y-0 right-0 w-px bg-white/[0.06]" />}
                 <dt className="label">{st.label}</dt>
                 <dd className="font-serif text-[clamp(26px,2.4vw,36px)] leading-none">{st.node}</dd>
                 {st.hint && <dd className="text-[12px] text-mute">{st.hint}</dd>}
               </div>
             ))}
-          </dl>
+          </Assemble>
         </div>
-      </Reveal>
+      </ClipReveal>
     </section>
   );
 }

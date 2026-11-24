@@ -1,7 +1,11 @@
 "use client";
-
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import Link from "next/link";
+import { gsap, useGSAP, reducedMotion } from "@/components/motion/gsap";
+import Headline from "@/components/motion/Headline";
+import Magnetic from "@/components/ui/Magnetic";
+import RollText from "@/components/motion/RollText";
+import { WALK, walkSrc } from "@/components/journey/scenes";
 
 type Props = {
   name: string;
@@ -13,136 +17,115 @@ type Props = {
 };
 
 /**
- * Headquarters hero: establishing clip followed by the entrance/arrival clip.
- * Media paths are intentionally local and same-origin for GitHub Pages export.
- * Optimized owner-approved MP4 files and poster frames are committed in public/media.
- * Keep the base-path prefix so the same component works on GitHub Pages exports.
+ * THE HEADQUARTERS WALK — the hero.
+ * A tall section (300vh desktop, 220vh phones) with a sticky 100svh stage: scrolling is walking. The camera itself
+ * is drawn by the journey stage behind the page (components/journey), which reads this section's progress as the
+ * walk's playhead — scroll down to walk forward, up to walk back.
+ * Choreography on top of the footage:
+ *   0–2 %    the copy is fully on screen (name, headline, body, portfolio value, both calls to action)
+ *   2–26 %   the copy rises, blurs and fades away as the walk begins
+ *   doors    the "Headquarters · Global markets" caption rolls to "Entering"; a brief warm bloom (opacity only)
+ *            as the camera passes the portal, and the trading floor resolves
+ *   a champagne line along the bottom traces the walk
+ * The first frame is a server-rendered poster (the LCP image); the canvas takes over once frames are ready.
+ * Reduced motion: one viewport, the still poster, no scrubbing.
  */
 export default function HeadquartersHero({ name, eyebrow, lines, body, figure, showInvestments }: Props) {
-  const [shot, setShot] = useState<0 | 1>(0);
-  const [mediaReady, setMediaReady] = useState(false);
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-  const mediaLayer = useRef<HTMLDivElement>(null);
-  const firstVideo = useRef<HTMLVideoElement>(null);
-  const secondVideo = useRef<HTMLVideoElement>(null);
+  const root = useRef<HTMLElement>(null);
+  const doorsAt = WALK.doors / Math.max(1, WALK.frames - 1);
 
-  useEffect(() => {
-    const section = document.getElementById("top");
-    const first = firstVideo.current;
-    const second = secondVideo.current;
-    if (!section || !first || !second) return;
+  useGSAP(() => {
+    const el = root.current;
+    if (!el || reducedMotion()) return;
+    const q = gsap.utils.selector(el);
+    // the poster steps back once the live stage is drawing
+    const onReady = () => gsap.to(q("[data-poster]"), { autoAlpha: 0, duration: 0.8, ease: "power2.out" });
+    window.addEventListener("journey:ready", onReady, { once: true });
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      first.pause();
-      second.pause();
-      setMediaReady(false);
-      return;
-    }
-
-    let raf = 0;
-    let activeVideo: HTMLVideoElement | null = null;
-    let inView = false;
-    const sync = () => {
-      raf = 0;
-      const rect = section.getBoundingClientRect();
-      const distance = Math.max(1, section.offsetHeight - window.innerHeight);
-      const progress = Math.min(1, Math.max(0, -rect.top / distance));
-      const visible = rect.bottom > 0 && rect.top < window.innerHeight;
-      if (mediaLayer.current) mediaLayer.current.style.opacity = "1";
-      const nextShot: 0 | 1 = progress < 0.5 ? 0 : 1;
-      setShot(nextShot);
-      const video = nextShot === 0 ? first : second;
-      const other = nextShot === 0 ? second : first;
-
-      if (video !== activeVideo) {
-        other.pause();
-        if (activeVideo) activeVideo.pause();
-        video.currentTime = 0;
-        activeVideo = video;
-      }
-      if (visible && inView) {
-        if (video.paused) void video.play().catch(() => setMediaReady(false));
-      } else {
-        video.pause();
-      }
-    };
-    const schedule = () => { if (!raf) raf = requestAnimationFrame(sync); };
-    const observer = new IntersectionObserver(([entry]) => {
-      inView = entry.isIntersecting;
-      schedule();
-    }, { threshold: 0.01 });
-    observer.observe(section);
-    first.addEventListener("loadeddata", schedule);
-    second.addEventListener("loadeddata", schedule);
-    first.addEventListener("canplay", schedule);
-    second.addEventListener("canplay", schedule);
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    schedule();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      observer.disconnect();
-      first.removeEventListener("loadeddata", schedule);
-      second.removeEventListener("loadeddata", schedule);
-      first.removeEventListener("canplay", schedule);
-      second.removeEventListener("canplay", schedule);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      first.pause();
-      second.pause();
-    };
-  }, []);
+    const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: el, start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
+    tl.to(q("[data-copy]"), { yPercent: -18, autoAlpha: 0, filter: "blur(10px)", ease: "power2.in", duration: 0.24 }, 0.02)
+      .to(q("[data-topline]"), { autoAlpha: 0, y: -20, duration: 0.14 }, 0.06)
+      .to(q("[data-progress]"), { scaleX: 1, duration: 1 }, 0)
+      // caption roll at the doors
+      .to(q("[data-cap-a]"), { yPercent: -100, duration: 0.03, ease: "power2.inOut" }, doorsAt - 0.06)
+      .to(q("[data-cap-b]"), { yPercent: -100, duration: 0.03, ease: "power2.inOut" }, doorsAt - 0.06)
+      // warm bloom as the portal passes the camera
+      .fromTo(q("[data-bloom]"), { opacity: 0 }, { opacity: 0.7, duration: 0.05, ease: "power2.out" }, doorsAt - 0.05)
+      .to(q("[data-bloom]"), { opacity: 0, duration: 0.09, ease: "power2.inOut" }, doorsAt)
+      // the scroll cue leaves with the copy, the closing hairline arrives on the trading floor
+      .to(q("[data-cue]"), { autoAlpha: 0, duration: 0.08 }, 0.04)
+      .fromTo(q("[data-arrive]"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.08, ease: "power2.out" }, Math.min(0.9, doorsAt + 0.08));
+    // entrance of the copy after the intro curtain
+    const enter = () => gsap.from(q("[data-enter]"), { y: 24, autoAlpha: 0, duration: 1.2, stagger: 0.08, ease: "expo.out", delay: 0.35 });
+    if (document.documentElement.dataset.ready === "1") enter(); else window.addEventListener("intro:done", enter, { once: true });
+    return () => { window.removeEventListener("journey:ready", onReady); window.removeEventListener("intro:done", enter); };
+  }, { scope: root });
 
   return (
-    <section id="top" aria-label="Investment headquarters" className="headquarters-hero relative isolate min-h-[100svh]">
-      <div ref={mediaLayer} className="headquarters-media" aria-hidden="true">
-        <div className="headquarters-fallback"><img src={`${basePath}/media/headquarters-establishing.jpg`} alt="" fetchPriority="high" decoding="async" /></div>
-        <video ref={firstVideo} className={`headquarters-video ${shot === 0 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-establishing.mp4`} poster={`${basePath}/media/headquarters-establishing.jpg`} muted playsInline loop preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
-        <video ref={secondVideo} className={`headquarters-video ${shot === 1 ? "is-active" : ""}`} src={`${basePath}/media/headquarters-arrival.mp4`} poster={`${basePath}/media/headquarters-arrival.jpg`} muted playsInline preload="auto" onLoadedData={() => setMediaReady(true)} onError={() => setMediaReady(false)} />
-        <div className="headquarters-vignette" />
-        <div className="headquarters-film-grain" />
-      </div>
+    <section ref={root} id="top" data-walk aria-label="Investment headquarters" className="walk relative">
+      <div className="walk-stage sticky top-0 h-[100svh] overflow-hidden">
+        {/* LCP: the walk's first frame, server-rendered; the journey canvas behind takes over once frames are decoded */}
+        <picture data-poster className="absolute inset-0 block">
+          <source media="(max-width: 820px)" srcSet={walkSrc(WALK.posterSm)} />
+          <img src={walkSrc(WALK.poster)} alt="" width={WALK.w} height={WALK.h} fetchPriority="high" decoding="async" className="h-full w-full object-cover object-[50%_48%]" />
+        </picture>
+        <div aria-hidden className="walk-shade absolute inset-0" />
+        <div aria-hidden data-bloom className="walk-bloom absolute inset-0 opacity-0" />
 
-      <div className="relative z-10 flex min-h-[100svh] w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
-        <div className="flex items-center justify-between gap-6">
-          <p className="eyebrow flex items-center gap-4 text-white/75">
-            <span className="h-px w-10 bg-[#c7a77a]" />
-            <span className="text-[#d9c09b]">VASILIS MAVROUDES</span>
-            <span className="hidden text-white/45 sm:inline">/ {eyebrow}</span>
-          </p>
-          <p className="hidden font-mono text-[10px] uppercase tracking-[0.24em] text-white/55 sm:block">{name}</p>
-        </div>
+        <div className="relative z-10 flex h-full w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
+          <div data-topline className="flex items-center justify-between gap-6">
+            <p data-enter className="eyebrow flex items-center gap-4 text-white/75">
+              <span className="h-px w-10 bg-ice-deep" />
+              <span className="text-ice-deep">{name}</span>
+              <span className="hidden text-white/45 sm:inline">/ Personal portfolio</span>
+            </p>
+          </div>
 
-        <div className="max-w-[900px] pb-8 md:pb-12">
-          <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.34em] text-[#d9c09b] md:text-xs">
-            INVESTOR  ·  CFA LEVEL III CANDIDATE
-          </p>
-          <h1 className="max-w-[12ch] text-[clamp(54px,8.8vw,142px)] font-normal leading-[0.88] tracking-[-0.065em] text-[#f4f1eb] [text-shadow:0_4px_45px_rgba(0,0,0,.5)]">
-            {lines[0] || "Capital"}<br />
-            <em className="font-serif font-normal text-[#d9c09b]">{lines[1] || "with conviction."}</em>
-          </h1>
-          <div className="mt-8 flex max-w-[690px] flex-col gap-7 md:mt-10 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-[430px]">
-              <p className="text-sm leading-[1.8] text-white/80 md:text-base">{body}</p>
-              {figure && <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">{figure.label}<span className="mt-2 block font-sans text-3xl tracking-tight text-white md:text-4xl">{figure.value}</span></p>}
-            </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-3">
-              {showInvestments && <Link href="/#investments" className="inline-flex h-12 items-center gap-5 bg-[#d9c09b] px-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[#11110f] transition-colors hover:bg-[#f0e4d0]">Explore the portfolio <span aria-hidden>↗</span></Link>}
-              <Link href="/#strategy" className="inline-flex h-12 items-center border border-white/45 bg-black/25 px-5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:border-[#d9c09b] hover:text-[#e5cba4]">Investment approach</Link>
+          <div data-copy className="max-w-[900px] pb-8 will-change-transform md:pb-12">
+            <p data-enter className="mb-6 font-mono text-[10px] uppercase tracking-[0.34em] text-ice-deep md:text-xs">{eyebrow}</p>
+            <Headline as="h1" onLoad drift={false} skew={false} className="display max-w-[12ch] text-[clamp(54px,8.8vw,142px)] leading-[0.88] tracking-[-0.065em] text-graphite [text-shadow:0_4px_45px_rgba(0,0,0,.5)]">
+              {lines[0]}<br />
+              <em className="text-ice-deep">{lines[1]}</em>
+            </Headline>
+            <div className="mt-8 flex max-w-[690px] flex-col gap-7 md:mt-10 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-[430px]">
+                <p data-enter className="text-sm leading-[1.8] text-white/80 md:text-base">{body}</p>
+                {figure && (
+                  <p data-enter className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">
+                    {figure.label}<span className="tnum mt-2 block font-sans text-3xl tracking-tight text-graphite md:text-4xl">{figure.value}</span>
+                  </p>
+                )}
+              </div>
+              <div data-enter className="flex shrink-0 flex-wrap items-center gap-3">
+                {showInvestments && (
+                  <Magnetic strength={0.25}>
+                    <Link href="/#investments" data-cursor="Explore" className="roll-host inline-flex h-12 items-center gap-5 bg-ice-deep px-6 font-mono text-[10px] uppercase tracking-[0.2em] text-snow transition-colors hover:bg-[#f0e4d0]">
+                      <RollText>Explore the portfolio</RollText><span aria-hidden>↗</span>
+                    </Link>
+                  </Magnetic>
+                )}
+                <Magnetic strength={0.25}>
+                  <Link href="/#strategy" className="roll-host inline-flex h-12 items-center border border-white/45 bg-black/25 px-5 font-mono text-[10px] uppercase tracking-[0.2em] text-graphite backdrop-blur-sm transition-colors hover:border-ice-deep hover:text-ice-deep">
+                    <RollText>Investment approach</RollText>
+                  </Link>
+                </Magnetic>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-end justify-between border-t border-white/25 pt-4">
-          <span className="font-mono text-[9px] uppercase tracking-[0.24em] text-white/55">Headquarters · Global markets</span>
-          <a href="#capital-engine" className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.24em] text-white/75 hover:text-white">
-            Discover the institution <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-sm">↓</span>
-          </a>
+          <div className="relative flex items-end justify-between border-t border-white/20 pt-4">
+            <span aria-hidden data-progress className="absolute -top-px left-0 block h-px w-full origin-left scale-x-0 bg-ice-deep" />
+            <span className="relative block h-[1.6em] overflow-hidden font-mono text-[9px] uppercase leading-[1.6em] tracking-[0.24em] text-white/60">
+              <span data-cap-a className="block">Headquarters · Global markets</span>
+              <span data-cap-b aria-hidden className="block text-ice-deep">Entering · The trading floor</span>
+            </span>
+            <span data-cue className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.24em] text-white/70">
+              Scroll to walk in <span aria-hidden className="walk-cue relative block h-8 w-px overflow-hidden bg-white/20"><span className="absolute inset-x-0 top-0 block h-1/3 bg-ice-deep" /></span>
+            </span>
+            <span data-arrive aria-hidden className="absolute bottom-0 right-0 font-mono text-[9px] uppercase tracking-[0.24em] text-ice-deep opacity-0">II · The Capital Engine ↓</span>
+          </div>
         </div>
       </div>
-      {!mediaReady && <span className="sr-only">Headquarters film poster fallback is displayed while the video loads.</span>}
     </section>
   );
 }

@@ -1,11 +1,7 @@
 "use client";
-import { useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import { useRef } from "react";
+import { gsap, useGSAP, reducedMotion } from "@/components/motion/gsap";
 import { pad2 } from "@/lib/format";
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 export interface StrategyContent {
   draft: boolean;
@@ -15,54 +11,78 @@ export interface StrategyContent {
   principles: { title: string; body: string }[];
 }
 
-/** 05 — personal philosophy. The headline lights up word by word as you scroll; the counter follows the principle in view. */
+/**
+ * 05 — STRATEGY. Personal philosophy as a held card stack.
+ * Choreography: the manifesto lights up word by word as it crosses the viewport (scrubbed). Then a sticky stage
+ * (one viewport, held for ~70svh per principle): the six principles sit in one place; each new card slides up over
+ * the previous one (yPercent 115 → 0, expo-like), the card beneath settles back (scale 0.94, dims, lifts 4%), and the
+ * big counter on the left rolls to the card's number. Reduced motion: the principles as a plain list.
+ */
 export default function Strategy({ s }: { s: StrategyContent }) {
   const root = useRef<HTMLElement>(null);
-  const [active, setActive] = useState(0);
+  const n = s.principles.length;
 
   useGSAP(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.fromTo("[data-word]", { opacity: 0.42, filter: "blur(2px)" }, {
-      opacity: 1, filter: "blur(0px)", stagger: 0.12, ease: "none",
-      scrollTrigger: { trigger: "[data-manifesto]", start: "top 80%", end: "bottom 35%", scrub: 0.6 },
+    const el = root.current;
+    if (!el || reducedMotion()) return;
+    const q = gsap.utils.selector(el);
+    gsap.fromTo(q("[data-word]"), { opacity: 0.22 }, {
+      opacity: 1, stagger: 0.12, ease: "none",
+      scrollTrigger: { trigger: q("[data-manifesto]")[0], start: "top 82%", end: "bottom 40%", scrub: 0.6 },
     });
-    gsap.utils.toArray<HTMLElement>("[data-principle]").forEach((el, i) => {
-      ScrollTrigger.create({ trigger: el, start: "top 55%", end: "bottom 55%", onToggle: (st) => st.isActive && setActive(i) });
-      gsap.from(el, { y: 60, autoAlpha: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: el, start: "top 88%", once: true } });
-    });
+    gsap.from(q("[data-intro]"), { y: 24, autoAlpha: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: q("[data-intro]")[0], start: "top 88%", once: true } });
+    const cards = q("[data-card]") as HTMLElement[];
+    // waiting cards park just below the screen (measured, so it holds on any viewport)
+    const below = (c: HTMLElement) => window.innerHeight - c.getBoundingClientRect().top + 40;
+    cards.forEach((c, i) => { if (i > 0) gsap.set(c, { y: () => below(cards[0]) }); });
+    const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: q("[data-deck]")[0], start: "top top", end: "bottom bottom", scrub: 0.8, invalidateOnRefresh: true } });
+    for (let i = 1; i < n; i++) {
+      const at = i - 1;
+      tl.fromTo(cards[i], { y: () => below(cards[0]) }, { y: 0, duration: 0.8, ease: "power3.out", immediateRender: false }, at)
+        .to(cards[i - 1], { scale: 0.94, yPercent: -4, opacity: 0.45, duration: 0.8, ease: "power2.out" }, at)
+        .to(q("[data-roll]"), { yPercent: -(100 / n) * i, duration: 0.5, ease: "power3.inOut" }, at + 0.15)
+        .to(q("[data-bar]"), { scaleX: (i + 1) / n, duration: 0.8 }, at)
+        .to({}, { duration: 0.2 }, at + 0.8);
+    }
   }, { scope: root });
 
   return (
     <section id="strategy" ref={root} aria-labelledby="strategy-title" className="relative">
-      <div className="container-x flex flex-col gap-[110px] py-36">
-        <div className="flex flex-col gap-10">
-          <span className="eyebrow flex items-center gap-4 text-ice-deep"><span className="tnum">05</span><span className="block h-px w-10 iris-line" />Investment strategy
-            {s.draft && <span className="rounded-full border border-ice-deep/40 px-2.5 py-1 text-[9px] tracking-[0.2em]">Draft</span>}
-          </span>
-          <h2 id="strategy-title" data-manifesto className="display max-w-[1300px] text-[clamp(52px,8vw,148px)] leading-[0.92] tracking-[-0.03em]">
-            {s.headline.map((w, i) => (
-              <span key={i} data-word className={i >= s.italicFrom ? "serif text-lime" : undefined}>{w} </span>
-            ))}
-          </h2>
-        </div>
-        <div className="flex flex-wrap items-start gap-16">
-          <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-7 lg:sticky lg:top-36">
-            <p className="font-serif text-[32px] italic leading-[1.25] text-graphite-2">{s.intro}</p>
-            <span className="tnum font-serif text-[120px] leading-[0.8] text-lavender-deep" aria-hidden>
-              {pad2(active + 1)}<span className="text-[32px] text-mute"> / {pad2(s.principles.length)}</span>
-            </span>
+      <div className="container-x flex flex-col gap-16 pt-36">
+        <span className="eyebrow flex items-center gap-4 text-ice-deep"><span className="tnum">05</span><span className="block h-px w-10 iris-line" />Investment strategy
+          {s.draft && <span className="rounded-full border border-ice-deep/40 px-2.5 py-1 text-[9px] tracking-[0.2em]">Draft</span>}
+        </span>
+        <h2 id="strategy-title" data-manifesto className="display vskew max-w-[1300px] text-[clamp(52px,8vw,148px)] leading-[0.92] tracking-[-0.03em]">
+          {s.headline.map((w, i) => (
+            <span key={i} data-word className={i >= s.italicFrom ? "serif text-ice-deep" : undefined}>{w} </span>
+          ))}
+        </h2>
+        <p data-intro className="max-w-[640px] font-serif text-[clamp(24px,2.4vw,32px)] italic leading-[1.3] text-graphite-2">{s.intro}</p>
+      </div>
+
+      {/* the deck: held while each principle slides over the last */}
+      <div data-deck className="strategy-deck relative" style={{ ["--cards" as string]: n }}>
+        <div className="strategy-stage sticky top-0 flex h-[100svh] items-center overflow-hidden">
+          <div className="container-x grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+            <div aria-hidden className="flex items-end gap-4 lg:flex-col lg:items-start">
+              <span className="tnum relative block h-[0.82em] overflow-hidden font-serif text-[clamp(96px,12vw,200px)] leading-[0.82] text-ice-deep">
+                <span data-roll className="block">
+                  {s.principles.map((_, i) => <span key={i} className="block h-[0.82em]">{pad2(i + 1)}</span>)}
+                </span>
+              </span>
+              <span className="tnum pb-2 font-mono text-[12px] tracking-[0.2em] text-mute">/ {pad2(n)}</span>
+              <span className="hidden h-px w-48 overflow-hidden bg-line lg:block"><span data-bar className="block h-px origin-left bg-ice-deep" style={{ transform: `scaleX(${1 / n})` }} /></span>
+            </div>
+            <ol className="strategy-cards relative">
+              {s.principles.map((p, i) => (
+                <li key={p.title} data-card className="strategy-card glass flex flex-col gap-5 rounded-[28px] p-8 md:p-12" style={{ zIndex: i + 1 }}>
+                  <span className="tnum text-[11px] tracking-[0.2em] text-ice-deep">{pad2(i + 1)} · Principle</span>
+                  <h3 className="font-serif text-[clamp(34px,3.6vw,58px)] leading-[1.02]">{p.title}</h3>
+                  <p className="max-w-[560px] text-base leading-[1.75] text-graphite-2 md:text-lg">{p.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
-          <ol className="flex min-w-0 flex-[1.6_1_520px] flex-col gap-4">
-            {s.principles.map((p, i) => (
-              <li key={p.title} data-principle className={`glass grid grid-cols-[56px_minmax(0,1fr)] gap-6 rounded-[24px] p-7 transition-[transform,box-shadow] duration-500 md:p-9 ${active === i ? "translate-x-0 shadow-[0_30px_70px_-35px_rgba(215,255,63,0.25)]" : ""}`}>
-                <span className={`tnum pt-2 text-[11px] tracking-[0.2em] ${active === i ? "text-lavender-deep" : "text-mute"}`}>{pad2(i + 1)}</span>
-                <div className="flex flex-col gap-3">
-                  <h3 className="font-serif text-[clamp(30px,3vw,46px)] leading-none">{p.title}</h3>
-                  <p className="max-w-[580px] text-base leading-[1.7] text-graphite-2">{p.body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
         </div>
       </div>
     </section>

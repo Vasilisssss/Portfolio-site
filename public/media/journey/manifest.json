@@ -1,0 +1,35 @@
+{
+ "w": 1280,
+ "h": 720,
+ "lo": {
+  "w": 854,
+  "h": 480
+ },
+ "fps": 12,
+ "frames": 131,
+ "step": 2,
+ "hi": "hi/f{i}.webp",
+ "loPath": "lo/f{i}.webp",
+ "poster": "poster.webp",
+ "posterSm": "poster-sm.webp",
+ "last": "last.webp",
+ "join": 88,
+ "doors": 120,
+ "source": {
+  "establishing": {
+   "frames": 190,
+   "join": 175
+  },
+  "arrival": {
+   "frames": 190,
+   "join": 104,
+   "doors": 169
+  },
+  "reframe": {
+   "side": "establishing",
+   "scale": 1.05,
+   "dx": -0.02
+  },
+  "mad": 0.563
+ }
+}

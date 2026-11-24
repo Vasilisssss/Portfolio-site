@@ -1,7 +1,6 @@
 "use client";
-import { useRef, useState } from "react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
+import { useMemo, useRef, useState } from "react";
+import { gsap, useGSAP, reducedMotion } from "@/components/motion/gsap";
 import type { PublicView, Slice } from "@/lib/public";
 import { money, pct } from "@/lib/format";
 import { classColor, RAMP, UNDISCLOSED } from "@/lib/palette";
@@ -17,6 +16,12 @@ const TABS: { key: Tab; label: string }[] = [
 
 const R = 120, SW = 30, C = 2 * Math.PI * R;
 
+/**
+ * ALLOCATION — capital in proportion.
+ * Choreography: on first entry the donut sweeps its segments in (stroke-dash from 0, staggered) and the bars grow
+ * from the left. Switching tabs never swaps hard: every segment morphs from its previous length, offset and colour to
+ * the new ones (segments that are not needed collapse to zero), and the bars regrow in sequence.
+ */
 export default function Allocation({ allocation, currency }: { allocation: PublicView["allocation"]; currency: string }) {
   const tabs = TABS.filter((t) => allocation[t.key].length > 0);
   const [tab, setTab] = useState<Tab>(tabs[0]?.key ?? "assetClass");
@@ -24,15 +29,36 @@ export default function Allocation({ allocation, currency }: { allocation: Publi
   const root = useRef<HTMLDivElement>(null);
   const slices: Slice[] = allocation[tab];
   const color = (s: Slice, i: number) => (s.undisclosed ? UNDISCLOSED : tab === "assetClass" ? classColor(s.key) : RAMP[i % RAMP.length]);
+  // one persistent arc per slot across all tabs, so a tab switch can morph rather than remount
+  const slotCount = useMemo(() => Math.max(...TABS.map((t) => allocation[t.key].length), 1), [allocation]);
+  let acc = 0;
+  const geo = Array.from({ length: slotCount }, (_, i) => {
+    const sl = slices[i];
+    const len = sl ? sl.weight * C : 0;
+    const g = { dash: `${Math.max(0, len - 3).toFixed(2)} ${C.toFixed(2)}`, off: (-acc).toFixed(2), stroke: sl ? color(sl, i) : "#2a2e33" };
+    acc += len;
+    return g;
+  });
+  const prev = useRef<typeof geo | null>(null);
 
   useGSAP(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.from("[data-arc]", { strokeDasharray: `0 ${C}`, duration: 1.4, ease: "expo.out", stagger: 0.05, scrollTrigger: { trigger: root.current, start: "top 80%", once: true } });
-    gsap.from("[data-row-bar]", { scaleX: 0, transformOrigin: "left center", duration: 1.2, ease: "expo.out", stagger: 0.04, scrollTrigger: { trigger: root.current, start: "top 80%", once: true } });
-  }, { scope: root, dependencies: [tab], revertOnUpdate: true });
+    if (reducedMotion()) { prev.current = geo; return; }
+    const arcs = gsap.utils.toArray<SVGCircleElement>("[data-arc]", root.current);
+    if (!prev.current) {
+      gsap.from(arcs, { attr: { "stroke-dasharray": `0 ${C}` }, duration: 1.6, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: root.current, start: "top 78%", once: true } });
+      gsap.from("[data-row-bar]", { scaleX: 0, transformOrigin: "left center", duration: 1.3, ease: "expo.out", stagger: 0.05, scrollTrigger: { trigger: root.current, start: "top 78%", once: true } });
+    } else {
+      arcs.forEach((a, i) => {
+        const from = prev.current![i], to = geo[i];
+        gsap.fromTo(a, { attr: { "stroke-dasharray": from.dash, "stroke-dashoffset": from.off, stroke: from.stroke } },
+          { attr: { "stroke-dasharray": to.dash, "stroke-dashoffset": to.off, stroke: to.stroke }, duration: 1.1, ease: "power3.inOut", delay: i * 0.03 });
+      });
+      gsap.from("[data-row-bar]", { scaleX: 0, transformOrigin: "left center", duration: 1, ease: "expo.out", stagger: 0.05 });
+      gsap.from("[data-row]", { y: 12, autoAlpha: 0, duration: 0.8, ease: "expo.out", stagger: 0.04 });
+    }
+    prev.current = geo;
+  }, { scope: root, dependencies: [tab] });
 
-  let acc = 0;
-  const arcs = slices.map((s, i) => { const len = s.weight * C; const a = { s, i, dash: `${Math.max(0, len - 3).toFixed(2)} ${C.toFixed(2)}`, off: (-acc).toFixed(2) }; acc += len; return a; });
   const cur = active >= 0 ? slices[active] : null;
   const max = Math.max(...slices.map((s) => s.weight), 0.0001);
 
@@ -53,10 +79,10 @@ export default function Allocation({ allocation, currency }: { allocation: Publi
           <svg viewBox="0 0 300 300" className="relative h-full w-full -rotate-90" role="img" aria-label={`Allocation by ${TABS.find((t) => t.key === tab)?.label}: ${slices.map((s) => `${s.label} ${pct(s.weight)}`).join(", ")}`}>
             <circle cx="150" cy="150" r={R} fill="none" stroke="rgba(243,242,237,0.05)" strokeWidth={SW} />
             <circle cx="150" cy="150" r={R + SW / 2 + 9} fill="none" stroke="rgba(243,242,237,0.10)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
-            {arcs.map((a) => (
-              <circle key={a.s.key} data-arc cx="150" cy="150" r={R} fill="none" stroke={color(a.s, a.i)} strokeWidth={active === a.i ? SW + 10 : SW}
-                strokeDasharray={a.dash} strokeDashoffset={a.off} opacity={active === -1 || active === a.i ? 1 : 0.35}
-                className="cursor-pointer transition-[stroke-width,opacity] duration-300" onPointerEnter={() => setActive(a.i)} onPointerLeave={() => setActive(-1)} />
+            {geo.map((g, i) => (
+              <circle key={i} data-arc cx="150" cy="150" r={R} fill="none" stroke={g.stroke} strokeWidth={active === i ? SW + 10 : SW}
+                strokeDasharray={g.dash} strokeDashoffset={g.off} opacity={active === -1 || active === i ? 1 : 0.35}
+                className="cursor-pointer transition-[stroke-width,opacity] duration-300" onPointerEnter={() => i < slices.length && setActive(i)} onPointerLeave={() => setActive(-1)} />
             ))}
           </svg>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-[24%] text-center">
@@ -68,7 +94,7 @@ export default function Allocation({ allocation, currency }: { allocation: Publi
 
         <ul className="flex flex-col">
           {slices.map((s, i) => (
-            <li key={s.key}>
+            <li key={s.key} data-row>
               <button type="button" onPointerEnter={() => setActive(i)} onPointerLeave={() => setActive(-1)} onFocus={() => setActive(i)} onBlur={() => setActive(-1)}
                 className={`grid w-full grid-cols-[14px_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-line py-3.5 text-left transition-opacity ${active === -1 || active === i ? "opacity-100" : "opacity-45"}`}>
                 <span className="h-3 w-3 rounded-full" style={{ background: color(s, i) }} />
