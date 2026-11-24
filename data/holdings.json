@@ -24,6 +24,7 @@
     "name": "Cash (EUR)",
     "assetClass": "Cash",
     "geography": "Europe",
-    "industry": "Cash"
+    "industry": "Cash",
+    "accent": "#E9B949"
   }
 }

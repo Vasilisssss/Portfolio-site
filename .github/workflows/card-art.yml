@@ -58,7 +58,8 @@ jobs:
             --max-turns 40
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(gh pr create:*),Bash(node:*),Bash(wc:*)"
           prompt: |
-            You are adding card artwork for one position to a personal investment portfolio website (Next.js, this
+            You are adding card artwork for one position (any kind: stock, ETF, cash, bond, crypto, commodity, real
+            estate…) to a personal investment portfolio website (Next.js, this
             repository, branch cinematic-redesign). The position:
               id:     ${{ inputs.id }}
               name:   ${{ inputs.name }}
@@ -72,7 +73,12 @@ jobs:
             2. Draw public/brand/${{ inputs.id }}.svg: an emblem clearly related to the company: inspired by its brand
                mark, brand colours and what it makes, in the same refined style. A stylised mark, not a pixel copy of
                a trademarked logo; no words or slogans (a single letterform is fine where the brand mark is one).
-               For a fund (ETF), draw the issuer's mark (e.g. iShares, Vanguard) with a hint of what the fund holds.
+               This works for every kind of position: a company (its brand mark); a fund or ETF (the issuer's mark,
+               e.g. iShares or Vanguard, with a hint of what the fund holds); cash (the currency: its symbol, coins,
+               the issuing country's or union's emblem and colours); a bond (the issuer: a government's or company's
+               emblem); a cryptocurrency (its symbol); a commodity or precious metal (the material itself, e.g. an
+               ingot); real estate (the building or place). See public/brand/ for the ones already made (Vanguard's
+               ship, the euro coin).
                Rules: viewBox="0 0 100 100", transparent background, only shapes and fills (path, circle, rect,
                ellipse, polygon, line, g, linearGradient/radialGradient), no <text>, <image>, <script>, <style>,
                <foreignObject>, external links or event attributes. Under 8 KB. It must read clearly on #111315.
