@@ -1,0 +1,193 @@
+#!/usr/bin/env node
+/**
+ * Daily portfolio update from an Interactive Brokers Flex Query (free, no server, no login).
+ *
+ *   node tools/ibkr/flex-update.mjs                 fetch the statement (IBKR_FLEX_TOKEN, IBKR_FLEX_QUERY_ID) and update
+ *   node tools/ibkr/flex-update.mjs --xml file.xml  use a saved statement instead of fetching
+ *   --dry-run         print the result, write nothing
+ *   --accept-changes  accept a deposit/withdrawal or a changed quantity (after you have checked it)
+ *
+ * The Flex Query (see docs/ibkr-flex-setup.md) is a Year-to-Date Activity statement with Open Positions, Cash Report,
+ * Change in NAV and Net Asset Value (NAV) in Base. From it this script updates data/portfolio.json:
+ *   - each holding's quantity, average cost and mark price, and the USD→base FX rate
+ *   - the cash holding (base-currency ending cash)
+ *   - the latest history point: NAV, cumulative net deposits, cumulative time-weighted return (chained from the last
+ *     point before the statement period, so returns stay cumulative across years)
+ * Nothing is estimated. Anything unexpected (an unknown position, a missing month-end, a value that does not add up)
+ * stops the update: the script exits with code 2 and writes the reasons to stdout (and $GITHUB_STEP_SUMMARY).
+ * Exit codes: 0 updated or nothing new, 1 error, 2 needs review.
+ */
+import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const DATA = join(ROOT, "data/portfolio.json");
+const args = process.argv.slice(2);
+const flag = (n) => args.includes(n);
+const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
+
+// ---------- Flex Web Service ----------
+const FLEX = "https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService";
+const UA = { "User-Agent": "portfolio-site-flex/1.0" };
+const tag = (xml, name) => xml.match(new RegExp(`<${name}>([^<]*)</${name}>`))?.[1]?.trim();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchStatement(token, queryId) {
+  const send = await (await fetch(`${FLEX}/SendRequest?t=${encodeURIComponent(token)}&q=${encodeURIComponent(queryId)}&v=3`, { headers: UA })).text();
+  if (tag(send, "Status") !== "Success") throw new Error(`Flex SendRequest failed: ${tag(send, "ErrorCode") ?? ""} ${tag(send, "ErrorMessage") ?? send.slice(0, 200)}`);
+  const ref = tag(send, "ReferenceCode");
+  const url = tag(send, "Url") || `${FLEX}/GetStatement`;
+  // the statement is generated asynchronously: poll until it is ready
+  for (let i = 0, wait = 5000; i < 12; i++, wait = Math.min(wait * 1.5, 60000)) {
+    await sleep(wait);
+    const body = await (await fetch(`${url}?t=${encodeURIComponent(token)}&q=${encodeURIComponent(ref)}&v=3`, { headers: UA })).text();
+    if (body.includes("<FlexQueryResponse")) return body;
+    const code = tag(body, "ErrorCode");
+    // 1019 = statement generation in progress, 1018 = too many requests: wait and retry
+    if (code !== "1019" && code !== "1018") throw new Error(`Flex GetStatement failed: ${code ?? ""} ${tag(body, "ErrorMessage") ?? body.slice(0, 200)}`);
+  }
+  throw new Error("Flex statement was not ready after several minutes");
+}
+
+// ---------- minimal XML reading (Flex rows are attribute-only elements) ----------
+const unescape = (s) => s.replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+function rows(xml, name) {
+  const out = [];
+  for (const m of xml.matchAll(new RegExp(`<${name}\\s([^>]*?)/?>`, "g"))) {
+    const a = {};
+    for (const p of m[1].matchAll(/([A-Za-z_][\w.-]*)="([^"]*)"/g)) a[p[1]] = unescape(p[2]);
+    out.push(a);
+  }
+  return out;
+}
+const num = (v) => { if (v == null || v === "") return null; const n = Number(String(v).replace(/,/g, "")); return Number.isFinite(n) ? n : null; };
+const isoDate = (d) => {
+  if (!d) return null;
+  const s = String(d).split(/[;,\s]/)[0];
+  const m = s.match(/^(\d{4})-?(\d{2})-?(\d{2})$/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+};
+
+export function parseStatement(xml) {
+  const nav = rows(xml, "ChangeInNAV")[0];
+  if (!nav) throw new Error("the statement has no Change in NAV section (add it to the Flex Query)");
+  const positions = rows(xml, "OpenPosition").filter((p) => (p.levelOfDetail ?? "SUMMARY").toUpperCase() === "SUMMARY" && (p.assetCategory ?? "STK") !== "CASH");
+  const cashRow = rows(xml, "CashReportCurrency").find((c) => c.currency === "BASE_SUMMARY");
+  if (!cashRow) throw new Error("the statement has no Cash Report base summary (add Cash Report to the Flex Query)");
+  const daily = rows(xml, "EquitySummaryByReportDateInBase").map((r) => ({ date: isoDate(r.reportDate), total: num(r.total) })).filter((r) => r.date && r.total != null);
+  const st = rows(xml, "FlexStatement")[0] ?? {};
+  return {
+    fromDate: isoDate(nav.fromDate ?? st.fromDate),
+    toDate: isoDate(nav.toDate ?? st.toDate),
+    endingValue: num(nav.endingValue),
+    deposits: num(nav.depositsWithdrawals) ?? 0,
+    twrRaw: num(nav.twr),
+    cash: num(cashRow.endingCash),
+    positions: positions.map((p) => ({
+      symbol: String(p.symbol ?? "").split(/\s|@/)[0],
+      quantity: num(p.position),
+      price: num(p.markPrice),
+      avgPrice: num(p.costBasisPrice),
+      currency: p.currency,
+      fx: num(p.fxRateToBase),
+    })),
+    daily,
+  };
+}
+
+// ---------- update ----------
+const round = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
+const monthOf = (d) => d.slice(0, 7);
+
+export function update(pf, s, { acceptChanges = false } = {}) {
+  const review = [], notes = [];
+  if (!s.toDate || !s.fromDate || s.endingValue == null || s.cash == null) review.push("The statement is missing its period, ending NAV or cash.");
+  if (review.length) return { pf, review, notes, changed: false };
+
+  const next = structuredClone(pf);
+  const history = next.history ?? [];
+  const last = history[history.length - 1];
+  if (last && s.toDate < last.date) review.push(`The statement ends ${s.toDate}, before the latest point already published (${last.date}).`);
+
+  // holdings
+  const seen = new Set();
+  for (const p of s.positions) {
+    const h = next.holdings.find((x) => x.ticker && x.ticker.toUpperCase() === p.symbol.toUpperCase());
+    if (!h) { review.push(`New position ${p.symbol} (${p.quantity} @ ${p.price} ${p.currency}): add it to data/portfolio.json with its name, asset class, geography and industry, then re-run.`); continue; }
+    seen.add(h.id);
+    if (p.quantity == null || p.price == null) { review.push(`${p.symbol}: quantity or mark price missing.`); continue; }
+    if (h.quantity !== p.quantity || (p.avgPrice != null && Math.abs((h.avgPrice ?? 0) - p.avgPrice) > 1e-6)) {
+      const msg = `${p.symbol}: quantity ${h.quantity} → ${p.quantity}, average cost ${h.avgPrice} → ${p.avgPrice}.`;
+      if (acceptChanges) notes.push(msg); else review.push(`${msg} (a trade: re-run with "accept changes" once checked).`);
+      h.quantity = p.quantity; if (p.avgPrice != null) h.avgPrice = p.avgPrice;
+    }
+    h.currentPrice = p.price;
+    if (p.currency && p.currency !== next.baseCurrency && p.fx != null) next.fx[p.currency] = p.fx;
+  }
+  for (const h of next.holdings) if (h.ticker && !seen.has(h.id)) review.push(`${h.ticker} is no longer in the IBKR statement (sold?): remove it from data/portfolio.json, then re-run.`);
+  const cash = next.holdings.find((h) => h.assetClass === "Cash");
+  if (cash) { cash.invested = round(s.cash, 2); cash.currentValue = round(s.cash, 2); }
+
+  // the base: the last published point before the statement period (cumulative figures continue from it)
+  const before = history.filter((p) => p.date < s.fromDate);
+  const base = before[before.length - 1];
+  const netContributions = round((base?.netContributions ?? 0) + s.deposits, 6);
+  if (last && Math.abs(netContributions - last.netContributions) > 0.01) {
+    const msg = `Net deposits ${last.netContributions} → ${netContributions} (a deposit or withdrawal).`;
+    if (acceptChanges) notes.push(msg); else review.push(`${msg} Re-run with "accept changes" once checked.`);
+  }
+
+  // cumulative time-weighted return. Flex reports TWR either as a fraction or in percent: take the reading that
+  // continues the published series (daily moves are small; the two readings differ by a factor of 100)
+  let twr;
+  if (s.twrRaw != null) {
+    const chain = (r) => round((1 + (base?.twr ?? 0)) * (1 + r) - 1, 8);
+    const a = chain(s.twrRaw), b = chain(s.twrRaw / 100);
+    twr = last?.twr == null ? (Math.abs(s.twrRaw) > 1.5 ? b : a) : (Math.abs(a - last.twr) <= Math.abs(b - last.twr) ? a : b);
+    if (last?.twr != null && Math.abs(twr - last.twr) > 0.25) review.push(`Time-weighted return would jump from ${last.twr} to ${twr}.`);
+  } else review.push("The statement has no TWR in Change in NAV (add the TWR field to the Flex Query).");
+
+  // month-end: when a new month has begun, the previous latest point must be that month's last business day
+  if (last && monthOf(s.toDate) > monthOf(last.date)) {
+    const monthRows = s.daily.filter((r) => monthOf(r.date) === monthOf(last.date));
+    const end = monthRows[monthRows.length - 1];
+    if (end && end.date !== last.date) review.push(`The ${monthOf(last.date)} month-end point is ${last.date}, but the month's last business day is ${end.date} (a daily run was missed). Its return cannot be filled in from a year-to-date statement: update that point by hand or from PortfolioAnalyst.`);
+  }
+
+  // sanity: positions + cash should add up to the statement's NAV
+  const total = next.holdings.reduce((t, h) => t + (h.currentValue ?? (h.quantity ?? 0) * (h.currentPrice ?? 0) * (next.fx[h.currency] ?? NaN)), 0);
+  if (!(Math.abs(total - s.endingValue) <= 0.02 * Math.max(1, Math.abs(s.endingValue)))) review.push(`Holdings add up to ${round(total, 2)} but the statement's NAV is ${s.endingValue}.`);
+
+  const point = { date: s.toDate, value: round(s.endingValue, 6), netContributions, ...(twr != null ? { twr } : {}) };
+  // within a month the latest point moves forward; once a month is over, its last point stays as the month-end
+  if (last && monthOf(last.date) === monthOf(s.toDate)) history[history.length - 1] = point; else history.push(point);
+  next.history = history;
+  next.asOf = s.toDate;
+  const changed = JSON.stringify(next) !== JSON.stringify(pf);
+  return { pf: next, review, notes, changed, total, point };
+}
+
+// ---------- main ----------
+async function main() {
+  const xml = opt("--xml") ? readFileSync(opt("--xml"), "utf8") : await (async () => {
+    const t = process.env.IBKR_FLEX_TOKEN, q = process.env.IBKR_FLEX_QUERY_ID;
+    if (!t || !q) { console.log("IBKR_FLEX_TOKEN / IBKR_FLEX_QUERY_ID are not set: nothing to do (see docs/ibkr-flex-setup.md)."); process.exit(0); }
+    return fetchStatement(t, q);
+  })();
+  const pf = JSON.parse(readFileSync(DATA, "utf8"));
+  const s = parseStatement(xml);
+  const r = update(pf, s, { acceptChanges: flag("--accept-changes") || process.env.ACCEPT_CHANGES === "true" });
+  const lines = [];
+  if (r.point) lines.push(`Statement ${s.fromDate} → ${s.toDate}: NAV ${s.endingValue} ${pf.baseCurrency}, net deposits ${r.point.netContributions}, TWR ${r.point.twr ?? "—"}.`);
+  lines.push(...r.notes.map((n) => `- ${n}`));
+  if (r.review.length) lines.unshift("NEEDS REVIEW — nothing was published:", ...r.review.map((x) => `- ${x}`), "");
+  else lines.push(r.changed ? "Updated data/portfolio.json." : "No new data.");
+  const text = lines.join("\n");
+  console.log(text);
+  if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${text}\n`);
+  if (r.review.length) process.exit(2);
+  if (r.changed && !flag("--dry-run")) writeFileSync(DATA, `${JSON.stringify(r.pf, null, 2)}\n`);
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error(String(e?.message ?? e)); process.exit(1); });

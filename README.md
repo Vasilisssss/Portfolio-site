@@ -59,8 +59,13 @@ Every section reads these values. Nothing is estimated, and fields that aren't i
 
 ## Updating the data
 
-Replace `data/portfolio.json` (format in `data/README.md`) and merge it into `cinematic-redesign`. The site redeploys automatically.
-The current data comes from Interactive Brokers: positions and cost basis, plus PortfolioAnalyst month-end NAV and TWR.
+**Automatic (daily, free):** `.github/workflows/ibkr-daily.yml` reads an IBKR Flex Query every Tuesday–Saturday at
+06:17 UTC (the previous US trading day's close), updates `data/portfolio.json` with `tools/ibkr/flex-update.mjs` and
+redeploys. Trades, deposits and anything that does not add up are never published automatically: the run opens an
+issue instead. One-time setup: `docs/ibkr-flex-setup.md`.
+
+**By hand:** edit `data/portfolio.json` (format in `data/README.md`) and merge it into `cinematic-redesign`. The site
+redeploys automatically.
 
 **Keeping data out of the public repo (optional):** store the JSON in a repository secret named `PORTFOLIO_JSON`.
 A build that is given it uses it instead of `data/portfolio.json` (the release workflow would need to pass it to `npm run build:pages`). For local builds, `data/portfolio.private.json` does the same
