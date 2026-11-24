@@ -21,7 +21,6 @@ export interface PublicHolding {
   note?: string;
   brand?: string;
   accent?: string;
-  art?: string;
   /** URL of the company artwork (public/brand/<id>.svg), when there is one */
   artSrc?: string;
   purchaseDate?: string;
@@ -101,7 +100,7 @@ export function getPublicView({ reveal = false }: { reveal?: boolean } = {}): Pu
       return clean<PublicHolding>({
         id: h.id, name: h.name, ticker: h.ticker, assetClass: h.assetClass, currency: h.currency,
         geography: h.geography, industry: h.industry, note: h.note, brand: h.brand,
-        accent: h.accent && /^#[0-9a-f]{3,8}$/i.test(h.accent) ? h.accent : undefined, art: h.art,
+        accent: h.accent && /^#[0-9a-f]{3,8}$/i.test(h.accent) ? h.accent : undefined,
         artSrc: fs.existsSync(path.join(process.cwd(), "public", "brand", `${h.id}.svg`)) ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/brand/${h.id}.svg` : undefined,
         weight: p.weight, returnPct: p.returnPct,
         purchaseDate: privacy.showPurchaseDates ? h.purchaseDate : undefined,

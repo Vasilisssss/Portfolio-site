@@ -6,7 +6,6 @@ import { useGSAP } from "@gsap/react";
 import type { PublicHolding } from "@/lib/public";
 import { moneyCompact, pct } from "@/lib/format";
 import { classColor } from "@/lib/palette";
-import Emblem from "@/components/ui/Emblem";
 
 /** the brand on a card: set in data/holdings.json, else the first word of the name ("NVIDIA Corp" → "NVIDIA") */
 const brandOf = (h: PublicHolding) => (h.brand ?? h.name.replace(/[^\p{L}\p{N}\s&.-]/gu, " ").trim().split(/\s+/)[0] ?? h.name).trim();
@@ -59,27 +58,7 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={h.artSrc} alt="" width={128} height={128} className="h-full w-full object-contain" />
               </div>
-            ) : listed ? (
-              // generated artwork in the manner of the Anthropic burst, unique per ticker (components/ui/Emblem)
-              <div className="absolute right-9 top-10 flex h-32 w-32 items-center justify-center opacity-85 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">
-                <Emblem seed={h.ticker ?? h.id} color={color} art={h.art} className="h-full w-full" />
-              </div>
-            ) : h.assetClass === "Cash" ? (
-              <div className="absolute -right-1 top-2 select-none font-serif text-[clamp(150px,19vw,230px)] font-light italic leading-none tracking-[-.1em] text-white/[.12] transition-transform duration-700 group-hover:-translate-y-2">€</div>
-            ) : h.assetClass === "Cryptocurrency" ? (
-              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 bg-white/[.025] font-sans text-[72px] font-light text-white/70 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">₿</div>
-            ) : h.assetClass === "Real Estate" ? (
-              <svg viewBox="0 0 160 160" className="absolute right-7 top-7 h-32 w-32 text-white/65 transition-transform duration-700 group-hover:-translate-y-2" fill="none" stroke="currentColor" strokeWidth="1.1" aria-hidden="true">
-                <path d="M22 138V54L80 20L138 54V138H22Z M48 138V78H112V138 M65 78V98H95V78 M58 49H102 M80 20V138" opacity=".75" />
-                <path d="M12 138H148 M35 54L80 8L125 54" stroke={color} />
-              </svg>
-            ) : h.assetClass === "Bonds" ? (
-              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 text-[68px] font-light text-white/65 transition-transform duration-700 group-hover:scale-105">§</div>
-            ) : h.assetClass === "Precious Metals" ? (
-              <div className="absolute right-8 top-8 flex h-32 w-32 items-center justify-center rounded-full border border-white/10 bg-white/[.025] font-serif text-[72px] italic text-white/70 transition-transform duration-700 group-hover:rotate-[-8deg] group-hover:scale-105">Au</div>
-            ) : (
-              <div className="absolute -right-5 top-7 select-none font-serif text-[clamp(150px,20vw,250px)] italic leading-[.8] tracking-[-.09em] text-white/[.14] transition-transform duration-700 group-hover:-translate-x-2">{(h.ticker ?? h.name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").map((w) => w[0]).join("").slice(0, 4)).slice(0, 4)}</div>
-            )}
+            ) : null /* no artwork until the position's real logo is in public/brand/ (see docs/card-art.md) */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c09b]/50 to-transparent" />
             <div className="absolute bottom-[34%] left-8 right-8 h-px bg-white/[.07]" />
           </div>

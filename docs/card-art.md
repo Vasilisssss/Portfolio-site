@@ -1,36 +1,38 @@
-# Company artwork for position cards
+# Logos on position cards
 
-Each stock or ETF card shows artwork in its top-right corner (and, larger, on its detail page):
+Every position card shows the position's **real logo or brand symbol** in its top-right corner (and, larger, on its
+detail page), never an invented emblem:
 
-1. **Company artwork**: `public/brand/<id>.svg`, an emblem related to the company (like the Anthropic burst or the
-   Google "G"). Drawn by Claude through the **Card artwork** workflow, or added by hand.
-2. **Fallback**: until there is one, a generated emblem (`components/ui/Emblem.tsx`), unique per ticker.
+- a company: its logo symbol (Anthropic's burst, Google's "G", …)
+- a fund or ETF: the issuer's logo (Vanguard's ship, iShares, …)
+- cash: the currency's symbol (the euro coin), a bond: the issuer's emblem, crypto: its symbol, and so on.
 
-The card's brand name and glow colour come from `brand` and `accent` in `data/holdings.json`.
+The logo is `public/brand/<id>.svg` (Anthropic and Alphabet are drawn in `components/sections/Investments.tsx`).
+A card without a logo yet shows no artwork. Its brand name and glow colour come from `brand` and `accent` in
+`data/holdings.json`.
 
-## How Claude draws it
+## Claude adds the logo
 
-When the daily IBKR update adds a new position, it starts `.github/workflows/card-art.yml` for it. Claude
-(`anthropics/claude-code-action`) draws `public/brand/<id>.svg` inspired by the company's brand mark, colours and
-products, sets `brand`, `accent` (and `industry` if empty) in `data/holdings.json`, and opens a **pull request**.
-GitHub shows the SVG as an image in the pull request; **merge it to publish**, or close it and ask again with wishes.
+When the daily IBKR update adds a new position, it starts `.github/workflows/card-art.yml`. Claude
+(`anthropics/claude-code-action`) fetches the official logo (Wikimedia Commons or the company's own site; redrawn
+faithfully as vector paths only if no official file exists), cleans it, and sets `brand`, `accent` (and `industry`
+if missing) in `data/holdings.json`. The workflow then checks the file (a single SVG, no scripts, text, images or
+external links, under 40 KB), publishes it and notifies you with an issue showing the logo.
 
-To draw (or redraw) artwork for any position: **Actions → Card artwork → Run workflow**, with the position's id
-(as in `/investments/<id>`), its name, ticker and optional wishes (e.g. "more minimal", "use the logo's colours").
+To redo one: **Actions → Card artwork → Run workflow** with the position's id (as in `/investments/<id>`), its
+name, ticker and your wishes (e.g. "use the white version", "symbol only").
 
 ## One-time setup
 
-1. **A key for Claude**, as a repository secret (Settings → Secrets and variables → Actions → New repository secret):
-   - **`CLAUDE_CODE_OAUTH_TOKEN`** (uses your Claude Pro or Max subscription): on a computer with Claude Code
-     installed, run `claude setup-token` and paste the token it prints; or
-   - **`ANTHROPIC_API_KEY`** (pay per use, from console.anthropic.com).
-2. **Allow pull requests from workflows**: Settings → Actions → General → Workflow permissions → tick
-   **Allow GitHub Actions to create and approve pull requests** → Save.
+One repository secret (Settings → Secrets and variables → Actions → New repository secret):
 
-Without the key, the Card artwork workflow fails and nothing else is affected: the card keeps its generated emblem.
+- **`CLAUDE_CODE_OAUTH_TOKEN`**: uses your Claude Pro or Max subscription. On a computer with Claude Code, run
+  `claude setup-token` and paste the token it prints; or
+- **`ANTHROPIC_API_KEY`**: pay per use, from console.anthropic.com.
 
-## Adding artwork by hand
+Without it, the Card artwork workflow fails and nothing else is affected: the card simply has no logo yet.
 
-Put an SVG at `public/brand/<id>.svg` (square, `viewBox="0 0 100 100"`, transparent background, made to read on a
-dark card) and commit it to `cinematic-redesign`. Anthropic and Alphabet keep their hand-made artwork in
-`components/sections/Investments.tsx`.
+## Adding a logo by hand
+
+Put the SVG at `public/brand/<id>.svg` (with a viewBox, transparent background, readable on a dark card) and commit
+it to `cinematic-redesign`.

@@ -30,8 +30,6 @@ export interface Holding {
   brand?: string;
   /** accent colour for the position card, e.g. "#76B900" (default: the asset-class colour) */
   accent?: string;
-  /** card artwork style: burst, rings, orbit, petals, facets, dots or waves (default: chosen from the ticker) */
-  art?: string;
   /** false = never shown individually (still counted in totals and allocation, as "Undisclosed") */
   public?: boolean;
 }

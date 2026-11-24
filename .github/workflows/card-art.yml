@@ -1,11 +1,11 @@
-# Card artwork for a position, drawn by Claude (anthropics/claude-code-action).
+# Logo artwork for a position card, by Claude (anthropics/claude-code-action).
 # Started automatically by "Daily IBKR data" when a new position is added, or by hand (Actions → Card artwork →
-# Run workflow) for any position. Claude draws public/brand/<id>.svg, an emblem inspired by the company's brand mark,
-# colours and products in the manner of the site's Anthropic burst, sets the card's brand and accent colour in
-# data/holdings.json, and opens a pull request. GitHub shows the SVG as an image in the pull request: nothing goes
-# live until you merge it.
-# Needs one of the secrets CLAUDE_CODE_OAUTH_TOKEN (Claude Pro/Max: `claude setup-token`) or ANTHROPIC_API_KEY, and
-# Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests". See docs/card-art.md.
+# Run workflow) for any position, e.g. to redraw one. Claude adds public/brand/<id>.svg: the company's REAL logo or
+# brand symbol (the official vector file where one exists; otherwise a faithful redrawing), in its official colours,
+# and sets the card's brand name and accent colour in data/holdings.json. This workflow then checks the file, publishes
+# it (commit to cinematic-redesign + release) and notifies you with an issue showing the logo.
+# Needs one secret: CLAUDE_CODE_OAUTH_TOKEN (Claude Pro/Max: `claude setup-token`) or ANTHROPIC_API_KEY.
+# See docs/card-art.md.
 name: Card artwork
 
 on:
@@ -15,22 +15,23 @@ on:
         description: "Position id (as in /investments/<id>), e.g. nvda"
         required: true
       name:
-        description: "Company or fund name, e.g. NVIDIA Corp"
+        description: "Company, fund or asset name, e.g. NVIDIA Corp"
         required: true
       ticker:
         description: "Ticker, e.g. NVDA"
         required: false
       notes:
-        description: "Optional wishes for the artwork"
+        description: "Optional wishes, e.g. 'use the green NVIDIA eye only'"
         required: false
 
 permissions:
   contents: write
-  pull-requests: write
+  actions: write
+  issues: write
   id-token: write
 
 concurrency:
-  group: card-art-${{ inputs.id }}
+  group: card-art
   cancel-in-progress: false
 
 jobs:
@@ -47,51 +48,96 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: cinematic-redesign
-          fetch-depth: 0
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Claude adds the logo
+        uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ github.token }}
           claude_args: >-
             --max-turns 40
-            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(gh pr create:*),Bash(node:*),Bash(wc:*)"
+            --allowedTools "Read,Write,Edit,Glob,Grep,WebSearch,WebFetch,Bash(curl:*),Bash(node:*),Bash(wc:*),Bash(head:*)"
           prompt: |
-            You are adding card artwork for one position (any kind: stock, ETF, cash, bond, crypto, commodity, real
-            estate…) to a personal investment portfolio website (Next.js, this
-            repository, branch cinematic-redesign). The position:
+            Add the logo for one position of a personal investment portfolio website (this repository). The position:
               id:     ${{ inputs.id }}
               name:   ${{ inputs.name }}
               ticker: ${{ inputs.ticker }}
               wishes: ${{ inputs.notes }}
 
-            1. Look at the hand-made artwork already on the site for reference, in components/sections/Investments.tsx:
-               the Anthropic burst (tapered rays around a core, in Anthropic's terracotta) and the Google "G" (the
-               four brand colours). Cards are dark (#111315); the artwork sits in a 128×128 px square, top right.
+            The card must show the position's REAL, recognisable logo or brand symbol, exactly like the site's
+            Anthropic burst and Google "G" (see components/sections/Investments.tsx and the files in public/brand/).
+            Never an invented, abstract or generic emblem.
 
-            2. Draw public/brand/${{ inputs.id }}.svg: an emblem clearly related to the company: inspired by its brand
-               mark, brand colours and what it makes, in the same refined style. A stylised mark, not a pixel copy of
-               a trademarked logo; no words or slogans (a single letterform is fine where the brand mark is one).
-               This works for every kind of position: a company (its brand mark); a fund or ETF (the issuer's mark,
-               e.g. iShares or Vanguard, with a hint of what the fund holds); cash (the currency: its symbol, coins,
-               the issuing country's or union's emblem and colours); a bond (the issuer: a government's or company's
-               emblem); a cryptocurrency (its symbol); a commodity or precious metal (the material itself, e.g. an
-               ingot); real estate (the building or place). See public/brand/ for the ones already made (Vanguard's
-               ship, the euro coin).
-               Rules: viewBox="0 0 100 100", transparent background, only shapes and fills (path, circle, rect,
-               ellipse, polygon, line, g, linearGradient/radialGradient), no <text>, <image>, <script>, <style>,
-               <foreignObject>, external links or event attributes. Under 8 KB. It must read clearly on #111315.
+            What the logo is:
+            - a company (stock): its logo symbol/icon (the mark, e.g. Apple's apple, Nike's swoosh, NVIDIA's eye); a
+              wordmark only if the company has no symbol;
+            - a fund or ETF: the issuer's logo (e.g. iShares, Vanguard, Xtrackers, SPDR);
+            - cash: the currency's symbol in that currency's colours (see public/brand/cash-eur.svg for the euro);
+            - a bond: the issuer's emblem (the government's or the company's);
+            - a cryptocurrency: its official symbol (e.g. the Bitcoin ₿ coin);
+            - a commodity or precious metal: the issuer's logo for an ETC, else the material (e.g. a gold bar).
 
+            How:
+            1. Find the official logo as SVG: Wikimedia Commons (search "<company> logo svg"; files are served from
+               upload.wikimedia.org) or the company's own site / press kit. Download it with curl. If no SVG exists,
+               redraw the official mark faithfully as vector paths in its official colours. Use the symbol, not the
+               full lockup with the name, unless the brand is only a wordmark.
+            2. Write it to public/brand/${{ inputs.id }}.svg, cleaned: one <svg> root with a viewBox (square-ish; fit
+               the mark with a little margin), no width/height needed, transparent background, outlined shapes only.
+               Remove <script>, <foreignObject>, <image>, <text>, event attributes (on…=) and any external reference
+               (http/https URLs, @import). Keep it under 40 KB. It sits top right on a dark card (#111315): if the
+               official colour is black or very dark, use the brand's official light/reversed version (white).
             3. In data/holdings.json, add or update the entry "${{ inputs.id }}" (keep every other entry and the
-               "_comment" untouched): set "brand" (the short brand name shown on the card) and "accent" (the brand's
-               main colour as #rrggbb, lightened if needed so it glows on a dark card). If the entry has no
-               "industry", add a short one (e.g. "Semiconductors"). Never add amounts.
+               "_comment" exactly as they are): "brand" = the short brand name shown on the card, "accent" = the
+               brand's main colour as #rrggbb (lightened if needed so it glows on a dark card), and, if missing,
+               "industry" (short, e.g. "Semiconductors"). Never add amounts.
+            4. Change no other file. Do not commit or push: the workflow publishes after checking.
+            5. Finish with one line: where the logo came from (URL, or "redrawn from the official mark").
 
-            4. Check: the SVG parses (node -e "const s=require('fs').readFileSync('public/brand/${{ inputs.id }}.svg','utf8'); if(!/^<svg[\s\S]*<\/svg>\s*$/.test(s.trim())||/<(script|text|image|foreignObject|style)\b|\son\w+=|href=/i.test(s)) process.exit(1)"),
-               and data/holdings.json is valid JSON. Only those two files may change.
+      - name: Check the logo file
+        env:
+          ID: ${{ inputs.id }}
+        run: |
+          node - <<'EOF'
+          const fs = require("fs");
+          const id = process.env.ID, file = `public/brand/${id}.svg`;
+          if (!fs.existsSync(file)) throw new Error(`${file} was not created`);
+          const s = fs.readFileSync(file, "utf8").trim();
+          if (s.length > 40000) throw new Error(`${file} is too large (${s.length} bytes)`);
+          if (!/^(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*<svg[\s>][\s\S]*<\/svg>$/.test(s)) throw new Error("not a single <svg> document");
+          if (!/viewBox=/.test(s)) throw new Error("no viewBox");
+          if (/<(script|foreignObject|image|iframe|text)\b/i.test(s) || /\son\w+\s*=/i.test(s) || /(https?:)?\/\/(?!www\.w3\.org)/i.test(s.replace(/xmlns(:\w+)?="[^"]*"/g, "")) || /@import/i.test(s))
+            throw new Error("the SVG contains something not allowed (scripts, text, images or external references)");
+          const meta = JSON.parse(fs.readFileSync("data/holdings.json", "utf8"));
+          const e = meta[id];
+          if (!e || !e.brand || !/^#[0-9a-f]{6}$/i.test(e.accent ?? "")) throw new Error("data/holdings.json: brand or accent missing");
+          console.log(`OK: ${file}, brand ${e.brand}, accent ${e.accent}`);
+          EOF
+          changed=$(git status --porcelain | awk '{print $2}' | sort | tr '\n' ' ')
+          if [ "$changed" != "data/holdings.json public/brand/$ID.svg " ] && [ "$changed" != "public/brand/$ID.svg " ]; then echo "Unexpected changes: $changed"; exit 1; fi
 
-            5. git checkout -b art/${{ inputs.id }}, commit both files ("Card artwork: ${{ inputs.name }}"), push, and
-               open a pull request into cinematic-redesign with gh pr create. In its body: one line on the idea behind
-               the design, then ![artwork](../blob/art/${{ inputs.id }}/public/brand/${{ inputs.id }}.svg?raw=true),
-               then "Merge to publish it on the site."
+      - name: Publish and notify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ID: ${{ inputs.id }}
+          NAME: ${{ inputs.name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "public/brand/$ID.svg" data/holdings.json
+          git commit -q -m "Card artwork: $NAME logo"
+          for i in 1 2 3 4; do git pull -q --rebase origin cinematic-redesign && git push origin HEAD:cinematic-redesign && break; sleep $((i * 10)); done
+          # a push made with the workflow token does not start other workflows: start the release explicitly
+          gh workflow run cinematic-redesign-checks.yml --ref cinematic-redesign
+          body="The logo for **$NAME** is on the site (live in about 5 minutes).
+
+          ![logo](https://raw.githubusercontent.com/${{ github.repository }}/cinematic-redesign/public/brand/$ID.svg)
+
+          Not right? Actions → **Card artwork** → **Run workflow** with id \`$ID\` and your wishes, and it is redrawn."
+          url=$(gh issue create --title "Card artwork published: $NAME" --body "$body")
+          gh issue close "$url" --reason completed
