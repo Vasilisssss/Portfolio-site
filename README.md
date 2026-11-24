@@ -1,48 +1,36 @@
 # Personal investment portfolio: Inside the Investment Headquarters
 
 My own investments: what I own, how my capital is allocated, how it has performed, and how I think about investing.
-The experience opens with a cinematic arrival at a premium financial headquarters, then moves inside to a
-photographic investment exchange. The approved exterior and entrance films are scrubbed by scrolling; the
-path-traced exchange film continues the journey through the trading floor, investment gallery and performance wall.
+A scroll-driven journey: scrolling walks you up to a headquarters at blue hour, through its doors, onto the trading
+floor and on through four photographic rooms. Every section on the page moves with the scroll.
 
 | Chapter | Where | Real content |
 |---|---|---|
-| I · Headquarters | Blue-hour financial district and a warm timber-and-glass entrance; scroll reveals the exchange | Headline, portfolio value |
-| II · The Capital Engine | Trading floor: the video wall, ticker and desk monitors show privacy-filtered portfolio figures | Invested capital, value, P/L, overview |
-| III · The Investment Gallery | Gallery wing: one brushed-steel monolith per holding, **height ∝ share of capital**, a lime/coral band (above/below cost), a brass plaque | Holdings, allocation |
-| IV · The Performance Gallery | Walnut wall: the **real month-end index** as a steel line, rebased to 100; each month's ring lime (gain) or coral (loss) | Performance, journal |
-| V · Investment Philosophy | Strategy, journal and about content complete the portfolio narrative | Strategy, about, closing |
+| I · Headquarters | The walk: plaza → portal → doors → trading floor (scroll is the playhead, both ways) | Headline, portfolio value |
+| II · The Capital Engine | Market screens reflected in dark glass | Invested capital, value, P/L, overview |
+| III · The Investment Gallery | Steel monoliths on a black stone plinth | Holdings, allocation |
+| IV · The Performance Gallery | A line of light on a walnut wall | Performance |
+| V · The Final Reveal | The skyline above the clouds, then **The Window** — the whole journey replayed through one frame | Strategy, experience, about |
 
 How it is made:
-- `tools/film/world.py` — the trading hall, investment gallery, performance wall and legacy studio/briefcase source
-  assets, modelled by script in Blender with scanned materials and models; `render.py` — the original camera path over scroll progress u ∈ [0, 4],
-  five full-resolution stills (one per scene) and ~160 motion frames, with the screen position of every label anchor
-  per frame; `encode.py` — photographic grade, WebP at two sizes, `public/film/manifest.json`.
-- Screens are drawn from the site's own privacy-filtered export (`/film-data.json`, built from `lib/public.ts`) by
-  `screens_img.py`, so the film can only show what the page may show.
-- `tools/film/check.mjs` runs in `npm run build:pages` and **stops the build if the portfolio data changed since the
-  film was rendered** — the film must be re-rendered rather than publish stale figures.
-- `components/world/film.ts` — the exchange-only player: starts at u = 1 and is constrained to u ∈ [1, 3].
-  It loads only trading-floor/gallery/performance stills and motion frames, keeps a small window decoded,
-  and positions the HTML labels on the rendered objects. Legacy briefcase endpoints remain source assets but are not requested.
-- `components/hero/HeadquartersHero.tsx` — scroll-scrubs the approved headquarters exterior and entrance clips,
-  then fades into the exchange film. Poster fallbacks and a reduced-motion static presentation are included.
-- `tools/exchange/proto.py` — the approved one-room prototype the film grew from.
-- Render: Blender as a Python module (`pip install bpy pillow`), Cycles on CPU, OpenImageDenoise.
-  `python tools/film/world.py --out world.blend` → `python tools/film/render.py world.blend out keys 1920 192` and
-  `… seq 1280 32 0 157` → `python tools/film/encode.py out film-data.json public/film`.
-- `?qa` exposes deterministic test hooks.
-
-Credits: CC0 scans from [Poly Haven](https://polyhaven.com). Materials: Granite Tile and Granite Tile 03 (Charlotte Baglioni),
-Marble 01 and Fabric Leather 01 (Rob Tuytel), Smoked Walnut, Black Oak and White Oak Veneer (Jenelle van Heerden),
-Poly Wool Herringbone (colormass, Rico Cilliers). Models: Pachira Aquatica 01 and Calathea Orbifolia 01 (Rob Tuytel,
-Rico Cilliers), Potted Plant 01 and 02 (Rico Cilliers), Potted Plant 04 and Side Table 01 (James Ray Cock), Mid Century
-Lounge Chair (Kuutti Siitonen), Modern Coffee Table 01 (Amin), Wall Clock (PierreB3D). Panorama: Canary Wharf (Andreas Mischok).
-Details: `tools/film/CREDITS.json`.
+- `tools/media/frames.mjs` — turns the two approved clips (`public/media/headquarters-*.mp4`) into one continuous,
+  scroll-scrubbed walk: finds the join where the portal is framed most alike (centre-weighted luma + edge
+  correlation over the last 3 s / first 5 s, reframing only the establishing side so any zoom reads as a forward
+  push), cross-dissolves 8 frames, grades every frame like `public/scenes` and writes WebP at full resolution and
+  854×480, plus `public/media/journey/manifest.json` (frames, join, the frame where the doors are passed).
+  Run `node tools/media/frames.mjs` (ffmpeg with libwebp on PATH); `--analyse` prints the join only.
+- `public/scenes/` — the four rooms and the closing shot, each wide/tall at two sizes; `manifest.json` gives each
+  room's fly-in point (`zoomOrigin`) and subject position for portrait crops (`focusX`).
+- `components/journey/` — one fixed WebGL2 stage behind the page (`stage.ts`: cover-fit, push, radial blur, aperture,
+  grade, vignette, grain; Canvas2D fallback), the frame loader (`sequence.ts`), the conductor that maps scroll to the
+  walk and the rooms (`Journey.tsx`), the chapter cards (`Chapter.tsx`) and **The Window** (`ViewingWindow.tsx`).
+- `components/motion/` — the shared motion system (masked headlines with drift and velocity skew, fade-rise,
+  clip reveals, assembling grids, stacked sheets, drifting type, text-roll links) on GSAP + ScrollTrigger + Lenis.
+- `?qa` exposes deterministic test hooks (`window.__journey`).
 
 Live at **https://vasilisssss.github.io/Portfolio-site/**
 
-Next.js 16 (App Router, **static export**) · TypeScript · Tailwind CSS 4 · Blender Cycles (pre-rendered film) · GSAP + ScrollTrigger · Framer Motion · Lenis · Geist / Geist Mono / Instrument Serif
+Next.js 16 (App Router, **static export**) · TypeScript · Tailwind CSS 4 · WebGL2 · GSAP + ScrollTrigger + SplitText · Framer Motion · Lenis · Geist / Geist Mono / Instrument Serif
 
 ## Sections
 

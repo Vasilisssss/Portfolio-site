@@ -3,10 +3,26 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { pad2 } from "@/lib/format";
+import { gsap, lenis, scrollToTarget } from "@/components/motion/gsap";
+import RollText from "@/components/motion/RollText";
 import Monogram from "./Monogram";
 import MarketClock from "./MarketClock";
 
 export interface NavItem { label: string; href: string }
+
+/** In-page anchors scroll through Lenis (smooth, and in step with every ScrollTrigger) instead of jumping. */
+export function onAnchor(e: React.MouseEvent<HTMLAnchorElement>, href: string, after?: () => void) {
+  const hash = href.includes("#") ? href.slice(href.indexOf("#") + 1) : "";
+  const home = (process.env.NEXT_PUBLIC_BASE_PATH ?? "") + "/";
+  if (!hash || (location.pathname !== home && location.pathname !== home.replace(/\/$/, ""))) return;
+  const el = document.getElementById(hash);
+  if (!el) return;
+  e.preventDefault();
+  after?.();
+  history.replaceState(null, "", `#${hash}`);
+  // after a closing menu, wait a frame so Lenis is running again
+  requestAnimationFrame(() => scrollToTarget(hash === "top" ? 0 : el));
+}
 
 export default function Nav({ name, items, email, closing }: { name: string; items: NavItem[]; email: string; closing: string }) {
   const [open, setOpen] = useState(false);
@@ -15,11 +31,21 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
   const closeBtn = useRef<HTMLButtonElement>(null);
   const openBtn = useRef<HTMLButtonElement>(null);
 
+  // hides on the way down, returns on the way up; gains its blurred backdrop once past the hero
+  const header = useRef<HTMLElement>(null);
   useEffect(() => {
+    let lastY = window.scrollY, hidden = false;
     const on = () => {
-      setScrolled(window.scrollY > 40);
+      const y = window.scrollY;
+      const hero = document.querySelector<HTMLElement>("[data-walk]");
+      const past = hero ? y > hero.offsetTop + hero.offsetHeight - window.innerHeight * 0.9 : y > 40;
+      setScrolled(past);
+      const down = y > lastY + 2, up = y < lastY - 2;
+      if (down && y > 140 && !hidden) { hidden = true; gsap.to(header.current, { yPercent: -110, duration: 0.6, ease: "power3.inOut" }); }
+      if ((up || y < 140) && hidden) { hidden = false; gsap.to(header.current, { yPercent: 0, duration: 0.7, ease: "expo.out" }); }
+      lastY = y;
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      if (progress.current) progress.current.style.transform = `scaleX(${max > 0 ? Math.min(1, window.scrollY / max) : 0})`;
+      if (progress.current) progress.current.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
     };
     on();
     window.addEventListener("scroll", on, { passive: true });
@@ -27,9 +53,9 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
   }, []);
 
   useEffect(() => {
-    const lenis = (window as unknown as { __lenis?: { stop(): void; start(): void } }).__lenis;
-    if (open) { lenis?.stop(); document.body.style.overflow = "hidden"; closeBtn.current?.focus(); }
-    else { lenis?.start(); document.body.style.overflow = ""; }
+    const l = lenis();
+    if (open) { l?.stop(); document.body.style.overflow = "hidden"; closeBtn.current?.focus(); }
+    else { l?.start(); document.body.style.overflow = ""; }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && open) { setOpen(false); openBtn.current?.focus(); return; }
       if (e.key !== "Tab" || !open) return;
@@ -45,18 +71,15 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  useEffect(() => () => {
-    const lenis = (window as unknown as { __lenis?: { start(): void } }).__lenis;
-    document.body.style.overflow = "";
-    lenis?.start();
-  }, []);
+  useEffect(() => () => { document.body.style.overflow = ""; lenis()?.start(); }, []);
 
   return (
     <>
-      <header className={`hq-nav fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500 ${scrolled ? "border-white/10 bg-[#090d10]/85 backdrop-blur-xl" : "border-transparent bg-gradient-to-b from-black/35 to-transparent"}`}>
-        <span aria-hidden ref={progress} className="absolute inset-x-0 bottom-[-1px] block h-[2px] origin-left scale-x-0 iris-line" />
+      {/* scroll progress: a thin champagne line across the very top of the viewport */}
+      <span aria-hidden ref={progress} className="pointer-events-none fixed inset-x-0 top-0 z-[60] block h-px origin-left scale-x-0 bg-ice-deep" />
+      <header ref={header} className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${scrolled ? "border-white/10 bg-[#090d10]/80 backdrop-blur-xl" : "border-transparent bg-gradient-to-b from-black/35 to-transparent"}`}>
         <div className="container-x flex items-center justify-between gap-6 py-5">
-          <Link href="/#top" aria-label={`${name} Portfolio — home`} className="flex items-center gap-3.5">
+          <Link href="/#top" onClick={(e) => onAnchor(e, "/#top")} className="flex items-center gap-3.5">
             <Monogram draw />
             <span className="flex flex-col leading-[1.1]">
               <span className="font-serif text-[22px] font-medium tracking-[0.01em] text-[#f4f1eb]">{name}</span>
@@ -65,17 +88,17 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-8 text-[11px] tracking-[0.22em] xl:flex">
             {items.map((n) => (
-              <Link key={n.href} href={n.href} className="group relative py-2 uppercase text-white/70 hover:text-[#e3c79d]">
-                {n.label}
-                <span className="absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-[#c9a779] transition-transform duration-500 ease-[var(--ease-expo)] group-hover:origin-left group-hover:scale-x-100" />
+              <Link key={n.href} href={n.href} onClick={(e) => onAnchor(e, n.href)} className="roll-host group relative py-2 uppercase text-white/70 transition-colors hover:text-ice-deep">
+                <RollText>{n.label}</RollText>
+                <span className="absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-ice-deep transition-transform duration-500 ease-[var(--ease-expo)] group-hover:origin-left group-hover:scale-x-100" />
               </Link>
             ))}
           </nav>
           <div className="flex items-center gap-5">
             <MarketClock />
             <button ref={openBtn} type="button" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="site-menu"
-              className="flex h-11 items-center gap-2.5 rounded-full border border-white/25 bg-black/25 px-[18px] text-[11px] tracking-[0.24em] text-white backdrop-blur transition-colors hover:border-[#c9a779]">
-              MENU
+              data-cursor="Menu" className="roll-host flex h-11 items-center gap-2.5 rounded-full border border-white/25 bg-black/25 px-[18px] text-[11px] tracking-[0.24em] text-white backdrop-blur transition-colors hover:border-ice-deep">
+              <RollText>MENU</RollText>
               <span aria-hidden className="flex flex-col gap-1"><span className="block h-px w-4 bg-white" /><span className="block h-px w-2.5 bg-[#c9a779]" /></span>
             </button>
           </div>
@@ -99,7 +122,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
             </div>
             <nav aria-label="Menu" className="relative flex flex-col">
               {items.map((n, i) => (
-                <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="group flex items-baseline gap-7 overflow-hidden border-b border-white/10 py-1.5">
+                <Link key={n.href} href={n.href} onClick={(e) => { setOpen(false); onAnchor(e, n.href); }} className="group flex items-baseline gap-7 overflow-hidden border-b border-white/10 py-1.5">
                   <span className="tnum w-8 text-[11px] tracking-[0.2em] text-[#c9a779]/70">{pad2(i + 1)}</span>
                   <motion.span
                     className="display block text-[clamp(40px,6.4vw,96px)] leading-[1.04] text-[#f4f1eb] transition-[color,transform] duration-500 group-hover:translate-x-4 group-hover:text-[#d9c09b]"

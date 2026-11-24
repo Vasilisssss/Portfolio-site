@@ -1,0 +1,7 @@
+[
+  { "id": "screens", "chapter": 2, "zoomOrigin": [0.64, 0.46], "focusX": 0.70, "alt": "Glowing market screens reflected in dark glass" },
+  { "id": "gallery", "chapter": 3, "zoomOrigin": [0.76, 0.30], "focusX": 0.58, "alt": "Polished steel monoliths of different heights on a black stone plinth in a concrete gallery" },
+  { "id": "chart",   "chapter": 4, "zoomOrigin": [0.88, 0.22], "focusX": 0.66, "alt": "A rising line of light traced across a dark walnut wall" },
+  { "id": "skyline", "chapter": 5, "zoomOrigin": [0.60, 0.58], "focusX": 0.60, "alt": "A financial-district skyline at dawn seen from above the clouds" },
+  { "id": "metal",   "chapter": null, "role": "closing", "zoomOrigin": [0.70, 0.52], "focusX": 0.72, "alt": "Macro of a brushed metal edge catching a thin line of warm light" }
+]

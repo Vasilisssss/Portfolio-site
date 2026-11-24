@@ -6,7 +6,6 @@ import { useGSAP } from "@gsap/react";
 import type { PublicHolding } from "@/lib/public";
 import { moneyCompact, pct } from "@/lib/format";
 import { classColor } from "@/lib/palette";
-import CardArt from "@/components/ui/CardArt";
 
 function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
@@ -25,13 +24,11 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
   }, { scope: ref });
 
   const color = classColor(h.assetClass);
-  const isStock = true;
   return (
     <Link ref={ref} href={`/investments/${h.id}`} data-cursor="View" data-card
-      className={`group relative flex h-full min-h-[390px] flex-col overflow-hidden rounded-[22px] border transition-all duration-700 ${isStock ? "border-[#d9c09b]/15 bg-[#111315] hover:border-[#d9c09b]/45 hover:shadow-[0_32px_90px_-42px_rgba(217,192,155,.28)]" : "glass border-white/[.08] hover:border-lime/25"}`}>
-      {isStock ? (
-        <>
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      className={`group relative flex h-full min-h-[390px] flex-col overflow-hidden rounded-[22px] border transition-[border-color,box-shadow] duration-700 border-ice-deep/15 bg-[#111315] hover:border-ice-deep/45 hover:shadow-[0_32px_90px_-42px_rgba(217,192,155,.28)]`}>
+      <>
+          <div ref={art} data-art className="pointer-events-none absolute -inset-4 overflow-hidden">
             <div className={`absolute inset-0 ${h.id === "alphabet" ? "bg-[radial-gradient(ellipse_at_78%_28%,rgba(66,133,244,.18),transparent_34%),radial-gradient(ellipse_at_22%_82%,rgba(52,168,83,.10),transparent_42%),linear-gradient(135deg,#15191e_0%,#101214_60%,#0b0d0f_100%)]" : h.id === "anthropic" ? "bg-[radial-gradient(ellipse_at_78%_25%,rgba(217,154,116,.18),transparent_38%),linear-gradient(135deg,#211915_0%,#141211_60%,#0b0d0f_100%)]" : "bg-[linear-gradient(135deg,#17191a_0%,#101214_58%,#0b0d0f_100%)]"}`} style={h.id === "alphabet" || h.id === "anthropic" ? undefined : { backgroundImage: `radial-gradient(ellipse at 82% 18%, ${color}30, transparent 44%), linear-gradient(135deg,#17191a 0%,#101214 58%,#0b0d0f 100%)` }} />
             <div className="absolute inset-y-0 right-0 w-[42%] border-l border-white/[.045] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.025))]" />
             {h.id === "alphabet" ? (
@@ -125,34 +122,24 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
             </div>
           </div>
         </>
-      ) : (
-        <>
-          <div className="relative h-[210px] overflow-hidden" style={{ background: `radial-gradient(120% 90% at 70% 10%, ${color}55, transparent 70%)` }}>
-            <div ref={art} className="absolute -inset-3"><CardArt assetClass={h.assetClass} seed={i + 1} accent={color} className="h-full w-full transition-transform duration-[1.1s] ease-[var(--ease-expo)] group-hover:scale-[1.06]" /></div>
-            <div className="absolute inset-x-5 top-4 flex items-center justify-between">
-              <span className="inline-flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-graphite-2 backdrop-blur"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{h.assetClass}</span>
-              {h.ticker && <span className="tnum text-[11px] tracking-[0.2em] text-graphite-2">{h.ticker}</span>}
-            </div>
-          </div>
-          <div className="flex flex-1 flex-col justify-between gap-6 p-6">
-            <h3 className="font-serif text-[28px] leading-[1.05] transition-colors group-hover:text-lavender-deep">{h.name}</h3>
-            <dl className="grid grid-cols-3 gap-3 text-[10px] uppercase tracking-[0.18em] text-mute">
-              <div className="flex flex-col gap-1.5"><dt>Weight</dt><dd className="tnum text-[15px] normal-case tracking-normal text-graphite">{pct(h.weight)}</dd></div>
-              <div className="flex flex-col gap-1.5"><dt>Return</dt><dd className={`tnum text-[15px] normal-case tracking-normal ${h.returnPct == null ? "text-mute" : h.returnPct >= 0 ? "text-gain" : "text-loss"}`}>{h.returnPct == null ? "—" : pct(h.returnPct, true)}</dd></div>
-              {h.value != null && <div className="flex flex-col gap-1.5"><dt>Value</dt><dd className="tnum text-[15px] normal-case tracking-normal text-graphite">{moneyCompact(h.value, cur)}</dd></div>}
-            </dl>
-          </div>
-        </>
-      )}
     </Link>
   );
 }
 
+/**
+ * INVESTMENTS — the positions as a gallery you walk past.
+ * Desktop: a sticky horizontal track. The section is exactly as tall as the track is wide (plus the stage), so
+ * vertical scroll slides the cards sideways (scrubbed); each card tilts slightly by its position on screen
+ * (rotateY ±4°, towards the centre) and its artwork parallaxes inside the frame, with a progress hairline.
+ * The cards arrive in a staggered rise. Phones/tablets: a grid whose cards clip-reveal and rise in sequence.
+ * Reduced motion: a plain grid.
+ */
 export default function Investments({ holdings, currency }: { holdings: PublicHolding[]; currency: string }) {
   const classes = useMemo(() => [...new Set(holdings.map((h) => h.assetClass))], [holdings]);
   const [filter, setFilter] = useState<string>("All");
   const grid = useRef<HTMLDivElement>(null);
   const pin = useRef<HTMLDivElement>(null);
+  const outer = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -163,28 +150,44 @@ export default function Investments({ holdings, currency }: { holdings: PublicHo
 
   useGSAP(() => {
     const mm = gsap.matchMedia();
-    // desktop: pin the gallery and glide the cards sideways while you scroll
     mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
-      const track = grid.current!, wrap = pin.current!;
-      const distance = () => Math.max(0, track.scrollWidth - wrap.clientWidth);
-      if (distance() < 40) return;
+      const track = grid.current!, wrap = outer.current!, stage = wrap.firstElementChild as HTMLElement;
+      const distance = () => Math.max(0, track.scrollWidth - stage.clientWidth);
+      const size = () => { wrap.style.height = `${stage.offsetHeight + distance()}px`; };
+      size();
+      const cards = gsap.utils.toArray<HTMLElement>("[data-card]", track);
+      const arts = gsap.utils.toArray<HTMLElement>("[data-art]", track);
+      const tilt = () => {
+        const vw = window.innerWidth;
+        cards.forEach((c, i) => {
+          const r = c.getBoundingClientRect();
+          const off = gsap.utils.clamp(-1, 1, (r.left + r.width / 2 - vw / 2) / (vw / 2));
+          gsap.set(c, { rotateY: -off * 4, transformPerspective: 1400 });
+          if (arts[i]) gsap.set(arts[i], { xPercent: off * -6 });
+        });
+      };
       gsap.to(track, {
         x: () => -distance(), ease: "none",
-        scrollTrigger: { trigger: wrap, start: "top 12%", end: () => `+=${distance()}`, pin: true, pinSpacing: true /* parent is flex: GSAP would default this to false */, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1,
-          onUpdate: (st) => { if (bar.current) bar.current.style.transform = `scaleX(${st.progress})`; } },
+        scrollTrigger: { trigger: wrap, start: "top 12%", end: () => `+=${distance()}`, scrub: 0.8, invalidateOnRefresh: true, onRefreshInit: size,
+          onUpdate: (st) => { if (bar.current) bar.current.style.transform = `scaleX(${st.progress})`; tilt(); } },
       });
-      gsap.fromTo("[data-card]", { autoAlpha: 0, x: 120 }, { autoAlpha: 1, x: 0, duration: 1.2, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: wrap, start: "top 85%", once: true } });
+      tilt();
+      gsap.fromTo(cards, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 1.3, ease: "expo.out", stagger: 0.09, scrollTrigger: { trigger: wrap, start: "top 85%", once: true } });
+      return () => { wrap.style.height = ""; };
     });
-    // smaller screens: simple rise-in grid
     mm.add("(max-width: 1023px) and (prefers-reduced-motion: no-preference)", () => {
-      gsap.fromTo("[data-card]", { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.1, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: grid.current, start: "top 88%", once: true } });
+      gsap.utils.toArray<HTMLElement>("[data-card]", grid.current!).forEach((c) => {
+        gsap.timeline({ scrollTrigger: { trigger: c, start: "top 90%", once: true } })
+          .fromTo(c, { clipPath: "inset(100% 0% 0% 0%)", y: 40 }, { clipPath: "inset(0% 0% 0% 0%)", y: 0, duration: 1.3, ease: "power4.inOut" })
+          .fromTo(c.querySelector("[data-art]"), { scale: 1.2 }, { scale: 1, duration: 1.6, ease: "expo.out" }, 0.1);
+      });
     });
     return () => mm.revert();
   }, { scope: pin, dependencies: [filter], revertOnUpdate: true });
 
   const shown = filter === "All" ? holdings : holdings.filter((h) => h.assetClass === filter);
   return (
-    <div ref={pin} className="flex flex-col gap-10 py-2 motion-safe:lg:overflow-hidden">
+    <div ref={pin} className="flex flex-col gap-10 py-2">
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div role="group" aria-label="Filter by asset class" className="flex flex-wrap gap-2">
           {["All", ...classes].map((c) => (
@@ -198,17 +201,21 @@ export default function Investments({ holdings, currency }: { holdings: PublicHo
         </div>
         <span aria-hidden className="hidden h-px w-56 overflow-hidden bg-line motion-safe:lg:block"><span ref={bar} className="block h-px origin-left scale-x-0 iris-line" /></span>
       </div>
-      <div ref={grid} className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 motion-safe:lg:flex motion-safe:lg:w-max motion-safe:lg:gap-8 motion-safe:lg:pb-6" aria-live="polite">
-        <div aria-hidden className="hidden w-[min(420px,30vw)] shrink-0 flex-col justify-between rounded-[24px] border border-line p-8 motion-safe:lg:flex">
-          <span className="eyebrow text-mute">Portfolio · {shown.length} {shown.length === 1 ? "position" : "positions"}</span>
-          <span className="display text-[clamp(56px,5vw,88px)] leading-[0.9]">Scroll<br /><em className="iris-text">to explore</em></span>
-          <svg width="64" height="16" viewBox="0 0 64 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-ice-deep"><path d="M0 8h62M54 1l8 7-8 7" /></svg>
-        </div>
-        {shown.map((h, i) => (
-          <div key={h.id} className="motion-safe:lg:w-[min(440px,32vw)] motion-safe:lg:shrink-0">
-            <Card h={h} i={i} cur={currency} />
+      <div ref={outer} className="relative">
+        <div className="motion-safe:lg:sticky motion-safe:lg:top-[12svh] motion-safe:lg:overflow-hidden">
+          <div ref={grid} className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 motion-safe:lg:flex motion-safe:lg:w-max motion-safe:lg:gap-8 motion-safe:lg:pb-6 motion-safe:lg:pr-[8vw]" aria-live="polite">
+            <div aria-hidden className="hidden w-[min(420px,30vw)] shrink-0 flex-col justify-between rounded-[24px] border border-line p-8 motion-safe:lg:flex">
+              <span className="eyebrow text-mute">Portfolio · {shown.length} {shown.length === 1 ? "position" : "positions"}</span>
+              <span className="display text-[clamp(56px,5vw,88px)] leading-[0.9]">Keep<br /><em className="iris-text">walking</em></span>
+              <svg width="64" height="16" viewBox="0 0 64 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-ice-deep"><path d="M0 8h62M54 1l8 7-8 7" /></svg>
+            </div>
+            {shown.map((h, i) => (
+              <div key={h.id} className="motion-safe:lg:w-[min(440px,32vw)] motion-safe:lg:shrink-0">
+                <Card h={h} i={i} cur={currency} />
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
