@@ -46,7 +46,15 @@ export default function Footer() {
           <p aria-hidden className="-mx-[1vw] select-none whitespace-nowrap font-serif text-[17vw] font-light leading-[0.8] tracking-[-0.045em] text-transparent [-webkit-text-stroke:1px_rgba(217,192,155,0.14)]">{profile.name}</p>
         </Drift>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4 text-[11px] leading-[1.7] text-mute">
-          <span>© {new Date().getFullYear()} {profile.name}</span>
+          <span className="flex items-center gap-4">
+            © {new Date().getFullYear()} {profile.name}
+            {process.env.NEXT_PUBLIC_PRIVATE_VIEW === "1" && (
+              <a href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/private/`} rel="nofollow" className="inline-flex items-center gap-1.5 text-mute/80 transition-colors hover:text-ice-deep">
+                <svg aria-hidden width="10" height="11" viewBox="0 0 10 11" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="1" y="5" width="8" height="5.4" rx="1" /><path d="M3 5V3.4a2 2 0 0 1 4 0V5" /></svg>
+                Private view
+              </a>
+            )}
+          </span>
           <p className="max-w-[720px]">{profile.disclaimer}</p>
         </div>
       </div>

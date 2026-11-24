@@ -68,14 +68,21 @@ export interface PublicView {
   };
 }
 
-let cached: PublicView | null = null;
+const cache = new Map<boolean, PublicView>();
 const clean = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
 
-export function getPublicView(): PublicView {
-  if (cached) return cached;
+/**
+ * `reveal` is for the owner-only private view (app/private), which is published only encrypted
+ * (tools/private/seal.mjs): it shows amounts, quantities and prices regardless of content/privacy.ts.
+ */
+export function getPublicView({ reveal = false }: { reveal?: boolean } = {}): PublicView {
+  const hit = cache.get(reveal);
+  if (hit) return hit;
   const data = loadPortfolio();
   const m = computeMetrics(data);
-  const amt = privacy.showAmounts;
+  const amt = reveal || privacy.showAmounts;
+  const showQuantities = reveal || privacy.showQuantities;
+  const showPrices = reveal || privacy.showPrices;
 
   const isPublic = (h: Holding) =>
     privacy.showHoldings && h.public !== false && (privacy.holdingsMode === "all" || privacy.selected.includes(h.id));
@@ -89,10 +96,10 @@ export function getPublicView(): PublicView {
         geography: h.geography, industry: h.industry, note: h.note,
         weight: p.weight, returnPct: p.returnPct,
         purchaseDate: privacy.showPurchaseDates ? h.purchaseDate : undefined,
-        quantity: privacy.showQuantities ? h.quantity : undefined,
-        unit: privacy.showQuantities ? h.unit : undefined,
-        avgPrice: amt && privacy.showPrices ? h.avgPrice : undefined,
-        currentPrice: amt && privacy.showPrices ? h.currentPrice : undefined,
+        quantity: showQuantities ? h.quantity : undefined,
+        unit: showQuantities ? h.unit : undefined,
+        avgPrice: amt && showPrices ? h.avgPrice : undefined,
+        currentPrice: amt && showPrices ? h.currentPrice : undefined,
         value: amt ? p.value : undefined,
         invested: amt && p.cost != null ? p.cost : undefined,
         pnl: amt && p.pnl != null ? p.pnl : undefined,
@@ -147,7 +154,7 @@ export function getPublicView(): PublicView {
     });
   }
 
-  cached = {
+  const view: PublicView = {
     sample: data.sample,
     source: data.source,
     asOf: data.asOf,
@@ -176,7 +183,8 @@ export function getPublicView(): PublicView {
     },
     performance,
   };
-  return cached;
+  cache.set(reveal, view);
+  return view;
 }
 
 export const getPublicHolding = (id: string) => getPublicView().holdings.find((h) => h.id === id);

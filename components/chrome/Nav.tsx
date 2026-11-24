@@ -65,6 +65,8 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
   }, [open]);
 
   useEffect(() => () => { document.body.style.overflow = ""; lenis()?.start(); }, []);
+  // the private view keeps section links in its own page (components/chrome/StayInPage): close the menu then too
+  useEffect(() => { const close = () => setOpen(false); window.addEventListener("stayinpage:navigate", close); return () => window.removeEventListener("stayinpage:navigate", close); }, []);
 
   return (
     <>

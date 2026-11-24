@@ -1,6 +1,8 @@
 # Portfolio data
 
-`data/portfolio.json` is the portfolio the site shows. It is committed, so it is **public** like the repository.
+`data/portfolio.json` is the portfolio the site shows. Once the `PRIVATE_VIEW_PASSWORD` secret is set it is stored
+**encrypted** as `data/portfolio.json.enc` (see `docs/private-view.md`); a plain `data/portfolio.json` is public like
+the repository.
 Merge a change into `cinematic-redesign` and the site redeploys. It is updated daily from Interactive Brokers by
 `.github/workflows/ibkr-daily.yml` (setup: `docs/ibkr-flex-setup.md`).
 
