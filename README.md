@@ -13,12 +13,10 @@ floor and on through four photographic rooms. Every section on the page moves wi
 | V · The Final Reveal | The skyline above the clouds, then **The Window** — the whole journey replayed through one frame | Strategy, experience, about |
 
 How it is made:
-- `tools/media/frames.mjs` — turns the two approved source clips (`media-src/headquarters-*.mp4`, kept out of the published site) into one continuous,
-  scroll-scrubbed walk: finds the join where the portal is framed most alike (centre-weighted luma + edge
-  correlation over the last 3 s / first 5 s, reframing only the establishing side so any zoom reads as a forward
-  push), cross-dissolves 8 frames, grades every frame like `public/scenes` and writes WebP at full resolution and
-  854×480, plus `public/media/journey/manifest.json` (frames, join, the frame where the doors are passed).
-  Run `node tools/media/frames.mjs` (ffmpeg with libwebp on PATH); `--analyse` prints the join only.
+- `public/media/journey/` — the walk: 131 WebP frames (full size and 854×480) cut from two approved video clips,
+  with `manifest.json` (frames, the join, the frame where the doors are passed). The source clips and the script that
+  cut them (`media-src/`, `tools/media/frames.mjs`) were removed from the working tree; restore them with
+  `git checkout 736b429 -- media-src tools/media docs/headquarters-media-handoff.md`.
 - `public/scenes/` — the four rooms and the closing shot, each wide/tall at two sizes; `manifest.json` gives each
   room's fly-in point (`zoomOrigin`) and subject position for portrait crops (`focusX`).
 - `components/journey/` — one fixed WebGL2 stage behind the page (`stage.ts`: cover-fit, push, radial blur, aperture,
