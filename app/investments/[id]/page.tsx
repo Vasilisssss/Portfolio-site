@@ -29,7 +29,7 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
   const i = list.findIndex((x) => x.id === h.id);
   const prev = list[(i + list.length - 1) % list.length], next = list[(i + 1) % list.length];
   const cur = view.baseCurrency;
-  const color = classColor(h.assetClass);
+  const color = h.accent ?? classColor(h.assetClass);
   const classInfo = view.classes.find((c) => c.key === h.assetClass);
 
   // only fields that actually exist are shown
@@ -88,6 +88,14 @@ export default async function InvestmentPage({ params }: { params: Promise<{ id:
                     <circle cx="60" cy="60" r="6" fill="#E8C3A8" />
                   </svg>
                   <span className="font-sans text-[11px] tracking-[.35em] text-[#E8C3A8]/75">ANTHROPIC</span>
+                </div>
+              </div>
+            ) : h.artSrc ? (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: `radial-gradient(ellipse at 75% 25%, ${color}33, transparent 45%)` }}>
+                <div className="relative flex items-center gap-8">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={h.artSrc} alt="" width={160} height={160} className="h-40 w-40 object-contain" />
+                  <span className="font-sans text-[11px] tracking-[.35em] text-white/60">{(h.brand ?? h.name).toUpperCase()}</span>
                 </div>
               </div>
             ) : h.assetClass === "ETFs" ? (

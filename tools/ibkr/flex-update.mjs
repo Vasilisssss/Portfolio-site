@@ -5,7 +5,9 @@
  *   node tools/ibkr/flex-update.mjs                 fetch the statement (IBKR_FLEX_TOKEN, IBKR_FLEX_QUERY_ID) and update
  *   node tools/ibkr/flex-update.mjs --xml file.xml  use a saved statement instead of fetching
  *   --dry-run         print the result, write nothing
- *   --accept-changes  accept a deposit/withdrawal or a changed quantity (after you have checked it)
+ *   --force           publish even if the totals or the return look odd (after you have checked them)
+ *   --hold-changes    stop for review on trades, deposits and new or sold positions instead of taking them over
+ *   (by default they are taken over and listed in $CHANGES_FILE when set, for a notification)
  *
  * The Flex Query (see docs/ibkr-flex-setup.md) is a Year-to-Date Activity statement with Open Positions, Cash Report,
  * Change in NAV and Net Asset Value (NAV) in Base. From it this script updates data/portfolio.json:
@@ -130,7 +132,7 @@ const regionOf = (country, exchange) => {
 };
 const monthOf = (d) => d.slice(0, 7);
 
-export function update(pf, s, { acceptChanges = false } = {}) {
+export function update(pf, s, { acceptChanges = false, force = false } = {}) {
   const review = [], notes = [];
   if (!s.toDate || !s.fromDate || s.endingValue == null || s.cash == null) review.push("The statement is missing its period, ending NAV or cash.");
   if (review.length) return { pf, review, notes, changed: false };
@@ -159,7 +161,7 @@ export function update(pf, s, { acceptChanges = false } = {}) {
     const h = next.holdings.find((x) => x.ticker && canonical(x.ticker) === canonical(p.symbol));
     if (!h) {
       const msg = `New position ${p.symbol}${p.description ? ` (${p.description})` : ""}.`;
-      if (!acceptChanges) { review.push(`${msg} Re-run with "accept changes" to add it.`); continue; }
+      if (!acceptChanges) { review.push(`${msg} Re-run without --hold-changes to add it.`); continue; }
       // added from the statement: name, class and currency; geography and industry stay empty until set by hand
       const id = canonical(p.symbol).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const etf = /ETF|FUND/i.test(`${p.subCategory ?? ""}`);
@@ -181,7 +183,7 @@ export function update(pf, s, { acceptChanges = false } = {}) {
     if (!qtyChanged && !costChanged && p.avgPrice != null) h.avgPrice = p.avgPrice;
     if (qtyChanged || costChanged) {
       const msg = `${p.symbol}: quantity or average cost changed (a trade).`;
-      if (acceptChanges) notes.push(msg); else review.push(`${msg} Re-run with "accept changes" once checked.`);
+      if (acceptChanges) notes.push(msg); else review.push(`${msg} Re-run without --hold-changes once checked.`);
       h.quantity = p.quantity; if (p.avgPrice != null) h.avgPrice = p.avgPrice;
     }
     h.currentPrice = p.price;
@@ -191,7 +193,7 @@ export function update(pf, s, { acceptChanges = false } = {}) {
     if (!h.ticker || seen.has(h.id)) continue;
     const msg = `${h.ticker} is no longer in the IBKR statement (sold).`;
     if (acceptChanges) { next.holdings.splice(next.holdings.indexOf(h), 1); notes.push(`${msg} Removed.`); }
-    else review.push(`${msg} Re-run with "accept changes" to remove it.`);
+    else review.push(`${msg} Re-run without --hold-changes to remove it.`);
   }
   const cash = next.holdings.find((h) => h.assetClass === "Cash");
   if (cash) { cash.invested = round(s.cash, 2); cash.currentValue = round(s.cash, 2); }
@@ -202,7 +204,7 @@ export function update(pf, s, { acceptChanges = false } = {}) {
   const netContributions = round((base?.netContributions ?? 0) + s.deposits, 6);
   if (last && Math.abs(netContributions - last.netContributions) > 0.01) {
     const msg = `Net deposits changed (a deposit or withdrawal).`;
-    if (acceptChanges) notes.push(msg); else review.push(`${msg} Re-run with "accept changes" once checked.`);
+    if (acceptChanges) notes.push(msg); else review.push(`${msg} Re-run without --hold-changes once checked.`);
   }
 
   // cumulative time-weighted return. Flex reports TWR either as a fraction or in percent: take the reading that
@@ -212,7 +214,7 @@ export function update(pf, s, { acceptChanges = false } = {}) {
     const chain = (r) => round((1 + (base?.twr ?? 0)) * (1 + r) - 1, 8);
     const a = chain(s.twrRaw), b = chain(s.twrRaw / 100);
     twr = last?.twr == null ? (Math.abs(s.twrRaw) > 1.5 ? b : a) : (Math.abs(a - last.twr) <= Math.abs(b - last.twr) ? a : b);
-    if (last?.twr != null && Math.abs(twr - last.twr) > 0.25) review.push("Time-weighted return would jump by more than 25 percentage points.");
+    if (last?.twr != null && Math.abs(twr - last.twr) > 0.25) (force ? notes : review).push("Time-weighted return would jump by more than 25 percentage points.");
   } else review.push("The statement has no TWR in Change in NAV (add the TWR field to the Flex Query).");
 
   // month-end: when a new month has begun, the previous latest point must be that month's last business day
@@ -223,13 +225,13 @@ export function update(pf, s, { acceptChanges = false } = {}) {
       const msg = `The ${monthOf(last.date)} month-end point is ${last.date}, but the month's last business day is ${end.date} (a daily run was missed).`;
       // its return cannot be rebuilt from a year-to-date statement; accepting keeps the last published point as the month-end
       if (acceptChanges) notes.push(`${msg} Kept ${last.date} as the month-end.`);
-      else review.push(`${msg} Re-run with "accept changes" to keep ${last.date} as that month's point.`);
+      else review.push(`${msg} Re-run without --hold-changes to keep ${last.date} as that month's point.`);
     }
   }
 
   // sanity: positions + cash should add up to the statement's NAV
   const total = next.holdings.reduce((t, h) => t + (h.currentValue ?? (h.quantity ?? 0) * (h.currentPrice ?? 0) * (next.fx[h.currency] ?? NaN)), 0);
-  if (!(Math.abs(total - s.endingValue) <= 0.02 * Math.max(1, Math.abs(s.endingValue)))) review.push(`Holdings do not add up to the statement's NAV (off by ${Math.abs(round((total / s.endingValue - 1) * 100, 1))}%).`);
+  if (!(Math.abs(total - s.endingValue) <= 0.02 * Math.max(1, Math.abs(s.endingValue)))) (force ? notes : review).push(`Holdings do not add up to the statement's NAV (off by ${Math.abs(round((total / s.endingValue - 1) * 100, 1))}%).`);
 
   const point = { date: s.toDate, value: round(s.endingValue, 6), netContributions, ...(twr != null ? { twr } : {}) };
   // within a month the latest point moves forward; once a month is over, its last point stays as the month-end
@@ -249,7 +251,12 @@ async function main() {
   })();
   const pf = JSON.parse(readFileSync(DATA, "utf8"));
   const s = parseStatement(xml);
-  const r = update(pf, s, { acceptChanges: flag("--accept-changes") || process.env.ACCEPT_CHANGES === "true" });
+  // fully automatic: trades, deposits and new or sold positions are taken over; only anomalies stop the update
+  const r = update(pf, s, {
+    acceptChanges: !(flag("--hold-changes") || process.env.HOLD_CHANGES === "true"),
+    // after checking an anomaly (totals that do not add up, a large jump in return): publish anyway
+    force: flag("--force") || process.env.FORCE === "true",
+  });
   const lines = [];
   lines.push(`Statement ${s.fromDate} → ${s.toDate}.`);
   lines.push(...r.notes.map((n) => `- ${n}`));
@@ -260,6 +267,9 @@ async function main() {
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${text}\n`);
   if (r.review.length) process.exit(2);
   if (r.changed && !flag("--dry-run")) writeFileSync(DATA, `${JSON.stringify(r.pf, null, 2)}\n`);
+  // what changed in the portfolio (no amounts), for the workflow's notification
+  if (r.changed && r.notes.length && process.env.CHANGES_FILE && !flag("--dry-run"))
+    writeFileSync(process.env.CHANGES_FILE, `Published with the IBKR statement of ${r.pf.asOf}:\n\n${r.notes.map((n) => `- ${n}`).join("\n")}\n`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error(String(e?.message ?? e)); process.exit(1); });
