@@ -4,8 +4,10 @@ The public site shows returns and percentages only (`content/privacy.ts`). Two t
 
 1. **The private view**: `/private/` is the full site with every figure (value, invested capital, profit/loss,
    quantities, prices). It is published **encrypted** (AES-256-GCM, key derived from your password with PBKDF2-SHA256,
-   600 000 iterations). There is no visible link: open it by **clicking three times quickly on the copyright line**
-   ("© 2026 …") at the very bottom of the page, or bookmark `/private/`. The unlock page decrypts it in your browser.
+   600 000 iterations). There is no visible link. Open it by **typing the door word** anywhere on the page (no text field: just
+   type while the site is open), or by **pressing and holding the copyright line** ("© 2026 …") at the very bottom
+   for 10 seconds (works on phones). Or bookmark `/private/`. Only a fingerprint of the word is in the code
+   (`components/chrome/SecretDoor.tsx`). The unlock page decrypts it in your browser.
    Nothing is sent anywhere, and without the password the file is unreadable. **Lock** (bottom left) returns to the
    public site.
 2. **The data file**: `data/portfolio.json.enc` is the portfolio data encrypted with the same password. The release
