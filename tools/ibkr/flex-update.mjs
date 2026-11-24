@@ -258,6 +258,10 @@ async function main() {
     force: flag("--force") || process.env.FORCE === "true",
   });
   const lines = [];
+  // when IBKR publishes: each run records what day the report covers; the first run that shows a new day bounds it
+  const lastPublished = pf.asOf ?? "";
+  const fresh = s.toDate > lastPublished ? "new" : "not yet";
+  lines.push(`Checked at ${new Date().toISOString().slice(11, 16)} UTC — IBKR report covers up to ${s.toDate} (${fresh}; the site shows ${lastPublished || "—"}).`);
   lines.push(`Statement ${s.fromDate} → ${s.toDate}.`);
   lines.push(...r.notes.map((n) => `- ${n}`));
   if (r.review.length) lines.unshift("NEEDS REVIEW — nothing was published:", ...r.review.map((x) => `- ${x}`), "");
