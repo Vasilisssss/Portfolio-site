@@ -5,7 +5,7 @@
 export const profile = {
   name: "Vasilis Mavroudes",
   /** shown in the browser tab and search results */
-  siteTitle: "Vasilis Mavroudes — Investor & CFA Level III Candidate",
+  siteTitle: "Vasilis Mavroudes — Retail Investor",
   url: process.env.SITE_URL || "https://vasilisssss.github.io/Portfolio-site",
   email: "vmavro01@gmail.com",
   socials: [
@@ -13,7 +13,7 @@ export const profile = {
   ],
 
   hero: {
-    eyebrow: "Investor · CFA Level III Candidate",
+    eyebrow: "Retail investor",
     lines: ["My capital,", "in the long run."],
     body: "A finance professional with experience across risk and investment analysis, portfolio performance and financial research, alongside continued professional development through the CFA Program.",
   },
