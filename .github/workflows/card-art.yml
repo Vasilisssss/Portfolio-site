@@ -71,7 +71,9 @@ jobs:
 
             The card must show the position's REAL, recognisable logo or brand symbol, exactly like the site's
             Anthropic burst and Google "G" (see components/sections/Investments.tsx and the files in public/brand/).
-            Never an invented, abstract or generic emblem.
+            Never an invented, abstract or generic emblem, and never history or heritage imagery (a founder, a
+            namesake ship, an old emblem): the logo the company uses TODAY, as on its own website (e.g. Vanguard is
+            its red "V", not the HMS Vanguard ship it is named after). Check the company's current website if unsure.
 
             What the logo is:
             - a company (stock): its logo symbol/icon (the mark, e.g. Apple's apple, Nike's swoosh, NVIDIA's eye); a

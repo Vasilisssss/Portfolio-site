@@ -4,7 +4,7 @@ Every position card shows the position's **real logo or brand symbol** in its to
 detail page), never an invented emblem:
 
 - a company: its logo symbol (Anthropic's burst, Google's "G", …)
-- a fund or ETF: the issuer's logo (Vanguard's ship, iShares, …)
+- a fund or ETF: the issuer's logo (Vanguard's red V, iShares, …)
 - cash: the currency's symbol (the euro coin), a bond: the issuer's emblem, crypto: its symbol, and so on.
 
 The logo is `public/brand/<id>.svg` (Anthropic and Alphabet are drawn in `components/sections/Investments.tsx`).
