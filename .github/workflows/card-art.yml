@@ -101,6 +101,21 @@ jobs:
             4. Change no other file. Do not commit or push: the workflow publishes after checking.
             5. Finish with one line: where the logo came from (URL, or "redrawn from the official mark").
 
+      # when Claude stops early, show why (only the result and error messages; nothing secret)
+      - name: Why Claude stopped
+        if: failure()
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || { echo "No Claude output file."; exit 0; }
+          node -e '
+            const raw = require("fs").readFileSync(process.argv[1], "utf8");
+            let items; try { items = JSON.parse(raw); } catch { items = raw.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); }
+            for (const m of [].concat(items)) {
+              if (m.type === "result") console.log("Result:", m.subtype, "|", m.result ?? m.error ?? "", "| errors:", JSON.stringify(m.errors ?? []));
+              if (m.type === "assistant") for (const c of m.message?.content ?? []) if (c.type === "text") console.log("Claude:", c.text.slice(0, 500));
+              if (m.error) console.log("Error:", typeof m.error === "string" ? m.error : JSON.stringify(m.error));
+            }' "$f"
+
       - name: Check the logo file
         env:
           ID: ${{ inputs.id }}
