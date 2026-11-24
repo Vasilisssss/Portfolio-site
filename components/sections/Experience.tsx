@@ -7,7 +7,7 @@ const milestones = [
   {
     date: "PRESENT",
     category: "Professional focus",
-    title: "Risk & investment analysis",
+    title: "Risk & Investment analysis",
     description: "A current focus on understanding investment risk, evaluating opportunities and supporting informed portfolio decisions.",
     kind: "current",
   },
