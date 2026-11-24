@@ -76,10 +76,10 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
             <Monogram draw />
             <span className="flex flex-col leading-[1.1]">
               <span className="font-serif text-[22px] font-medium tracking-[0.01em] text-[#f4f1eb]">{name}</span>
-              <span className="text-[9px] tracking-[0.22em] text-white/45">INVESTOR · CFA LEVEL III CANDIDATE</span>
+              <span className="text-[10px] tracking-[0.22em] text-white/50">RETAIL INVESTOR</span>
             </span>
           </Link>
-          <nav aria-label="Main" className="hidden items-center gap-8 text-[11px] tracking-[0.22em] xl:flex">
+          <nav aria-label="Main" className="hidden items-center gap-5 text-[11px] tracking-[0.16em] xl:flex 2xl:gap-8 2xl:tracking-[0.22em]">
             {items.map((n) => (
               <Link key={n.href} href={n.href} onClick={(e) => onAnchor(e, n.href)} className="roll-host group relative py-2 uppercase text-white/70 transition-colors hover:text-ice-deep">
                 <RollText>{n.label}</RollText>

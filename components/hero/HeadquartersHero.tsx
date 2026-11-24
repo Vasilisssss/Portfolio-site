@@ -22,7 +22,7 @@ type Props = {
  * is drawn by the journey stage behind the page (components/journey), which reads this section's progress as the
  * walk's playhead — scroll down to walk forward, up to walk back.
  * Choreography on top of the footage:
- *   0–2 %    the copy is fully on screen (name, headline, body, portfolio value, both calls to action)
+ *   0–2 %    the copy is fully on screen (headline, body, portfolio value, both calls to action)
  *   2–26 %   the copy rises, blurs and fades away as the walk begins
  *   doors    the "Headquarters · Global markets" caption rolls to "Entering"; a brief warm bloom (opacity only)
  *            as the camera passes the portal, and the trading floor resolves
@@ -30,7 +30,7 @@ type Props = {
  * The first frame is a server-rendered poster (the LCP image); the canvas takes over once frames are ready.
  * Reduced motion: one viewport, the still poster, no scrubbing.
  */
-export default function HeadquartersHero({ name, eyebrow, lines, body, figure, showInvestments }: Props) {
+export default function HeadquartersHero({ lines, body, figure, showInvestments }: Props) {
   const root = useRef<HTMLElement>(null);
   const doorsAt = WALK.doors / Math.max(1, WALK.frames - 1);
 
@@ -44,7 +44,6 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
 
     const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: el, start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
     tl.to(q("[data-copy]"), { yPercent: -18, autoAlpha: 0, filter: "blur(10px)", ease: "power2.in", duration: 0.24 }, 0.02)
-      .to(q("[data-topline]"), { autoAlpha: 0, y: -20, duration: 0.14 }, 0.06)
       .to(q("[data-progress]"), { scaleX: 1, duration: 1 }, 0)
       // caption roll at the doors
       .to(q("[data-cap-a]"), { yPercent: -100, duration: 0.03, ease: "power2.inOut" }, doorsAt - 0.06)
@@ -73,16 +72,10 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
         <div aria-hidden data-bloom className="walk-bloom absolute inset-0 opacity-0" />
 
         <div className="relative z-10 flex h-full w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-20 pt-32 md:pb-14 md:pt-36 lg:pb-14">
-          <div data-topline className="flex items-center justify-between gap-6">
-            <p data-enter className="eyebrow flex items-center gap-4 text-white/75">
-              <span className="h-px w-10 bg-ice-deep" />
-              <span className="text-ice-deep">{name}</span>
-              <span className="hidden text-white/45 sm:inline">/ Personal portfolio</span>
-            </p>
-          </div>
+          {/* top of the stage left clear: the name is already in the navigation bar */}
+          <div aria-hidden />
 
           <div data-copy className="max-w-[900px] pb-8 will-change-transform md:pb-12">
-            <p data-enter className="mb-6 font-mono text-[10px] uppercase tracking-[0.34em] text-ice-deep md:text-xs">{eyebrow}</p>
             <Headline as="h1" onLoad drift={false} skew={false} className="display max-w-[12ch] text-[clamp(54px,8.8vw,142px)] leading-[0.88] tracking-[-0.065em] text-graphite [text-shadow:0_4px_45px_rgba(0,0,0,.5)]">
               {lines[0]}<br />
               <em className="text-ice-deep">{lines[1]}</em>

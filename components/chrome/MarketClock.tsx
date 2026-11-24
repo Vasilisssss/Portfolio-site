@@ -1,30 +1,37 @@
 "use client";
 import { useEffect, useState } from "react";
 
-/** New York local time. Deliberately avoids claiming a live market status on holidays or early-close sessions. */
-function read() {
-  const parts: Record<string, string> = {};
-  new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(new Date()).forEach((p) => (parts[p.type] = p.value));
-  return `${parts.hour}:${parts.minute}`;
-}
+/**
+ * Local time in the world's main market centres. Times only: it deliberately makes no claim about whether a market is
+ * open (holidays and early closes are not modelled). Hong Kong joins on wide screens, where there is room.
+ */
+const MARKETS = [
+  { code: "NYC", name: "New York", tz: "America/New_York" },
+  { code: "LON", name: "London", tz: "Europe/London" },
+  { code: "TYO", name: "Tokyo", tz: "Asia/Tokyo" },
+  { code: "HKG", name: "Hong Kong", tz: "Asia/Hong_Kong", wide: true },
+] as const;
+
+const time = (tz: string) =>
+  new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date());
 
 export default function MarketClock() {
-  const [time, setTime] = useState<string | null>(null);
+  const [now, setNow] = useState<string[] | null>(null);
   useEffect(() => {
-    const update = () => setTime(read());
+    const update = () => setNow(MARKETS.map((m) => time(m.tz)));
     update();
     const iv = setInterval(update, 15_000);
     return () => clearInterval(iv);
   }, []);
   return (
-    <span className="tnum hidden items-center gap-2 text-[10px] tracking-[0.2em] text-white/55 md:flex" aria-label={time ? `New York local time ${time}` : "New York local time"}>
-      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[#c9a779]" />
-      {time ? `NEW YORK · ${time}` : "NEW YORK · --:--"}
-    </span>
+    <ul className="tnum hidden items-center gap-3 text-[10px] tracking-[0.14em] 2xl:gap-4 2xl:tracking-[0.18em] text-white/55 md:flex" aria-label="Local time in major markets">
+      {MARKETS.map((m, i) => (
+        <li key={m.code} className={`items-center gap-1.5 ${"wide" in m && m.wide ? "hidden 2xl:flex" : "flex"}`} aria-label={`${m.name} ${now ? now[i] : ""}`} title={m.name}>
+          <span aria-hidden className="h-1 w-1 rounded-full bg-ice-deep/80" />
+          <span className="text-white/40">{m.code}</span>
+          <span className="text-white/75">{now ? now[i] : "--:--"}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
