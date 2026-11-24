@@ -6,7 +6,7 @@ The public site shows returns and percentages only (`content/privacy.ts`). Two t
    quantities, prices). It is published **encrypted** (AES-256-GCM, key derived from your password with PBKDF2-SHA256,
    600 000 iterations). There is no visible link. Open it by **typing the door word** anywhere on the page (no text field: just
    type while the site is open), or by **pressing and holding the copyright line** ("© 2026 …") at the very bottom
-   for 6 seconds (works on phones). Or bookmark `/private/`. Only a fingerprint of the word is in the code
+   for 10 seconds (works on phones). Or bookmark `/private/`. Only a fingerprint of the word is in the code
    (`components/chrome/SecretDoor.tsx`). The unlock page decrypts it in your browser.
    Nothing is sent anywhere, and without the password the file is unreadable. **Lock** (bottom left) returns to the
    public site.

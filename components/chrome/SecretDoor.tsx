@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
  * The private view's hidden entrance (rendered only when a private view exists). Two deliberate gestures, nothing
  * visible:
  *   - type the door word anywhere on the page (no text field: just type while the site is open)
- *   - press and hold the wrapped text (the footer's copyright line) for 6 s without moving: works on phones too
+ *   - press and hold the wrapped text (the footer's copyright line) for 10 s without moving: works on phones too
  * Only a SHA-256 fingerprint of the word is in the code, so reading the source does not reveal it. The private page
  * stays encrypted either way; this only keeps the entrance out of sight. To change the word: put
  * sha256(new word in lowercase) in WORD_SHA256 and its length in WORD_LENGTH. Any printable characters count
@@ -13,7 +13,7 @@ import { useEffect, useRef } from "react";
  */
 const WORD_SHA256 = "11b0fe93143c77f4e5246020db5c5888a4294af512a28446c854fa8fc0f6504e";
 const WORD_LENGTH = 11;
-const HOLD_MS = 6000;
+const HOLD_MS = 10000;
 
 const open = () => { location.href = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/private/`; };
 const sha256 = async (s: string) =>
