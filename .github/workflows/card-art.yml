@@ -1,0 +1,91 @@
+# Card artwork for a position, drawn by Claude (anthropics/claude-code-action).
+# Started automatically by "Daily IBKR data" when a new position is added, or by hand (Actions → Card artwork →
+# Run workflow) for any position. Claude draws public/brand/<id>.svg, an emblem inspired by the company's brand mark,
+# colours and products in the manner of the site's Anthropic burst, sets the card's brand and accent colour in
+# data/holdings.json, and opens a pull request. GitHub shows the SVG as an image in the pull request: nothing goes
+# live until you merge it.
+# Needs one of the secrets CLAUDE_CODE_OAUTH_TOKEN (Claude Pro/Max: `claude setup-token`) or ANTHROPIC_API_KEY, and
+# Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests". See docs/card-art.md.
+name: Card artwork
+
+on:
+  workflow_dispatch:
+    inputs:
+      id:
+        description: "Position id (as in /investments/<id>), e.g. nvda"
+        required: true
+      name:
+        description: "Company or fund name, e.g. NVIDIA Corp"
+        required: true
+      ticker:
+        description: "Ticker, e.g. NVDA"
+        required: false
+      notes:
+        description: "Optional wishes for the artwork"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: card-art-${{ inputs.id }}
+  cancel-in-progress: false
+
+jobs:
+  art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check the position id
+        env:
+          ID: ${{ inputs.id }}
+        run: |
+          if ! printf '%s' "$ID" | grep -Eq '^[a-z0-9-]{1,60}$'; then echo "Invalid id: use lowercase letters, numbers and dashes"; exit 1; fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: cinematic-redesign
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ github.token }}
+          claude_args: >-
+            --max-turns 40
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(gh pr create:*),Bash(node:*),Bash(wc:*)"
+          prompt: |
+            You are adding card artwork for one position to a personal investment portfolio website (Next.js, this
+            repository, branch cinematic-redesign). The position:
+              id:     ${{ inputs.id }}
+              name:   ${{ inputs.name }}
+              ticker: ${{ inputs.ticker }}
+              wishes: ${{ inputs.notes }}
+
+            1. Look at the hand-made artwork already on the site for reference, in components/sections/Investments.tsx:
+               the Anthropic burst (tapered rays around a core, in Anthropic's terracotta) and the Google "G" (the
+               four brand colours). Cards are dark (#111315); the artwork sits in a 128×128 px square, top right.
+
+            2. Draw public/brand/${{ inputs.id }}.svg: an emblem clearly related to the company: inspired by its brand
+               mark, brand colours and what it makes, in the same refined style. A stylised mark, not a pixel copy of
+               a trademarked logo; no words or slogans (a single letterform is fine where the brand mark is one).
+               For a fund (ETF), draw the issuer's mark (e.g. iShares, Vanguard) with a hint of what the fund holds.
+               Rules: viewBox="0 0 100 100", transparent background, only shapes and fills (path, circle, rect,
+               ellipse, polygon, line, g, linearGradient/radialGradient), no <text>, <image>, <script>, <style>,
+               <foreignObject>, external links or event attributes. Under 8 KB. It must read clearly on #111315.
+
+            3. In data/holdings.json, add or update the entry "${{ inputs.id }}" (keep every other entry and the
+               "_comment" untouched): set "brand" (the short brand name shown on the card) and "accent" (the brand's
+               main colour as #rrggbb, lightened if needed so it glows on a dark card). If the entry has no
+               "industry", add a short one (e.g. "Semiconductors"). Never add amounts.
+
+            4. Check: the SVG parses (node -e "const s=require('fs').readFileSync('public/brand/${{ inputs.id }}.svg','utf8'); if(!/^<svg[\s\S]*<\/svg>\s*$/.test(s.trim())||/<(script|text|image|foreignObject|style)\b|\son\w+=|href=/i.test(s)) process.exit(1)"),
+               and data/holdings.json is valid JSON. Only those two files may change.
+
+            5. git checkout -b art/${{ inputs.id }}, commit both files ("Card artwork: ${{ inputs.name }}"), push, and
+               open a pull request into cinematic-redesign with gh pr create. In its body: one line on the idea behind
+               the design, then ![artwork](../blob/art/${{ inputs.id }}/public/brand/${{ inputs.id }}.svg?raw=true),
+               then "Merge to publish it on the site."

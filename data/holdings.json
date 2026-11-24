@@ -17,7 +17,8 @@
     "assetClass": "ETFs",
     "geography": "Europe",
     "industry": "Cash equivalents",
-    "brand": "Vanguard"
+    "brand": "Vanguard",
+    "accent": "#D24A4F"
   },
   "cash-eur": {
     "name": "Cash (EUR)",

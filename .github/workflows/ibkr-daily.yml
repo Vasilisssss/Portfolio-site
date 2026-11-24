@@ -3,7 +3,8 @@
 # statements once a day, after New York closes, and the first check that finds the new one publishes it. It updates
 # data/portfolio.json on cinematic-redesign and starts the release workflow (which builds, checks and deploys).
 # Trades, deposits and new or sold positions are published automatically, with a notification (an issue opened and
-# closed at once, listing what changed, never amounts). Only anomalies (totals that do not add up, a jump in return,
+# closed at once, listing what changed, never amounts); a new position also gets company artwork drawn by Claude
+# (card-art.yml, as a pull request). Only anomalies (totals that do not add up, a jump in return,
 # the wrong statement period) publish nothing and open an issue instead; after checking, run it by hand with
 # "publish anyway" ticked (the statement period can never be overridden).
 # Setup: docs/ibkr-flex-setup.md (secrets IBKR_FLEX_TOKEN and IBKR_FLEX_QUERY_ID). Without them it does nothing.
@@ -108,6 +109,13 @@ jobs:
             url=$(gh issue create --title "IBKR update: portfolio changes published ($(date -u +%F))" --body-file "$RUNNER_TEMP/changes.txt")
             gh issue close "$url" --reason completed
           fi
+          # a new position without company artwork: ask Claude to draw it (Card artwork workflow, opens a pull request)
+          for id in $(grep -o 'Added as "[a-z0-9-]*"' "$RUNNER_TEMP/changes.txt" 2>/dev/null | cut -d'"' -f2); do
+            [ -f "public/brand/$id.svg" ] && continue
+            name=$(node -p "(require('./' + process.env.PORTFOLIO_FILE).holdings.find((h) => h.id === '$id') || {}).name || ''")
+            ticker=$(node -p "(require('./' + process.env.PORTFOLIO_FILE).holdings.find((h) => h.id === '$id') || {}).ticker || ''")
+            gh workflow run card-art.yml --ref cinematic-redesign -f id="$id" -f name="$name" -f ticker="$ticker" || echo "Could not start Card artwork for $id"
+          done
 
       - name: Needs review
         if: steps.flex.outputs.code == '2'

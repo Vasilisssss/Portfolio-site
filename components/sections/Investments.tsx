@@ -53,6 +53,12 @@ function Card({ h, i, cur }: { h: PublicHolding; i: number; cur: string }) {
                   <circle cx="50" cy="50" r="5" fill="#E8C3A8" />
                 </svg>
               </div>
+            ) : h.artSrc ? (
+              // company artwork (public/brand/<id>.svg, made by the "Card artwork" workflow or added by hand)
+              <div className="absolute right-9 top-10 flex h-32 w-32 items-center justify-center transition-transform duration-700 group-hover:rotate-6 group-hover:scale-105">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={h.artSrc} alt="" width={128} height={128} className="h-full w-full object-contain" />
+              </div>
             ) : listed ? (
               // generated artwork in the manner of the Anthropic burst, unique per ticker (components/ui/Emblem)
               <div className="absolute right-9 top-10 flex h-32 w-32 items-center justify-center opacity-85 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-105">
