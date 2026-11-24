@@ -1,7 +1,6 @@
 # Daily portfolio data from Interactive Brokers (free: a Flex Query + GitHub Actions; no server, no login).
-# Runs Tuesday–Saturday at 06:17 UTC (IBKR refreshes Activity statements once a day at close of business and advises
-# pulling the previous day's statement the next morning), with a backup run at 10:17 UTC for days when IBKR's
-# processing finishes late (it then finds "nothing new" when the first run already published). It updates
+# Checks five times a night (Mon–Fri 22:17, Tue–Sat 01:17, 04:17, 06:17, 10:17 UTC): IBKR refreshes Activity
+# statements once a day, after New York closes, and the first check that finds the new one publishes it. It updates
 # data/portfolio.json on cinematic-redesign and starts the release workflow (which builds, checks and deploys).
 # Anything unusual (a trade, a deposit, a new position, numbers that do not add up) publishes nothing and opens an
 # issue instead; after checking, run this workflow by hand with "accept changes" ticked.
@@ -12,6 +11,11 @@ name: Daily IBKR data
 
 on:
   schedule:
+    # IBKR builds one statement per day, covering every market, overnight after New York closes (21:00 UTC). These
+    # checks catch it as soon as it is ready; the first that finds it publishes, the rest find nothing new.
+    - cron: "17 22 * * 1-5"
+    - cron: "17 1 * * 2-6"
+    - cron: "17 4 * * 2-6"
     - cron: "17 6 * * 2-6"
     - cron: "17 10 * * 2-6"
   workflow_dispatch:

@@ -1,0 +1,27 @@
+{
+  "_comment": "PUBLIC descriptive details per position (never amounts). Keys are holding ids, as in /investments/<id>. Any field set here overrides the encrypted data: name, assetClass (Stocks, ETFs, Cryptocurrency, Real Estate, Bonds, Cash, Precious Metals, Private Investments, Other Assets), geography, industry, note, purchaseDate (YYYY-MM-DD), public (false = shown only as 'Undisclosed'). Edit on GitHub; the site rebuilds on commit.",
+  "anthropic": {
+    "name": "Anthropic PBC (Class A)",
+    "assetClass": "Stocks",
+    "geography": "North America",
+    "industry": "Technology"
+  },
+  "alphabet": {
+    "name": "Alphabet Inc. (Class C)",
+    "assetClass": "Stocks",
+    "geography": "North America",
+    "industry": "Communications"
+  },
+  "vanguard-eur-cash-etf": {
+    "name": "Vanguard EUR Cash ETF",
+    "assetClass": "ETFs",
+    "geography": "Europe",
+    "industry": "Cash equivalents"
+  },
+  "cash-eur": {
+    "name": "Cash (EUR)",
+    "assetClass": "Cash",
+    "geography": "Europe",
+    "industry": "Cash"
+  }
+}
