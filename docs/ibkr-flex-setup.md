@@ -40,7 +40,7 @@ Secrets are encrypted and never shown in logs or on the site.
 
 ## 4. First run
 
-**Actions** → **Daily IBKR data** → **Run workflow** (branch `main`) → **Run workflow**. After a minute or two:
+**Actions** → **Daily IBKR data** → **Run workflow** (branch `cinematic-redesign`) → **Run workflow**. After a minute or two:
 
 - **green**: the data was updated (or was already current) and the site redeploys a few minutes later;
 - **red, with a new issue "needs review"**: the statement contained something to check (a trade, a deposit, a new
@@ -52,7 +52,7 @@ Secrets are encrypted and never shown in logs or on the site.
 
 Each position's public description (display name, asset class, region, industry, a note, purchase date, and
 `"public": false` to show it only as "Undisclosed") lives in `data/holdings.json`, a plain file with **no amounts**.
-Edit it on GitHub (switch to the `cinematic-redesign` branch, open the file, ✏️, commit); the site rebuilds by itself.
+Edit it on GitHub (open the file, ✏️, commit to `cinematic-redesign`, the default branch); the site rebuilds by itself.
 The amounts stay in the encrypted data file.
 
 From then on it runs by itself: five checks a night (Mon–Fri 22:17 UTC, Tue–Sat 01:17, 04:17, 06:17 and 10:17 UTC).
