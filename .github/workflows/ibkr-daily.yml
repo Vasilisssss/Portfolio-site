@@ -9,7 +9,7 @@
 # "publish anyway" ticked (the statement period can never be overridden).
 # Setup: docs/ibkr-flex-setup.md (secrets IBKR_FLEX_TOKEN and IBKR_FLEX_QUERY_ID). Without them it does nothing.
 # With PRIVATE_VIEW_PASSWORD the data file is kept encrypted (docs/private-view.md).
-# Scheduled workflows run from the default branch, so this file must also be on main.
+# Scheduled workflows run from the default branch, which is cinematic-redesign.
 name: Daily IBKR data
 
 on:

@@ -40,7 +40,7 @@ Secrets are encrypted and never shown in logs or on the site.
 
 ## 4. First run
 
-**Actions** → **Daily IBKR data** → **Run workflow** (branch `main`) → **Run workflow**. After a minute or two:
+**Actions** → **Daily IBKR data** → **Run workflow** (branch `cinematic-redesign`) → **Run workflow**. After a minute or two:
 
 - **green**: the data was updated (or was already current) and the site redeploys a few minutes later;
 - **red, with a new issue "needs review"**: the statement looked wrong (totals that do not add up, a large jump in

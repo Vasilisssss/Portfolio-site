@@ -25,4 +25,5 @@ If the clips are replaced with higher-resolution versions, re-run the script: it
 ## Release boundary
 
 Work happens on feature branches with a pull request into `cinematic-redesign`. A push to `cinematic-redesign`
-publishes the site (GitHub Actions); `main` has its own deploy workflow. Neither is pushed to directly.
+publishes the site (GitHub Actions); it is the default branch. Code changes arrive as pull requests; the daily IBKR
+workflow and edits to `data/holdings.json` commit to it directly.
