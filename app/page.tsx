@@ -86,7 +86,6 @@ export default function Home() {
 
       {/* III — THE INVESTMENT GALLERY */}
       <div data-scene="2" className="relative">
-        
         <Chapter index={2} roman="III" kicker="The Investment Gallery" title={<>A gallery of <em>positions.</em></>}
           still={{ id: "gallery", alt: room("gallery").alt, focusX: room("gallery").focusX }}
           stats={[
@@ -100,7 +99,7 @@ export default function Home() {
             <Sheet id="investments" aria-labelledby="investments-title">
               <section className="container-x relative flex flex-col gap-14 py-24">
                 <SectionHead index="02" eyebrow="My investments" id="investments-title" aside={<SampleBadge show={view.sample} />}>
-                  What I <em>own.
+                  What I <em>own.</em>
                 </SectionHead>
                 <Investments holdings={view.holdings} currency={cur} />
               </section>
