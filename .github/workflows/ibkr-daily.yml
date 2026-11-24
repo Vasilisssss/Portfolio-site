@@ -1,0 +1,79 @@
+# Daily portfolio data from Interactive Brokers (free: a Flex Query + GitHub Actions; no server, no login).
+# Runs Tuesday–Saturday at 06:17 UTC, after IBKR has published the previous US trading day's statement, updates
+# data/portfolio.json on cinematic-redesign and starts the release workflow (which builds, checks and deploys).
+# Anything unusual (a trade, a deposit, a new position, numbers that do not add up) publishes nothing and opens an
+# issue instead; after checking, run this workflow by hand with "accept changes" ticked.
+# Setup: docs/ibkr-flex-setup.md (secrets IBKR_FLEX_TOKEN and IBKR_FLEX_QUERY_ID). Without them it does nothing.
+# Scheduled workflows run from the default branch, so this file must also be on main.
+name: Daily IBKR data
+
+on:
+  schedule:
+    - cron: "17 6 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      accept_changes:
+        description: "Accept a trade, deposit or withdrawal reported in the statement (only after checking it)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+
+concurrency:
+  group: ibkr-daily
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cinematic-redesign
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Read the IBKR Flex statement and update data/portfolio.json
+        id: flex
+        env:
+          IBKR_FLEX_TOKEN: ${{ secrets.IBKR_FLEX_TOKEN }}
+          IBKR_FLEX_QUERY_ID: ${{ secrets.IBKR_FLEX_QUERY_ID }}
+          ACCEPT_CHANGES: ${{ inputs.accept_changes && 'true' || 'false' }}
+        run: |
+          set +e
+          node tools/ibkr/flex-update.mjs > "$RUNNER_TEMP/flex.txt" 2>&1
+          code=$?
+          cat "$RUNNER_TEMP/flex.txt"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Publish
+        if: steps.flex.outputs.code == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- data/portfolio.json; then echo "No new data."; exit 0; fi
+          if [ "$(git status --porcelain)" != " M data/portfolio.json" ]; then git status --porcelain; echo "Unexpected changes"; exit 1; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -am "data: IBKR Flex snapshot $(node -p 'require("./data/portfolio.json").asOf')"
+          for i in 1 2 3 4; do git push origin HEAD:cinematic-redesign && break; sleep $((i * 10)); done
+          # a push made with the workflow token does not start other workflows: start the release explicitly
+          gh workflow run cinematic-redesign-checks.yml --ref cinematic-redesign
+
+      - name: Needs review
+        if: steps.flex.outputs.code == '2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --title "IBKR daily update needs review ($(date -u +%F))" --body-file "$RUNNER_TEMP/flex.txt"
+          exit 1
+
+      - name: Failed
+        if: steps.flex.outputs.code != '0' && steps.flex.outputs.code != '2'
+        run: exit 1

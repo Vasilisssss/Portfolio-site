@@ -1,7 +1,8 @@
 # Portfolio data
 
 `data/portfolio.json` is the portfolio the site shows. It is committed, so it is **public** like the repository.
-Merge a change into `cinematic-redesign` and the site redeploys.
+Merge a change into `cinematic-redesign` and the site redeploys. It is updated daily from Interactive Brokers by
+`.github/workflows/ibkr-daily.yml` (setup: `docs/ibkr-flex-setup.md`).
 
 To keep the raw data private, either put it in `data/portfolio.private.json` (git-ignored, local builds) or in the
 `PORTFOLIO_JSON` repository secret (CI, once the release workflow passes it to the build). Both override `portfolio.json`. Only what `content/privacy.ts` allows
