@@ -4,9 +4,9 @@
   "baseCurrency": "EUR",
   "fx": {
     "EUR": 1,
-    "USD": 0.91178945
+    "USD": 0.91323455
   },
-  "asOf": "2026-11-22",
+  "asOf": "2026-11-24",
   "holdings": [
     {
       "id": "anthropic",
@@ -15,7 +15,7 @@
       "assetClass": "Stocks",
       "quantity": 2,
       "avgPrice": 96.79485,
-      "currentPrice": 87.80000305,
+      "currentPrice": 84.13739775,
       "currency": "USD",
       "purchaseDate": "2026-11-19",
       "geography": "North America",
@@ -28,7 +28,7 @@
       "assetClass": "Stocks",
       "quantity": 0.0829,
       "avgPrice": 280.00241255,
-      "currentPrice": 268.5,
+      "currentPrice": 278.1499939,
       "currency": "USD",
       "purchaseDate": "2026-11-19",
       "geography": "North America",
@@ -41,7 +41,7 @@
       "assetClass": "ETFs",
       "quantity": 0.2623,
       "avgPrice": 20.01410599,
-      "currentPrice": 15.2989998,
+      "currentPrice": 15.30790045,
       "currency": "EUR",
       "geography": "Europe",
       "industry": "Cash equivalents"
@@ -113,10 +113,10 @@
       "twr": -0.1249352
     },
     {
-      "date": "2026-11-22",
-      "value": 187.92094,
+      "date": "2026-11-24",
+      "value": 182.2383,
       "netContributions": 206.625,
-      "twr": -0.21225155
+      "twr": -0.23607269
     }
   ]
 }

@@ -2,8 +2,8 @@
 
 ## Sources
 
-- `public/media/headquarters-establishing.mp4` — blue-hour approach across the plaza to the bronze-lined portal (1280×720, 24 fps, 7.9 s).
-- `public/media/headquarters-arrival.mp4` — closer approach; the camera passes through the portal onto the trading floor (1280×720, 24 fps, 7.9 s).
+- `media-src/headquarters-establishing.mp4` — blue-hour approach across the plaza to the bronze-lined portal (1280×720, 24 fps, 7.9 s).
+- `media-src/headquarters-arrival.mp4` — closer approach; the camera passes through the portal onto the trading floor (1280×720, 24 fps, 7.9 s).
 - `public/scenes/` — the four rooms (screens, gallery, chart, skyline) and the closing shot (metal), each as
   `<id>-wide.webp` 1920×1080, `-wide-sm` 1280×720, `-tall` 1080×1350, `-tall-sm` 720×900, with `manifest.json`.
 

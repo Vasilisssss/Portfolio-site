@@ -1,10 +1,10 @@
 # Portfolio data
 
 `data/portfolio.json` is the portfolio the site shows. It is committed, so it is **public** like the repository.
-Push a change to `main` and the site redeploys.
+Merge a change into `cinematic-redesign` and the site redeploys.
 
 To keep the raw data private, either put it in `data/portfolio.private.json` (git-ignored, local builds) or in the
-`PORTFOLIO_JSON` repository secret (CI). Both override `portfolio.json`. Only what `content/privacy.ts` allows
+`PORTFOLIO_JSON` repository secret (CI, once the release workflow passes it to the build). Both override `portfolio.json`. Only what `content/privacy.ts` allows
 reaches the built site. With no data file at all, the clearly-labelled sample in `content/sample-portfolio.ts` is used.
 
 ## Format

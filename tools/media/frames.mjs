@@ -5,7 +5,7 @@
  *   node tools/media/frames.mjs [--analyse] [--doors <index>]
  *
  * 1. Finds the best join between the two clips: every frame from the last 3 s of
- *    public/media/headquarters-establishing.mp4 is compared with every frame from the first 4 s of
+ *    media-src/headquarters-establishing.mp4 is compared with every frame from the first 4 s of
  *    headquarters-arrival.mp4 (96×54 luma, mean absolute difference), also allowing a small centre zoom on either
  *    side so the portal can be matched at the same size. The pair with the lowest difference is the join.
  * 2. Builds one continuous walk: establishing start → join → arrival from the join → end, with an 8-frame
@@ -24,7 +24,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 const ROOT = new URL("../../", import.meta.url).pathname;
-const SRC = { est: join(ROOT, "public/media/headquarters-establishing.mp4"), arr: join(ROOT, "public/media/headquarters-arrival.mp4") };
+const SRC = { est: join(ROOT, "media-src/headquarters-establishing.mp4"), arr: join(ROOT, "media-src/headquarters-arrival.mp4") };
 const OUT = join(ROOT, "public/media/journey");
 const TMP = join(tmpdir(), `hq-frames-${process.pid}`);
 const args = process.argv.slice(2);
