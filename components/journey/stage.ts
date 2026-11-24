@@ -8,8 +8,7 @@
  *   zoom (radial) blur around a screen point, only while moving
  *   shared grade, vignette and animated film grain, so walk frames and rooms read as one camera
  * Canvas2D fallback (no WebGL2) — same pushes and cross-fades, no blur, aperture or grain.
- * The caller decides when to draw; nothing renders unless something changed (grain ticks at ~12 fps while the
- * stage is visible).
+ * The caller decides when to draw; nothing renders unless something changed.
  */
 export interface Layer {
   src: TexImageSource & { width: number; height: number };
@@ -68,6 +67,12 @@ vec2 mapA(vec2 s){ vec2 u = s * uCovA.xy + uCovA.zw; return uZA.yz + (u - uZA.yz
 vec2 mapB(vec2 s){ vec2 u = s * uCovB.xy + uCovB.zw; return uZB.yz + (u - uZB.yz) / uZB.x; }
 vec3 texA(vec2 s){ return texture(tA, clamp(mapA(s), vec2(.0005), vec2(.9995))).rgb; }
 vec3 texB(vec2 s){ return texture(tB, clamp(mapB(s), vec2(.0005), vec2(.9995))).rgb; }
+// at rest: four taps a third of a source texel apart — when a 720p/1080p source is upscaled this smooths WebP block
+// edges without the halos a sharpen would add (and costs four lookups, not a pass)
+vec3 softA(vec2 s){ vec2 u = clamp(mapA(s), vec2(.0005), vec2(.9995)); vec2 t = .34 / vec2(textureSize(tA, 0));
+  return .25 * (texture(tA, u + t).rgb + texture(tA, u - t).rgb + texture(tA, u + vec2(t.x, -t.y)).rgb + texture(tA, u + vec2(-t.x, t.y)).rgb); }
+vec3 softB(vec2 s){ vec2 u = clamp(mapB(s), vec2(.0005), vec2(.9995)); vec2 t = .34 / vec2(textureSize(tB, 0));
+  return .25 * (texture(tB, u + t).rgb + texture(tB, u - t).rgb + texture(tB, u + vec2(t.x, -t.y)).rgb + texture(tB, u + vec2(-t.x, t.y)).rgb); }
 float hash(vec2 p){ p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
 
 void main(){
@@ -90,8 +95,8 @@ void main(){
     }
     a /= 14.; b /= 14.;
   } else {
-    if (uHasA > .5) a = texA(s);
-    if (wB > .001) b = texB(s);
+    if (uHasA > .5) a = softA(s);
+    if (wB > .001) b = softB(s);
   }
   vec3 c = mix(a * uHasA, b, wB);
   // shared grade: blacks sit on the page colour, highlights lean warm, a touch less saturation
@@ -122,8 +127,11 @@ export function createStage(canvas: HTMLCanvasElement, opts: { webgl: boolean; p
   // preserve: only for automated screenshots (?qa), which can capture between redraws
   const gl = opts.webgl ? canvas.getContext("webgl2", { alpha: false, antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: !!opts.preserve, powerPreference: "high-performance" }) : null;
   if (gl?.isContextLost()) throw new Error("WebGL2 context lost");
+  // device resolution up to 2×, but never more than ~4.5 MP: the sources are 1920 px wide, so pixels beyond that
+  // only cost fill rate (a 2560 px screen at 2× would be 15 MP of blur taps)
   const size = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const area = Math.max(1, canvas.clientWidth * canvas.clientHeight);
+    const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(4.5e6 / area)));
     const w = Math.max(1, Math.round(canvas.clientWidth * dpr)), h = Math.max(1, Math.round(canvas.clientHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   };

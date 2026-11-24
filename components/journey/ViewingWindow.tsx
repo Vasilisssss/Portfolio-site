@@ -160,7 +160,7 @@ export default function ViewingWindow({ frames, closing }: { frames: WindowFrame
 
         {/* HUD: caption, counter, progress */}
         <div data-hud className="absolute inset-x-0 bottom-0 z-[5] opacity-0">
-          <div className="container-x flex items-end justify-between gap-6 pb-8">
+          <div className="container-x flex items-end justify-between gap-6 pb-20 lg:pb-8">
             <div className="relative h-[3.4em] min-w-0 flex-1 overflow-hidden text-[clamp(14px,1.3vw,17px)]">
               {frames.map((f) => (
                 <p key={f.roman} data-cap className="absolute inset-x-0 bottom-0 flex flex-wrap items-baseline gap-x-4 gap-y-1">

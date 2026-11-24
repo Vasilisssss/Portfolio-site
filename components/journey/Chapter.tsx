@@ -55,7 +55,7 @@ export default function Chapter({ index, roman, title, kicker, stats, note, stil
         </picture>
         <div aria-hidden className="chapter-scrim pointer-events-none absolute inset-0" />
         <span data-numeral aria-hidden className="chapter-numeral pointer-events-none absolute right-[4vw] top-[14svh] select-none font-serif text-[clamp(160px,26vw,420px)] italic leading-none text-transparent">{roman}</span>
-        <div className="container-x relative w-full pb-[9svh]">
+        <div className="container-x relative w-full pb-[max(9svh,5.5rem)] lg:pb-[9svh]">
           <div data-copy className="flex flex-col gap-7 will-change-transform">
             <span data-kicker className="eyebrow flex items-center gap-4 text-ice-deep">
               <span className="whitespace-nowrap">Chapter {roman}</span><span data-rule className="block h-px w-10 shrink-0 bg-ice-deep/60 md:w-16" /><span className="text-ice-deep/70">{kicker}</span>

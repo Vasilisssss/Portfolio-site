@@ -79,7 +79,7 @@ export default function Nav({ name, items, email, closing }: { name: string; ite
       <span aria-hidden ref={progress} className="pointer-events-none fixed inset-x-0 top-0 z-[60] block h-px origin-left scale-x-0 bg-ice-deep" />
       <header ref={header} className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${scrolled ? "border-white/10 bg-[#090d10]/80 backdrop-blur-xl" : "border-transparent bg-gradient-to-b from-black/35 to-transparent"}`}>
         <div className="container-x flex items-center justify-between gap-6 py-5">
-          <Link href="/#top" onClick={(e) => onAnchor(e, "/#top")} aria-label={`${name} Portfolio — home`} className="flex items-center gap-3.5">
+          <Link href="/#top" onClick={(e) => onAnchor(e, "/#top")} className="flex items-center gap-3.5">
             <Monogram draw />
             <span className="flex flex-col leading-[1.1]">
               <span className="font-serif text-[22px] font-medium tracking-[0.01em] text-[#f4f1eb]">{name}</span>

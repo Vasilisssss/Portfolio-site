@@ -72,7 +72,7 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
         <div aria-hidden className="walk-shade absolute inset-0" />
         <div aria-hidden data-bloom className="walk-bloom absolute inset-0 opacity-0" />
 
-        <div className="relative z-10 flex h-full w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-10 pt-32 md:pb-14 md:pt-36">
+        <div className="relative z-10 flex h-full w-full flex-col justify-between px-[clamp(24px,6vw,104px)] pb-20 pt-32 md:pb-14 md:pt-36 lg:pb-14">
           <div data-topline className="flex items-center justify-between gap-6">
             <p data-enter className="eyebrow flex items-center gap-4 text-white/75">
               <span className="h-px w-10 bg-ice-deep" />
@@ -120,9 +120,9 @@ export default function HeadquartersHero({ name, eyebrow, lines, body, figure, s
               <span data-cap-b aria-hidden className="block text-ice-deep">Entering · The trading floor</span>
             </span>
             <span data-cue className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.24em] text-white/70">
-              Scroll to walk in <span aria-hidden className="walk-cue relative block h-8 w-px overflow-hidden bg-white/20"><span className="absolute inset-x-0 top-0 block h-1/3 bg-ice-deep" /></span>
+              <span className="hidden sm:inline">Scroll to walk in</span> <span aria-hidden className="walk-cue relative block h-8 w-px overflow-hidden bg-white/20"><span className="absolute inset-x-0 top-0 block h-1/3 bg-ice-deep" /></span>
             </span>
-            <span data-arrive aria-hidden className="absolute bottom-0 right-0 font-mono text-[9px] uppercase tracking-[0.24em] text-ice-deep opacity-0">II · The Capital Engine ↓</span>
+            <span data-arrive aria-hidden className="absolute bottom-0 right-0 hidden font-mono sm:inline text-[9px] uppercase tracking-[0.24em] text-ice-deep opacity-0">II · The Capital Engine ↓</span>
           </div>
         </div>
       </div>

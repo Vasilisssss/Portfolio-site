@@ -20,7 +20,7 @@ import { ROOMS, FLOOR, sceneSrc, walkSrc, base, type Variant } from "./scenes";
  *   dwell [data-scene]    while a chapter is read, the room keeps pushing in slowly (1 → 1.06); fine pointers add
  *                         ±8 px parallax
  * u = 0→1 hands the walk's last frame (the trading floor) into the screens room, so walk and rooms are one camera.
- * The canvas only redraws when something changed; grain ticks at ~12 fps while the stage is on screen.
+ * The canvas only redraws when something changed (the grain is re-seeded on each redraw), never while hidden.
  * Reduced motion: nothing is mounted here; the hero and chapter cards show their own still images.
  */
 const RAIL = ["Headquarters", "The Capital Engine", "The Investment Gallery", "The Performance Gallery", "The Final Reveal"];
@@ -130,7 +130,7 @@ export default function Journey() {
     window.addEventListener("resize", onResize);
 
     let draws = 0, lastFrame = "", shown = true;
-    let lastWalkF = 0, walkSpeed = 0, lastGrain = 0, lastActive = -1, lastKey = "";
+    let lastWalkF = 0, walkSpeed = 0, lastActive = -1, lastKey = "";
     const layerOf = (src: ImageBitmap, key: string, focusX: number, zoom: number, origin: [number, number]): Layer => ({ src, key, focusX, zoom, origin });
     const frameAt = (g: Geometry, dt: number): StageFrame | null => {
       const base: StageFrame = { a: null, b: null, mix: 0, aperture: 1, apCenter: [0.5, 0.5], blur: 0, blurCenter: [0.5, 0.5], dim: 0, parallax: [par.x, par.y], grade: 0 };
@@ -183,8 +183,14 @@ export default function Journey() {
       return base;
     };
 
+    let lastY = NaN, lastW = 0, lastH = 0, lastPx = 0, lastPy = 0;
     const tick = (time: number, deltaMs: number) => {
       if (stopped || document.hidden) return;
+      // nothing scrolled, resized, moved or loaded: no measuring, no drawing
+      const y = window.scrollY;
+      if (!dirty && y === lastY && window.innerWidth === lastW && window.innerHeight === lastH && par.x === lastPx && par.y === lastPy && walkSpeed < 0.01) return;
+      lastY = y; lastW = window.innerWidth; lastH = window.innerHeight; lastPx = par.x; lastPy = par.y;
+      if (y === lastY) walkSpeed *= 0.8;
       const g = measure();
       const act = g.u < 0.5 ? 0 : Math.min(4, Math.round(g.u));
       if (act !== lastActive) { lastActive = act; setActive(act); }
@@ -195,9 +201,9 @@ export default function Journey() {
       const f = frameAt(g, deltaMs / 1000);
       if (!f) return;
       const key = `${f.a?.key}|${f.a?.zoom.toFixed(4)}|${f.b?.key}|${f.b?.zoom.toFixed(4)}|${f.mix.toFixed(3)}|${f.aperture.toFixed(3)}|${f.blur.toFixed(3)}|${f.parallax[0].toFixed(2)},${f.parallax[1].toFixed(2)}`;
-      const grainDue = time - lastGrain > 1 / 12;
-      if (!dirty && key === lastKey && !grainDue) return;
-      dirty = false; lastKey = key; lastGrain = time;
+      // render only on change: the grain is re-seeded on every real redraw (and is still while nothing moves)
+      if (!dirty && key === lastKey) return;
+      dirty = false; lastKey = key;
       f.grade = f.grade || 0;
       stage.draw(f, time);
       draws++; lastFrame = `${f.a?.key}@${f.a?.zoom.toFixed(2)} ${f.b?.key}@${f.b?.zoom.toFixed(2)} mix ${f.mix.toFixed(2)} ap ${f.aperture.toFixed(2)} blur ${f.blur.toFixed(2)}`;

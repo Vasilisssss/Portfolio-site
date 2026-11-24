@@ -22,7 +22,7 @@ export default function Headline({ as = "h2", children, className, id, delay = 0
     let split: SplitText | null = null;
     const tweens: (gsap.core.Tween | ScrollTrigger)[] = [];
     const run = () => {
-      split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "line", aria: "auto", autoSplit: true,
+      split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "line", aria: as === "h1" || as === "h2" || as === "h3" ? "auto" : "hidden", autoSplit: true,
         onSplit: (self) => gsap.from(self.lines, {
           yPercent: 110, duration: 1.3, ease: "expo.out", stagger, delay,
           scrollTrigger: onLoad ? undefined : { trigger: el, start: "top 90%", once: true },
