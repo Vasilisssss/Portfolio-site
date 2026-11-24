@@ -7,6 +7,7 @@ import Magnetic from "@/components/ui/Magnetic";
 import RollText from "@/components/motion/RollText";
 import FooterLink from "./FooterLink";
 import RevealFit from "./RevealFit";
+import SecretDoor from "@/components/chrome/SecretDoor";
 
 /**
  * FOOTER — the close.
@@ -46,7 +47,9 @@ export default function Footer() {
           <p aria-hidden className="-mx-[1vw] select-none whitespace-nowrap font-serif text-[17vw] font-light leading-[0.8] tracking-[-0.045em] text-transparent [-webkit-text-stroke:1px_rgba(217,192,155,0.14)]">{profile.name}</p>
         </Drift>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4 text-[11px] leading-[1.7] text-mute">
-          <span>© {new Date().getFullYear()} {profile.name}</span>
+          {process.env.NEXT_PUBLIC_PRIVATE_VIEW === "1"
+            ? <SecretDoor>© {new Date().getFullYear()} {profile.name}</SecretDoor>
+            : <span>© {new Date().getFullYear()} {profile.name}</span>}
           <p className="max-w-[720px]">{profile.disclaimer}</p>
         </div>
       </div>

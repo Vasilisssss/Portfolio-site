@@ -64,6 +64,9 @@ Every section reads these values. Nothing is estimated, and fields that aren't i
 redeploys. Trades, deposits and anything that does not add up are never published automatically: the run opens an
 issue instead. One-time setup: `docs/ibkr-flex-setup.md`.
 
+**Private view and encrypted data:** amounts are hidden on the public site; the full figures are in an encrypted,
+password-protected private view, and the data file is stored encrypted. See `docs/private-view.md`.
+
 **By hand:** edit `data/portfolio.json` (format in `data/README.md`) and merge it into `cinematic-redesign`. The site
 redeploys automatically.
 

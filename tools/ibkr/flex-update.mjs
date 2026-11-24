@@ -15,6 +15,7 @@
  *     point before the statement period, so returns stay cumulative across years)
  * Nothing is estimated. Anything unexpected (an unknown position, a missing month-end, a value that does not add up)
  * stops the update: the script exits with code 2 and writes the reasons to stdout (and $GITHUB_STEP_SUMMARY).
+ * Messages never contain amounts, quantities or prices: workflow logs and issues of a public repository are public.
  * Exit codes: 0 updated or nothing new, 1 error, 2 needs review.
  */
 import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
@@ -22,7 +23,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const DATA = join(ROOT, "data/portfolio.json");
+// the workflow points this at the decrypted copy (data/portfolio.private.json) when the data file is encrypted
+const DATA = process.env.PORTFOLIO_FILE ? join(ROOT, process.env.PORTFOLIO_FILE) : join(ROOT, "data/portfolio.json");
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
@@ -86,6 +88,9 @@ export function parseStatement(xml) {
     cash: num(cashRow.endingCash),
     positions: positions.map((p) => ({
       symbol: String(p.symbol ?? "").split(/\s|@/)[0],
+      description: p.description,
+      subCategory: p.subCategory,
+      assetCategory: p.assetCategory,
       quantity: num(p.position),
       price: num(p.markPrice),
       avgPrice: num(p.costBasisPrice),
@@ -130,18 +135,41 @@ export function update(pf, s, { acceptChanges = false } = {}) {
   const seen = new Set();
   for (const p of s.positions) {
     const h = next.holdings.find((x) => x.ticker && canonical(x.ticker) === canonical(p.symbol));
-    if (!h) { review.push(`New position ${p.symbol} (${p.quantity} @ ${p.price} ${p.currency}): add it to data/portfolio.json with its name, asset class, geography and industry, then re-run.`); continue; }
+    if (!h) {
+      const msg = `New position ${p.symbol}${p.description ? ` (${p.description})` : ""}.`;
+      if (!acceptChanges) { review.push(`${msg} Re-run with "accept changes" to add it.`); continue; }
+      // added from the statement: name, class and currency; geography and industry stay empty until set by hand
+      const id = canonical(p.symbol).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const etf = /ETF|FUND/i.test(`${p.subCategory ?? ""}`);
+      next.holdings.splice(next.holdings.findIndex((x) => x.assetClass === "Cash") >>> 0, 0, {
+        id, name: p.description || p.symbol, ticker: canonical(p.symbol), assetClass: etf ? "ETFs" : "Stocks",
+        quantity: p.quantity, avgPrice: p.avgPrice ?? p.price, currentPrice: p.price, currency: p.currency,
+      });
+      notes.push(`${msg} Added.`);
+      seen.add(id);
+      if (p.currency && p.currency !== next.baseCurrency && p.fx != null) next.fx[p.currency] = p.fx;
+      continue;
+    }
     seen.add(h.id);
     if (p.quantity == null || p.price == null) { review.push(`${p.symbol}: quantity or mark price missing.`); continue; }
-    if (h.quantity !== p.quantity || (p.avgPrice != null && Math.abs((h.avgPrice ?? 0) - p.avgPrice) > 1e-6)) {
-      const msg = `${p.symbol}: quantity ${h.quantity} → ${p.quantity}, average cost ${h.avgPrice} → ${p.avgPrice}.`;
-      if (acceptChanges) notes.push(msg); else review.push(`${msg} (a trade: re-run with "accept changes" once checked).`);
+    // IBKR's statement carries more decimals than the saved data: only a real change (beyond rounding) is a trade
+    const qtyChanged = Math.abs((h.quantity ?? 0) - p.quantity) > 1e-9;
+    const costChanged = p.avgPrice != null && Math.abs((h.avgPrice ?? 0) - p.avgPrice) > 1e-4 * Math.max(1, Math.abs(p.avgPrice));
+    if (!qtyChanged && !costChanged && p.avgPrice != null) h.avgPrice = p.avgPrice;
+    if (qtyChanged || costChanged) {
+      const msg = `${p.symbol}: quantity or average cost changed (a trade).`;
+      if (acceptChanges) notes.push(msg); else review.push(`${msg} Re-run with "accept changes" once checked.`);
       h.quantity = p.quantity; if (p.avgPrice != null) h.avgPrice = p.avgPrice;
     }
     h.currentPrice = p.price;
     if (p.currency && p.currency !== next.baseCurrency && p.fx != null) next.fx[p.currency] = p.fx;
   }
-  for (const h of next.holdings) if (h.ticker && !seen.has(h.id)) review.push(`${h.ticker} is no longer in the IBKR statement (sold?): remove it from data/portfolio.json, then re-run.`);
+  for (const h of [...next.holdings]) {
+    if (!h.ticker || seen.has(h.id)) continue;
+    const msg = `${h.ticker} is no longer in the IBKR statement (sold).`;
+    if (acceptChanges) { next.holdings.splice(next.holdings.indexOf(h), 1); notes.push(`${msg} Removed.`); }
+    else review.push(`${msg} Re-run with "accept changes" to remove it.`);
+  }
   const cash = next.holdings.find((h) => h.assetClass === "Cash");
   if (cash) { cash.invested = round(s.cash, 2); cash.currentValue = round(s.cash, 2); }
 
@@ -150,7 +178,7 @@ export function update(pf, s, { acceptChanges = false } = {}) {
   const base = before[before.length - 1];
   const netContributions = round((base?.netContributions ?? 0) + s.deposits, 6);
   if (last && Math.abs(netContributions - last.netContributions) > 0.01) {
-    const msg = `Net deposits ${last.netContributions} → ${netContributions} (a deposit or withdrawal).`;
+    const msg = `Net deposits changed (a deposit or withdrawal).`;
     if (acceptChanges) notes.push(msg); else review.push(`${msg} Re-run with "accept changes" once checked.`);
   }
 
@@ -161,19 +189,24 @@ export function update(pf, s, { acceptChanges = false } = {}) {
     const chain = (r) => round((1 + (base?.twr ?? 0)) * (1 + r) - 1, 8);
     const a = chain(s.twrRaw), b = chain(s.twrRaw / 100);
     twr = last?.twr == null ? (Math.abs(s.twrRaw) > 1.5 ? b : a) : (Math.abs(a - last.twr) <= Math.abs(b - last.twr) ? a : b);
-    if (last?.twr != null && Math.abs(twr - last.twr) > 0.25) review.push(`Time-weighted return would jump from ${last.twr} to ${twr}.`);
+    if (last?.twr != null && Math.abs(twr - last.twr) > 0.25) review.push("Time-weighted return would jump by more than 25 percentage points.");
   } else review.push("The statement has no TWR in Change in NAV (add the TWR field to the Flex Query).");
 
   // month-end: when a new month has begun, the previous latest point must be that month's last business day
   if (last && monthOf(s.toDate) > monthOf(last.date)) {
     const monthRows = s.daily.filter((r) => monthOf(r.date) === monthOf(last.date));
     const end = monthRows[monthRows.length - 1];
-    if (end && end.date !== last.date) review.push(`The ${monthOf(last.date)} month-end point is ${last.date}, but the month's last business day is ${end.date} (a daily run was missed). Its return cannot be filled in from a year-to-date statement: update that point by hand or from PortfolioAnalyst.`);
+    if (end && end.date !== last.date) {
+      const msg = `The ${monthOf(last.date)} month-end point is ${last.date}, but the month's last business day is ${end.date} (a daily run was missed).`;
+      // its return cannot be rebuilt from a year-to-date statement; accepting keeps the last published point as the month-end
+      if (acceptChanges) notes.push(`${msg} Kept ${last.date} as the month-end.`);
+      else review.push(`${msg} Re-run with "accept changes" to keep ${last.date} as that month's point.`);
+    }
   }
 
   // sanity: positions + cash should add up to the statement's NAV
   const total = next.holdings.reduce((t, h) => t + (h.currentValue ?? (h.quantity ?? 0) * (h.currentPrice ?? 0) * (next.fx[h.currency] ?? NaN)), 0);
-  if (!(Math.abs(total - s.endingValue) <= 0.02 * Math.max(1, Math.abs(s.endingValue)))) review.push(`Holdings add up to ${round(total, 2)} but the statement's NAV is ${s.endingValue}.`);
+  if (!(Math.abs(total - s.endingValue) <= 0.02 * Math.max(1, Math.abs(s.endingValue)))) review.push(`Holdings do not add up to the statement's NAV (off by ${Math.abs(round((total / s.endingValue - 1) * 100, 1))}%).`);
 
   const point = { date: s.toDate, value: round(s.endingValue, 6), netContributions, ...(twr != null ? { twr } : {}) };
   // within a month the latest point moves forward; once a month is over, its last point stays as the month-end
@@ -195,10 +228,10 @@ async function main() {
   const s = parseStatement(xml);
   const r = update(pf, s, { acceptChanges: flag("--accept-changes") || process.env.ACCEPT_CHANGES === "true" });
   const lines = [];
-  if (r.point) lines.push(`Statement ${s.fromDate} → ${s.toDate}: NAV ${s.endingValue} ${pf.baseCurrency}, net deposits ${r.point.netContributions}, TWR ${r.point.twr ?? "—"}.`);
+  lines.push(`Statement ${s.fromDate} → ${s.toDate}.`);
   lines.push(...r.notes.map((n) => `- ${n}`));
   if (r.review.length) lines.unshift("NEEDS REVIEW — nothing was published:", ...r.review.map((x) => `- ${x}`), "");
-  else lines.push(r.changed ? "Updated data/portfolio.json." : "No new data.");
+  else lines.push(r.changed ? `Updated the portfolio data (as of ${r.pf.asOf}).` : "No new data.");
   const text = lines.join("\n");
   console.log(text);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${text}\n`);

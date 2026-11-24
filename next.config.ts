@@ -10,7 +10,11 @@ const basePath = process.env.PAGES_BASE_PATH || "";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  env: { NEXT_PUBLIC_BASE_PATH: basePath }, // the journey loads its frames and scenes from <basePath>/media and <basePath>/scenes
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath, // the journey loads its frames and scenes from <basePath>/media and <basePath>/scenes
+    // only whether a private view exists (never the password itself): shows the footer's "Private view" link
+    NEXT_PUBLIC_PRIVATE_VIEW: process.env.PRIVATE_VIEW_PASSWORD ? "1" : "",
+  },
   poweredByHeader: false,
   ...(isPages
     ? { output: "export", basePath, assetPrefix: basePath || undefined, trailingSlash: true, images: { unoptimized: true } }

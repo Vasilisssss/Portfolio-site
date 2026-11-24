@@ -44,8 +44,9 @@ Secrets are encrypted and never shown in logs or on the site.
 
 - **green**: the data was updated (or was already current) and the site redeploys a few minutes later;
 - **red, with a new issue "needs review"**: the statement contained something to check (a trade, a deposit, a new
-  position…). The issue says what. Once checked, run the workflow again with **accept changes** ticked. A new
-  position also needs a line in `data/portfolio.json` with its name, asset class, geography and industry.
+  position…). The issue says what. Once checked, run the workflow again with **accept changes** ticked: trades and
+  deposits are taken over, new positions are added (name, asset class and currency from IBKR; region and industry
+  stay empty until set) and sold ones removed.
 
 From then on it runs by itself Tuesday–Saturday at 06:17 UTC, with a backup run at 10:17 UTC, and publishes the
 previous US trading day's closing figures.
