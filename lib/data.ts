@@ -10,7 +10,24 @@ import { samplePortfolio } from "@/content/sample-portfolio";
  *  1. data/portfolio.private.json — git-ignored local/CI override (CI writes it from the PORTFOLIO_JSON secret)
  *  2. data/portfolio.json         — committed portfolio data (public repository!)
  *  3. content/sample-portfolio.ts — labelled development sample
+ * data/holdings.json (public, no amounts) then overrides each holding's descriptive fields — name, class, region,
+ * industry, note, purchase date, visibility — so they can be edited on GitHub while the data itself stays encrypted.
  */
+const DESCRIPTIVE = ["name", "assetClass", "geography", "industry", "note", "purchaseDate", "public"] as const;
+
+function withDescriptions<T extends { holdings?: Record<string, unknown>[] }>(raw: T): T {
+  const file = path.join(process.cwd(), "data", "holdings.json");
+  if (!fs.existsSync(file)) return raw;
+  const meta = JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, Record<string, unknown>>;
+  return {
+    ...raw,
+    holdings: (raw.holdings ?? []).map((h) => {
+      const m = meta[String(h.id)];
+      if (!m || typeof m !== "object") return h;
+      return { ...h, ...Object.fromEntries(DESCRIPTIVE.filter((k) => m[k] !== undefined).map((k) => [k, m[k]])) };
+    }),
+  };
+}
 let cached: PortfolioData | null = null;
 
 function validate(raw: Omit<PortfolioData, "sample">, file: string): PortfolioData {
@@ -31,7 +48,7 @@ export function loadPortfolio(): PortfolioData {
   for (const name of ["portfolio.private.json", "portfolio.json"]) {
     const file = path.join(process.cwd(), "data", name);
     if (fs.existsSync(file)) {
-      cached = validate(JSON.parse(fs.readFileSync(file, "utf8")), `data/${name}`);
+      cached = validate(withDescriptions(JSON.parse(fs.readFileSync(file, "utf8"))), `data/${name}`);
       return cached;
     }
   }

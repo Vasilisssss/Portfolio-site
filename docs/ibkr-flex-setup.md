@@ -45,11 +45,19 @@ Secrets are encrypted and never shown in logs or on the site.
 - **green**: the data was updated (or was already current) and the site redeploys a few minutes later;
 - **red, with a new issue "needs review"**: the statement contained something to check (a trade, a deposit, a new
   position…). The issue says what. Once checked, run the workflow again with **accept changes** ticked: trades and
-  deposits are taken over, new positions are added (name, asset class and currency from IBKR; region and industry
-  stay empty until set) and sold ones removed.
+  deposits are taken over, new positions are added (name, class, currency and region from IBKR) and sold ones removed.
+  Give a new position its display name, industry and a note in `data/holdings.json` (see below).
 
-From then on it runs by itself Tuesday–Saturday at 06:17 UTC, with a backup run at 10:17 UTC, and publishes the
-previous US trading day's closing figures.
+## Describing your positions: data/holdings.json
+
+Each position's public description (display name, asset class, region, industry, a note, purchase date, and
+`"public": false` to show it only as "Undisclosed") lives in `data/holdings.json`, a plain file with **no amounts**.
+Edit it on GitHub (switch to the `cinematic-redesign` branch, open the file, ✏️, commit); the site rebuilds by itself.
+The amounts stay in the encrypted data file.
+
+From then on it runs by itself: five checks a night (Mon–Fri 22:17 UTC, Tue–Sat 01:17, 04:17, 06:17 and 10:17 UTC).
+IBKR builds one statement per day, covering every market you hold, after New York closes; the first check that finds
+it publishes the day's closing figures.
 If IBKR has not finished the statement yet, the next run picks it up.
 
 ## What it changes

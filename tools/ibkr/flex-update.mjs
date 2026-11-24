@@ -91,6 +91,8 @@ export function parseStatement(xml) {
       description: p.description,
       subCategory: p.subCategory,
       assetCategory: p.assetCategory,
+      country: p.issuerCountryCode,
+      exchange: p.listingExchange,
       quantity: num(p.position),
       price: num(p.markPrice),
       avgPrice: num(p.costBasisPrice),
@@ -106,6 +108,26 @@ const round = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
 // Flex statements sometimes use a different symbol from the one the site shows (same instrument, other listing name)
 const ALIASES = { VCAA: "VCSHA" };
 const canonical = (sym) => ALIASES[sym.toUpperCase()] ?? sym.toUpperCase();
+
+// region of a new position, from the issuer's country (or, failing that, its exchange)
+const REGION_BY_COUNTRY = {
+  "North America": "US CA MX",
+  Europe: "GB IE FR DE NL BE LU AT CH IT ES PT DK SE NO FI IS PL CZ HU GR CY MT SI SK HR RO BG EE LV LT JE GG IM",
+  Asia: "JP HK CN TW KR SG IN ID MY TH PH VN",
+  Oceania: "AU NZ",
+  "Latin America": "BR AR CL CO PE UY",
+  "Middle East & Africa": "IL AE SA QA ZA EG TR",
+};
+const REGION_BY_EXCHANGE = {
+  "North America": "NYSE NASDAQ ARCA AMEX BATS IEX ISLAND TSE VENTURE PINK",
+  Europe: "LSE LSEETF IBIS IBIS2 XETRA GETTEX GETTEX2 FWB SBF AEB EBS BVME BM SFB VSE WSE CPH OMXNO",
+  Asia: "TSEJ SEHK SGX KSE NSE",
+  Oceania: "ASX",
+};
+const regionOf = (country, exchange) => {
+  const pick = (table, code) => code && Object.entries(table).find(([, list]) => list.split(" ").includes(String(code).toUpperCase()))?.[0];
+  return pick(REGION_BY_COUNTRY, country) ?? pick(REGION_BY_EXCHANGE, exchange);
+};
 const monthOf = (d) => d.slice(0, 7);
 
 export function update(pf, s, { acceptChanges = false } = {}) {
@@ -143,9 +165,10 @@ export function update(pf, s, { acceptChanges = false } = {}) {
       const etf = /ETF|FUND/i.test(`${p.subCategory ?? ""}`);
       next.holdings.splice(next.holdings.findIndex((x) => x.assetClass === "Cash") >>> 0, 0, {
         id, name: p.description || p.symbol, ticker: canonical(p.symbol), assetClass: etf ? "ETFs" : "Stocks",
+        ...(regionOf(p.country, p.exchange) ? { geography: regionOf(p.country, p.exchange) } : {}),
         quantity: p.quantity, avgPrice: p.avgPrice ?? p.price, currentPrice: p.price, currency: p.currency,
       });
-      notes.push(`${msg} Added.`);
+      notes.push(`${msg} Added as "${id}". Set its display name, industry and a note in data/holdings.json.`);
       seen.add(id);
       if (p.currency && p.currency !== next.baseCurrency && p.fx != null) next.fx[p.currency] = p.fx;
       continue;
