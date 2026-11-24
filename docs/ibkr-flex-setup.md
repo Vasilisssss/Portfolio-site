@@ -43,22 +43,26 @@ Secrets are encrypted and never shown in logs or on the site.
 **Actions** → **Daily IBKR data** → **Run workflow** (branch `main`) → **Run workflow**. After a minute or two:
 
 - **green**: the data was updated (or was already current) and the site redeploys a few minutes later;
-- **red, with a new issue "needs review"**: the statement contained something to check (a trade, a deposit, a new
-  position…). The issue says what. Once checked, run the workflow again with **accept changes** ticked: trades and
-  deposits are taken over, new positions are added (name, class, currency and region from IBKR) and sold ones removed.
-  Give a new position its display name, industry and a note in `data/holdings.json` (see below).
+- **red, with a new issue "needs review"**: the statement looked wrong (totals that do not add up, a large jump in
+  return, the wrong period). Nothing was published; the issue says why. Once checked, run the workflow again with
+  **publish anyway** ticked (a wrong period has to be fixed in IBKR instead).
 
-## Describing your positions: data/holdings.json
-
-Each position's public description (display name, asset class, region, industry, a note, purchase date, the
-`brand`, `accent` colour and `art` style (burst, rings, orbit, petals, facets, dots, waves) of its card, and `"public": false` to show it only as "Undisclosed") lives in `data/holdings.json`, a plain file with **no amounts**.
-Edit it on GitHub (switch to the `cinematic-redesign` branch, open the file, ✏️, commit); the site rebuilds by itself.
-The amounts stay in the encrypted data file.
+Trades, deposits and withdrawals, and new or sold positions are **published automatically**. Each time, GitHub
+notifies you with an issue (opened and closed at once) listing what changed, never amounts. New positions get their
+name, class, currency and region from IBKR; give them a display name, industry and a note in `data/holdings.json`.
 
 From then on it runs by itself: five checks a night (Mon–Fri 22:17 UTC, Tue–Sat 01:17, 04:17, 06:17 and 10:17 UTC).
 IBKR builds one statement per day, covering every market you hold, after New York closes; the first check that finds
 it publishes the day's closing figures.
 If IBKR has not finished the statement yet, the next run picks it up.
+
+## Describing your positions: data/holdings.json
+
+Each position's public description (display name, asset class, region, industry, a note, purchase date, the
+`brand`, `accent` colour and `art` style (burst, rings, orbit, petals, facets, dots, waves) of its card, and `"public": false` to show it only as "Undisclosed")
+lives in `data/holdings.json`, a plain file with **no amounts**.
+Edit it on GitHub (open the file, ✏️, commit to `cinematic-redesign`); the site rebuilds by itself.
+The amounts stay in the encrypted data file.
 
 ## What it changes
 
