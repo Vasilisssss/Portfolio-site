@@ -6,7 +6,7 @@ import { useSize } from "@/components/ui/useSize";
 
 /**
  * Trend line drawn in real pixel space (crisp at any DPR), passing exactly through each month-end value.
- * Choreography: the line draws itself left to right, scrubbed to scroll while the panel crosses the viewport; the
+ * Choreography: the line draws itself left to right, scrubbed to scroll, done once the whole panel is on screen; the
  * area fill and the end dot arrive once it is drawn.
  */
 export default function Sparkline({ values, label, className }: { values: number[]; label: string; className?: string }) {
@@ -15,7 +15,7 @@ export default function Sparkline({ values, label, className }: { values: number
   useGSAP(() => {
     if (!svg.current || reducedMotion()) return;
     const q = gsap.utils.selector(svg.current);
-    const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: svg.current, start: "top 88%", end: "bottom 45%", scrub: 0.8 } });
+    const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: svg.current, start: "top 92%", end: "bottom 92%", scrub: 0.5 } });
     tl.fromTo(q("[data-draw]"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1 }, 0)
       .fromTo(q("[data-fill]"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6)
       .fromTo(q("[data-end]"), { opacity: 0, scale: 0.3, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.2 }, 0.85);

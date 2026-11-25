@@ -52,7 +52,9 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
     };
   }, [perf, range, mode, currency, w, h]);
 
-  // Choreography: the line draws left → right, scrubbed while the chart crosses the viewport; a champagne dot rides
+  // Choreography: the line draws left → right, scrubbed by the plot itself (not the whole card): it starts as the
+  // plot comes into view and reaches the latest value once the plot's bottom edge is 85 % of the way down the screen,
+  // so the whole chart and its latest value are seen together; a champagne dot rides
   // its leading edge with the value at that point updating live; the area, deposits and the end tag fade in last.
   useGSAP(() => {
     const el = root.current;
@@ -78,7 +80,7 @@ function MainChart({ perf, amounts, currency }: { perf: Perf; amounts: boolean; 
       const done = st.p > 0.995;
       rider.style.opacity = done ? "0" : "1"; tag.style.opacity = done ? "0" : "1";
     };
-    gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: el, start: "top 78%", end: "bottom 40%", scrub: 0.6, invalidateOnRefresh: true } })
+    gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: path.closest("svg")?.parentElement ?? el, start: "top 90%", end: "bottom 85%", scrub: 0.3, invalidateOnRefresh: true } })
       .fromTo(path, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1 }, 0)
       .fromTo(st, { p: 0 }, { p: 1, duration: 1, onUpdate: place }, 0)
       .fromTo(el.querySelectorAll("[data-fade]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.02 }, 0.75);
