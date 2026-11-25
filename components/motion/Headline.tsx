@@ -31,10 +31,18 @@ export default function Headline({ as = "h2", children, className, id, delay = 0
       if (drift) tweens.push(gsap.to(el, { yPercent: -6, ease: "none", scrollTrigger: { trigger: el, start: "top bottom", end: "bottom top", scrub: true } }));
     };
     if (onLoad && document.documentElement.dataset.ready !== "1") {
-      gsap.set(el, { autoAlpha: 0 });
-      let started = false;
-      const go = () => { if (started) return; started = true; window.clearTimeout(fb); gsap.set(el, { autoAlpha: 1 }); run(); };
-      const fb = window.setTimeout(go, 6000); // after the curtain's 5 s cap
+      // split now, behind the opening curtain (the split re-lays the text out), and only play when it lifts, so the
+      // first seconds after the curtain do no layout work
+      let started = false, anim: gsap.core.Tween | null = null;
+      split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "line", aria: as === "h1" || as === "h2" || as === "h3" ? "auto" : "hidden", autoSplit: true,
+        onSplit: (self) => {
+          anim = gsap.from(self.lines, { yPercent: 110, duration: 1.3, ease: "expo.out", stagger, delay, paused: !started });
+          return anim;
+        },
+      });
+      if (drift) tweens.push(gsap.to(el, { yPercent: -6, ease: "none", scrollTrigger: { trigger: el, start: "top bottom", end: "bottom top", scrub: true } }));
+      const go = () => { if (started) return; started = true; window.clearTimeout(fb); anim?.play(); };
+      const fb = window.setTimeout(go, 9000); // after the curtain's 8 s cap
       window.addEventListener("intro:done", go, { once: true });
       return () => { window.clearTimeout(fb); window.removeEventListener("intro:done", go); split?.revert(); tweens.forEach((t) => t.kill()); };
     }

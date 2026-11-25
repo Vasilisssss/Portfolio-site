@@ -7,6 +7,9 @@ import { warmState } from "./warmup";
 /**
  * Opening curtain, once per browser session. Content is server-rendered underneath, and the journey's media loads
  * behind it (see warmup.ts), so the first scroll is smooth.
+ * Exit: an upward wipe made of two opposite transforms (the curtain slides up, its content slides down by the same
+ * amount, so the content stays put while its lower edge sweeps up): both run on the compositor, so the wipe costs
+ * no repaints while the page underneath starts moving. (A clip-path wipe repainted the whole screen every frame.)
  */
 export default function Loader({ line }: { line: string }) {
   const [show, setShow] = useState(true);
@@ -51,16 +54,22 @@ export default function Loader({ line }: { line: string }) {
       {show && (
         <motion.div
           key="loader" aria-hidden
-          className="fixed inset-0 z-[150] flex flex-col items-center justify-center gap-9 bg-pearl"
-          exit={{ clipPath: "inset(0 0 100% 0)", transition: { duration: 1.2, ease: [0.7, 0, 0.2, 1] } }}
-          initial={{ clipPath: "inset(0 0 0% 0)" }}
+          className="fixed inset-0 z-[150] overflow-hidden will-change-transform"
+          exit={{ y: "-100%", transition: { duration: 1.2, ease: [0.7, 0, 0.2, 1] } }}
+          initial={{ y: "0%" }}
         >
+          <motion.div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-9 bg-pearl will-change-transform"
+            exit={{ y: "100%", transition: { duration: 1.2, ease: [0.7, 0, 0.2, 1] } }}
+            initial={{ y: "0%" }}
+          >
           <Monogram size={96} draw duration={1.6} stroke={0.6} />
           <motion.span className="display text-[28px] italic text-graphite" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 1 }}>{line}</motion.span>
           <span ref={counter} className="tnum display absolute bottom-8 right-8 text-[clamp(64px,12vw,180px)] leading-none text-graphite/90">00</span>
           <span className="block h-px w-[200px] bg-line">
             <span ref={bar} className="block h-px origin-left scale-x-0 bg-lime" />
           </span>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
