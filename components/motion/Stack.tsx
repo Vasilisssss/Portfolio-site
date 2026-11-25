@@ -1,6 +1,6 @@
 "use client";
 import { useRef } from "react";
-import { gsap, ScrollTrigger, useGSAP, reducedMotion } from "./gsap";
+import { gsap, ScrollTrigger, useGSAP, reducedMotion, finePointer } from "./gsap";
 
 /**
  * STACK — sections that layer like sheets.
@@ -9,6 +9,8 @@ import { gsap, ScrollTrigger, useGSAP, reducedMotion } from "./gsap";
  * scales to 0.96 and darkens under a page-colour veil — the page reads as a pile of layers rather than one long
  * column. The hold is a transform, not CSS sticky: a sticky opaque layer can make Chromium skip compositing the
  * fixed journey canvas beneath the following chapter card. Only transform and opacity animate.
+ * Touch screens: the hold is skipped (the covered sheet scrolls away normally and only darkens). Touch scrolling runs
+ * on the compositor while the hold is applied from script a frame later, so a held sheet visibly jitters there.
  * Disabled under reduced motion (the sheets simply follow each other).
  */
 export default function Stack({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -18,12 +20,14 @@ export default function Stack({ children, className }: { children: React.ReactNo
     if (!root || reducedMotion()) return;
     const sheets = Array.from(root.querySelectorAll<HTMLElement>(":scope > [data-sheet]"));
     sheets.forEach((s, i) => { s.style.zIndex = String(2 + i); });
+    // the hold needs scroll and transform in the same frame: true with a mouse/trackpad (smooth scroll drives both)
+    const hold = finePointer();
     sheets.forEach((s, i) => {
       const next = sheets[i + 1];
       if (!next) return;
       const veil = s.querySelector<HTMLElement>(":scope > [data-veil]");
       const tl = gsap.timeline({ scrollTrigger: { trigger: next, start: "top bottom", end: "top top", scrub: true, invalidateOnRefresh: true } });
-      tl.fromTo(s, { y: 0, scale: 1 }, { y: () => window.innerHeight, scale: 0.96, transformOrigin: "50% 100%", ease: "none" }, 0);
+      if (hold) tl.fromTo(s, { y: 0, scale: 1 }, { y: () => window.innerHeight, scale: 0.96, transformOrigin: "50% 100%", ease: "none" }, 0);
       if (veil) tl.fromTo(veil, { opacity: 0 }, { opacity: 0.72, ease: "none" }, 0);
     });
     void ScrollTrigger;
