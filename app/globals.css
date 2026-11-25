@@ -102,7 +102,8 @@ main { isolation: isolate; }
 /* content sheets: opaque layers that stack over each other (components/motion/Stack) */
 /* the page colour is painted as a gradient, not a background-color: Chromium can treat a solid-colour layer as an
    opaque occluder and stop compositing the fixed journey canvas beneath the next chapter card */
-.sheet { position: relative; z-index: 2; background: linear-gradient(var(--color-pearl), var(--color-pearl)); transform-origin: 50% 100%; }
+/* at least one screen tall, so a shorter sheet never leaves the one beneath it showing (e.g. a tall "desktop site" view on a phone) */
+.sheet { position: relative; z-index: 2; min-height: 100svh; background: linear-gradient(var(--color-pearl), var(--color-pearl)); transform-origin: 50% 100%; }
 .sheet + .sheet { box-shadow: 0 -40px 80px -30px rgba(0,0,0,.85); border-top: 1px solid rgba(217,192,155,.08); border-radius: 28px 28px 0 0; }
 [data-scene] { position: relative; }
 
