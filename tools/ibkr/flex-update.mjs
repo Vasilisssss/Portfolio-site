@@ -250,6 +250,13 @@ async function main() {
     return fetchStatement(t, q);
   })();
   const pf = JSON.parse(readFileSync(DATA, "utf8"));
+  // the report's structure (dates and counts only, never amounts): to see what IBKR sent when something looks off
+  {
+    const st = rows(xml, "FlexStatement").map((r) => `${r.fromDate}→${r.toDate} period=${r.period ?? "?"} generated=${r.whenGenerated ?? "?"}`);
+    const nav = rows(xml, "ChangeInNAV").map((r) => `${r.fromDate}→${r.toDate}`);
+    const eq = rows(xml, "EquitySummaryByReportDateInBase").map((r) => r.reportDate).filter(Boolean);
+    console.log(`Report structure: ${st.length} statement(s) [${st.join("; ")}], Change in NAV ${nav.length} [${nav.join("; ")}], open positions ${rows(xml, "OpenPosition").length}, daily NAV rows ${eq.length} (${eq[0] ?? "-"} … ${eq[eq.length - 1] ?? "-"}), cash rows ${rows(xml, "CashReportCurrency").length}`);
+  }
   const s = parseStatement(xml);
   // fully automatic: trades, deposits and new or sold positions are taken over; only anomalies stop the update
   const r = update(pf, s, {
