@@ -1,8 +1,10 @@
 /**
  * Frame sequence loader for scroll-scrubbed footage (the headquarters walk).
  *
- * Generalised from the old film player: frames are small WebP files listed by a manifest. Frames nearest the
- * playhead are requested first, six at a time; every compressed frame is kept as a Blob, and only a window of
+ * Generalised from the old film player: frames are small WebP files listed by a manifest. The published site packs
+ * them into one file per resolution (tools/media/pack-walk.mjs): it is fetched as one stream, in walking order, and
+ * each frame is usable as soon as its bytes have arrived. Without a pack (dev) or if it fails, frames nearest the
+ * playhead are requested one by one, six at a time; every compressed frame is kept as a Blob, and only a window of
  * frames around the playhead is decoded into ImageBitmaps (bitmaps leaving the window are closed). The window leans
  * the way the playhead is moving (AHEAD frames in front, BEHIND behind), so a fast scroll finds its frames decoded. The renderer
  * asks for the pair of decoded frames around a fractional playhead and cross-fades them.
@@ -12,6 +14,8 @@ export interface WalkManifest {
   fps: number; frames: number; step: number;
   hi: string; loPath: string; poster: string; posterSm: string; last: string;
   join: number; doors: number;
+  /** added by the static export: one file per resolution and each frame's byte length, in order */
+  packs?: Record<"hi" | "lo", { file: string; sizes: number[] }>;
 }
 
 const AHEAD = 20, BEHIND = 6, KEEP = AHEAD + 4;
@@ -28,6 +32,12 @@ export interface Sequence {
   ready(): boolean;
   dispose(): void;
 }
+
+const concat = (parts: Uint8Array[], len: number) => {
+  const out = new Uint8Array(len); let o = 0;
+  for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+};
 
 export async function loadSequence(base: string, low: boolean, signal: AbortSignal): Promise<Sequence> {
   const r = await fetch(`${base}/manifest.json`, { signal });
@@ -78,7 +88,34 @@ export async function loadSequence(base: string, low: boolean, signal: AbortSign
       } catch (e) { if (stopped || signal.aborted) return; console.warn("walk frame", i, e); }
     }
   };
-  void Promise.all([worker(), worker(), worker(), worker(), worker(), worker()]);
+  const perFile = () => void Promise.all([worker(), worker(), worker(), worker(), worker(), worker()]);
+  // the pack: read the stream and cut a frame off whenever its last byte has arrived
+  const pack = m.packs?.[low ? "lo" : "hi"];
+  const streamPack = async (pk: NonNullable<typeof pack>) => {
+    const res = await fetch(`${base}/${pk.file}`, { signal });
+    if (!res.ok || !res.body) throw new Error(`walk pack ${res.status}`);
+    const reader = res.body.getReader();
+    let chunks: Uint8Array[] = [], have = 0, i = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value); have += value.length;
+      while (i < m.frames && have >= pk.sizes[i]) {
+        const all = chunks.length === 1 ? chunks[0] : concat(chunks, have);
+        const n = pk.sizes[i];
+        if (!blobs.has(i)) {
+          blobs.set(i, new Blob([all.slice(0, n)], { type: "image/webp" })); pending.delete(i);
+          const ahead = (i - head) * dir;
+          if (ahead <= AHEAD && ahead >= -BEHIND) decode(i);
+        }
+        chunks = [all.subarray(n)]; have -= n; i++;
+      }
+      if (stopped) { void reader.cancel(); return; }
+    }
+    if (i < m.frames) throw new Error("walk pack ended early");
+  };
+  if (pack) streamPack(pack).catch((e) => { if (stopped || signal.aborted) return; console.warn("walk pack failed; loading frames one by one", e); perFile(); });
+  else perFile();
 
   const nearest = (i: number, dir: number) => {
     for (let d = 0; d < 8; d++) { const k = i + dir * d; const b = bitmaps.get(k); if (b) return { b, k }; }
