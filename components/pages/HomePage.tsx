@@ -78,7 +78,7 @@ export default function HomePage({ view, owner = false }: { view: PublicView; ow
       {!owner && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
       <Journey />
 
-      {/* I — THE HEADQUARTERS: scrolling walks up to the building, through its doors and onto the trading floor */}
+      {/* I — THE HEADQUARTERS: scrolling walks up to the building and into its revolving door, the trading floor ahead */}
       <div data-scene="0" className="relative">
         <Hero name={profile.name} eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
           figure={amounts ? { value: money(s.value!, cur), label: `Portfolio value · ${dateLong(view.asOf)}` } : s.returnPct != null ? { value: pct(s.returnPct, true), label: "Total return" } : undefined}
@@ -88,7 +88,7 @@ export default function HomePage({ view, owner = false }: { view: PublicView; ow
       {/* II — THE CAPITAL ENGINE */}
       <div data-scene="1" id="capital-engine" className="relative">
         <Chapter index={1} roman="II" kicker="The Capital Engine" title={<>Every euro <em>flows</em> through here.</>}
-          still={{ src: walkSrc(WALK.last), alt: "The trading floor" }} stats={capitalStats}
+          still={{ src: walkSrc(WALK.last), alt: "Through the revolving door onto the trading floor" }} stats={capitalStats}
           note="The screens hold the portfolio as it stands: what I have put in, what it is worth today, and the difference between the two." />
         <Stack>
           <Sheet>

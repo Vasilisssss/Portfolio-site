@@ -15,5 +15,5 @@ export const base = () => process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 export type Variant = "wide" | "wide-sm" | "tall" | "tall-sm";
 export const sceneSrc = (id: string, v: Variant) => `${base()}/scenes/${id}-${v}.webp`;
 export const walkSrc = (file: string) => `${base()}/media/journey/${file}`;
-/** the trading floor, seen at the end of the walk: where the camera hands off into the rooms */
-export const FLOOR = { id: "floor", zoomOrigin: [0.5, 0.5] as [number, number], focusX: 0.5, alt: "The trading floor inside the headquarters" };
+/** the end of the walk, inside the revolving door with the trading floor ahead: where the camera hands off into the rooms */
+export const FLOOR = { id: "floor", zoomOrigin: [0.5, 0.5] as [number, number], focusX: 0.5, alt: "Through the revolving door onto the trading floor" };

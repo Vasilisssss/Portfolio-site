@@ -11,9 +11,7 @@ import { ROOMS, FLOOR, sceneSrc, walkSrc, base, type Variant } from "./scenes";
  *
  * Scroll position is the playhead:
  *   hero  [data-walk]     the pinned headquarters walk; its progress picks the walk frame (neighbours cross-fade),
- *                         with a little zoom blur while the camera is moving, and a short push of zoom blur through the
- *                         doorway where the walk's two clips meet (manifest.join), so the change of entrance reads as
- *                         moving through rather than a cut
+ *                         with a little zoom blur while the camera is moving
  *   cards [data-chapter]  each chapter card (II–V) carries the camera forward into the next room while its top
  *                         travels from the bottom of the viewport to the top (u = Σ of those progresses, 0…4):
  *                           push   the current image scales up around its zoomOrigin (1 → 3, ease-in)
@@ -22,7 +20,7 @@ import { ROOMS, FLOOR, sceneSrc, walkSrc, base, type Variant } from "./scenes";
  *                                  screen while it settles from 1.35× to its dwell zoom
  *   dwell [data-scene]    while a chapter is read, the room keeps pushing in slowly (1 → 1.06); fine pointers add
  *                         ±8 px parallax
- * u = 0→1 hands the walk's last frame (the trading floor) into the screens room, so walk and rooms are one camera.
+ * u = 0→1 hands the walk's last frame (inside the revolving door, the trading floor ahead) into the screens room, so walk and rooms are one camera.
  * The canvas only redraws when something changed (the grain is re-seeded on each redraw), never while hidden.
  * Steady frame rate first: while the stage is moving, its frame times are watched; if several of the last 30 come in
  * slow, the stage lowers its render resolution (and blur taps) a step, and raises it again after a long smooth stretch.
@@ -179,9 +177,6 @@ export default function Journey() {
         if (p.b && p.ib !== p.ia) { base.b = layerOf(p.b, `w${p.ib}`, 0.5, 1, [0.5, 0.5]); base.mix = p.t; }
         base.blur = Math.min(0.28, walkSpeed / 90);
         base.blurCenter = [0.5, 0.56];
-        // the clips meet between join - 1 and join: push through with a zoom blur peaking there
-        const near = 1 - Math.min(1, Math.abs(f - (seq.manifest.join - 0.5)) / 2.2);
-        if (near > 0) base.blur = Math.max(base.blur, 0.75 * near * near * (3 - 2 * near));
         return base;
       }
       const uu = Math.min(4, g.u);
