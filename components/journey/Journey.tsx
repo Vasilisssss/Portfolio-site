@@ -22,6 +22,8 @@ import { ROOMS, FLOOR, sceneSrc, walkSrc, base, type Variant } from "./scenes";
  *                         ±8 px parallax
  * u = 0→1 hands the walk's last frame (the trading floor) into the screens room, so walk and rooms are one camera.
  * The canvas only redraws when something changed (the grain is re-seeded on each redraw), never while hidden.
+ * Steady frame rate first: while the stage is moving, its frame times are watched; if several of the last 30 come in
+ * slow, the stage lowers its render resolution (and blur taps) a step, and raises it again after a long smooth stretch.
  * Reduced motion: nothing is mounted here; the hero and chapter cards show their own still images.
  */
 const RAIL = ["Headquarters", "The Capital Engine", "The Investment Gallery", "The Performance Gallery", "The Final Reveal"];
@@ -102,10 +104,11 @@ export default function Journey() {
         rooms.get(s.id)?.close(); rooms.set(s.id, bmp); dirty = true;
       }));
     };
-    // media starts at once, behind the opening curtain: the first stretch of the walk is fetched, decoded and drawn
-    // before the curtain lifts, so the first scroll never waits on the network or the decoder. The curtain follows
-    // this progress (components/chrome/warmup.ts); the trading floor and the rooms keep loading afterwards.
-    const WARM_FRAMES = 30;
+    // media starts at once, behind the opening curtain: the whole walk is fetched (about 9 MB, 4 MB on phones) and its
+    // first frames decoded and drawn before the curtain lifts, so scrolling never waits on the network or the decoder.
+    // The curtain follows this progress (components/chrome/warmup.ts) and never waits longer than its own cap; the
+    // rooms keep loading afterwards.
+    const WARM_FRAMES = 131;
     reportWarm(0);
     let warmed = false;
     const warmTick = () => {
@@ -145,6 +148,19 @@ export default function Journey() {
 
     let draws = 0, lastFrame = "", shown = true;
     let lastWalkF = 0, walkSpeed = 0, lastActive = -1, lastKey = "";
+    // adaptive quality: frame times of consecutive redraws (a pause between draws is not a slow frame)
+    let quality = 1, drewLast = false, smoothRun = 0;
+    const times: number[] = [];
+    const watch = (deltaMs: number) => {
+      if (!drewLast) return;
+      times.push(deltaMs); if (times.length > 30) times.shift();
+      const slow = times.filter((t) => t > 24).length;
+      if (times.length >= 20 && slow >= 6 && quality > 0.56) {
+        quality = Math.max(0.55, quality * 0.85); stage.setQuality(quality); times.length = 0; smoothRun = 0; dirty = true;
+      } else if (deltaMs < 18 && quality < 1 && ++smoothRun > 600) {
+        quality = Math.min(1, quality / 0.85); stage.setQuality(quality); times.length = 0; smoothRun = 0; dirty = true;
+      }
+    };
     const layerOf = (src: ImageBitmap, key: string, focusX: number, zoom: number, origin: [number, number]): Layer => ({ src, key, focusX, zoom, origin });
     const frameAt = (g: Geometry, dt: number): StageFrame | null => {
       const base: StageFrame = { a: null, b: null, mix: 0, aperture: 1, apCenter: [0.5, 0.5], blur: 0, blurCenter: [0.5, 0.5], dim: 0, parallax: [par.x, par.y], grade: 0 };
@@ -199,7 +215,8 @@ export default function Journey() {
 
     let lastY = NaN, lastW = 0, lastH = 0, lastPx = 0, lastPy = 0;
     const tick = (time: number, deltaMs: number) => {
-      if (stopped || document.hidden) return;
+      if (stopped || document.hidden) { drewLast = false; return; }
+      const drewBefore = drewLast; drewLast = false;
       // nothing scrolled, resized, moved or loaded: no measuring, no drawing
       const y = window.scrollY;
       if (!dirty && y === lastY && window.innerWidth === lastW && window.innerHeight === lastH && par.x === lastPx && par.y === lastPy && walkSpeed < 0.01) return;
@@ -220,13 +237,14 @@ export default function Journey() {
       dirty = false; lastKey = key;
       f.grade = f.grade || 0;
       stage.draw(f, time);
+      drewLast = drewBefore; watch(deltaMs); drewLast = true;
       draws++; lastFrame = `${f.a?.key}@${f.a?.zoom.toFixed(2)} ${f.b?.key}@${f.b?.zoom.toFixed(2)} mix ${f.mix.toFixed(2)} ap ${f.aperture.toFixed(2)} blur ${f.blur.toFixed(2)}`;
       if (!readyFired) { readyFired = true; window.dispatchEvent(new Event("journey:ready")); cv.classList.add("is-ready"); }
     };
     gsap.ticker.add(tick);
 
     const qa = {
-      state: () => ({ ...measure(), frames: seq?.loaded ?? 0, decoded: seq?.decoded ?? 0, rooms: rooms.size, floor: !!floor, kind: stage.kind, ready: readyFired, draws, lastFrame }),
+      state: () => ({ ...measure(), quality, frames: seq?.loaded ?? 0, decoded: seq?.decoded ?? 0, rooms: rooms.size, floor: !!floor, kind: stage.kind, ready: readyFired, draws, lastFrame }),
       ready: () => !!seq && !!floor && rooms.size === ROOMS.length && readyFired,
       walkLoaded: () => !!seq && seq.loaded === seq.manifest.frames,
       async settle() { for (let i = 0; i < 120 && seq && !seq.ready(); i++) await new Promise((r) => setTimeout(r, 25)); dirty = true; return qa.state(); },
