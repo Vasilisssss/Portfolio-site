@@ -6,7 +6,7 @@
   "h": 480
  },
  "fps": 12,
- "frames": 121,
+ "frames": 145,
  "step": 2,
  "hi": "hi/f{i}.webp",
  "loPath": "lo/f{i}.webp",
@@ -14,16 +14,16 @@
  "posterSm": "poster-sm.webp",
  "last": "last.webp",
  "join": 87,
- "doors": 110,
+ "doors": 135,
  "source": {
   "establishing": {
    "frames": 190,
    "join": 175
   },
   "arrival": {
-   "frames": 190,
-   "join": 104,
-   "doors": 169
+   "frames": 56,
+   "from": "Google Flow, generated from the outside walk's last frame",
+   "used": "every 2nd frame from 2 to 54, cropped 6 % and colour-matched to that frame (gain R 1.069 G 1.115 B 1.166), 832x480 upscaled to 1280x720"
   },
   "reframe": {
    "side": "establishing",
@@ -31,9 +31,10 @@
    "dx": -0.02
   },
   "mad": 0.563,
-  "cut": {
-   "removed": "87-96 of the original 131",
-   "why": "the second clip starts further back than the first ends; frames from its first matching framing on"
+  "arrival2": {
+   "frames": 56,
+   "from": "Google Flow, generated from the first Flow clip's last good frame",
+   "used": "31 frames picked by visual change (even walking pace), aligned (crop 2 %, shift -4 px) and colour-matched to the first clip, then the same crop/grade as the first"
   }
  }
 }

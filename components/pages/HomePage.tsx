@@ -78,7 +78,7 @@ export default function HomePage({ view, owner = false }: { view: PublicView; ow
       {!owner && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
       <Journey />
 
-      {/* I — THE HEADQUARTERS: scrolling walks up to the building, through its doors and onto the trading floor */}
+      {/* I — THE HEADQUARTERS: scrolling walks up to the building, through its revolving door and onto the trading floor */}
       <div data-scene="0" className="relative">
         <Hero name={profile.name} eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
           figure={amounts ? { value: money(s.value!, cur), label: `Portfolio value · ${dateLong(view.asOf)}` } : s.returnPct != null ? { value: pct(s.returnPct, true), label: "Total return" } : undefined}
