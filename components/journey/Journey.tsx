@@ -11,7 +11,9 @@ import { ROOMS, FLOOR, sceneSrc, walkSrc, base, type Variant } from "./scenes";
  *
  * Scroll position is the playhead:
  *   hero  [data-walk]     the pinned headquarters walk; its progress picks the walk frame (neighbours cross-fade),
- *                         with a little zoom blur while the camera is moving
+ *                         with a little zoom blur while the camera is moving, and a short push of zoom blur through the
+ *                         doorway where the walk's two clips meet (manifest.join), so the change of entrance reads as
+ *                         moving through rather than a cut
  *   cards [data-chapter]  each chapter card (II–V) carries the camera forward into the next room while its top
  *                         travels from the bottom of the viewport to the top (u = Σ of those progresses, 0…4):
  *                           push   the current image scales up around its zoomOrigin (1 → 3, ease-in)
@@ -108,7 +110,7 @@ export default function Journey() {
     // first frames decoded and drawn before the curtain lifts, so scrolling never waits on the network or the decoder.
     // The curtain follows this progress (components/chrome/warmup.ts) and never waits longer than its own cap; the
     // rooms keep loading afterwards.
-    const WARM_FRAMES = 131;
+    const WARM_FRAMES = 1000; // the whole walk (capped at its frame count below)
     reportWarm(0);
     let warmed = false;
     const warmTick = () => {
@@ -177,6 +179,9 @@ export default function Journey() {
         if (p.b && p.ib !== p.ia) { base.b = layerOf(p.b, `w${p.ib}`, 0.5, 1, [0.5, 0.5]); base.mix = p.t; }
         base.blur = Math.min(0.28, walkSpeed / 90);
         base.blurCenter = [0.5, 0.56];
+        // the clips meet between join - 1 and join: push through with a zoom blur peaking there
+        const near = 1 - Math.min(1, Math.abs(f - (seq.manifest.join - 0.5)) / 2.2);
+        if (near > 0) base.blur = Math.max(base.blur, 0.75 * near * near * (3 - 2 * near));
         return base;
       }
       const uu = Math.min(4, g.u);

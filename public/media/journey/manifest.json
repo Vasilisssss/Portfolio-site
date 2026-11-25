@@ -6,15 +6,15 @@
   "h": 480
  },
  "fps": 12,
- "frames": 131,
+ "frames": 121,
  "step": 2,
  "hi": "hi/f{i}.webp",
  "loPath": "lo/f{i}.webp",
  "poster": "poster.webp",
  "posterSm": "poster-sm.webp",
  "last": "last.webp",
- "join": 88,
- "doors": 120,
+ "join": 87,
+ "doors": 110,
  "source": {
   "establishing": {
    "frames": 190,
@@ -30,6 +30,10 @@
    "scale": 1.05,
    "dx": -0.02
   },
-  "mad": 0.563
+  "mad": 0.563,
+  "cut": {
+   "removed": "87-96 of the original 131",
+   "why": "the second clip starts further back than the first ends; frames from its first matching framing on"
+  }
  }
 }
