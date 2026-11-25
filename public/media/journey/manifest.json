@@ -6,7 +6,7 @@
   "h": 480
  },
  "fps": 12,
- "frames": 114,
+ "frames": 145,
  "step": 2,
  "hi": "hi/f{i}.webp",
  "loPath": "lo/f{i}.webp",
@@ -14,7 +14,7 @@
  "posterSm": "poster-sm.webp",
  "last": "last.webp",
  "join": 87,
- "doors": 108,
+ "doors": 135,
  "source": {
   "establishing": {
    "frames": 190,
@@ -30,6 +30,11 @@
    "scale": 1.05,
    "dx": -0.02
   },
-  "mad": 0.563
+  "mad": 0.563,
+  "arrival2": {
+   "frames": 56,
+   "from": "Google Flow, generated from the first Flow clip's last good frame",
+   "used": "31 frames picked by visual change (even walking pace), aligned (crop 2 %, shift -4 px) and colour-matched to the first clip, then the same crop/grade as the first"
+  }
  }
 }

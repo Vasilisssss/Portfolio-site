@@ -20,7 +20,7 @@ import { ROOMS, FLOOR, sceneSrc, walkSrc, base, type Variant } from "./scenes";
  *                                  screen while it settles from 1.35× to its dwell zoom
  *   dwell [data-scene]    while a chapter is read, the room keeps pushing in slowly (1 → 1.06); fine pointers add
  *                         ±8 px parallax
- * u = 0→1 hands the walk's last frame (inside the revolving door, the trading floor ahead) into the screens room, so walk and rooms are one camera.
+ * u = 0→1 hands the walk's last frame (the trading floor, just through the revolving door) into the screens room, so walk and rooms are one camera.
  * The canvas only redraws when something changed (the grain is re-seeded on each redraw), never while hidden.
  * Steady frame rate first: while the stage is moving, its frame times are watched; if several of the last 30 come in
  * slow, the stage lowers its render resolution (and blur taps) a step, and raises it again after a long smooth stretch.
