@@ -82,6 +82,7 @@ export function parseStatement(xml) {
   const daily = rows(xml, "EquitySummaryByReportDateInBase").map((r) => ({ date: isoDate(r.reportDate), total: num(r.total) })).filter((r) => r.date && r.total != null);
   const st = rows(xml, "FlexStatement")[0] ?? {};
   return {
+    statements: rows(xml, "FlexStatement").length,
     fromDate: isoDate(nav.fromDate ?? st.fromDate),
     toDate: isoDate(nav.toDate ?? st.toDate),
     endingValue: num(nav.endingValue),
@@ -134,6 +135,10 @@ const monthOf = (d) => d.slice(0, 7);
 
 export function update(pf, s, { acceptChanges = false, force = false } = {}) {
   const review = [], notes = [];
+  if (s.statements > 1) {
+    review.push(`IBKR sent ${s.statements} separate statements instead of one: the Flex Query's "Breakout by Day" is on. In IBKR → Performance & Reports → Flex Queries → edit portfolio-site → General Configuration, set "Breakout by Day?" to No and save.`);
+    return { pf, review, notes, changed: false };
+  }
   if (!s.toDate || !s.fromDate || s.endingValue == null || s.cash == null) review.push("The statement is missing its period, ending NAV or cash.");
   if (review.length) return { pf, review, notes, changed: false };
 
@@ -252,10 +257,9 @@ async function main() {
   const pf = JSON.parse(readFileSync(DATA, "utf8"));
   // the report's structure (dates and counts only, never amounts): to see what IBKR sent when something looks off
   {
-    const st = rows(xml, "FlexStatement").map((r) => `${r.fromDate}→${r.toDate} period=${r.period ?? "?"} generated=${r.whenGenerated ?? "?"}`);
-    const nav = rows(xml, "ChangeInNAV").map((r) => `${r.fromDate}→${r.toDate}`);
+    const st = rows(xml, "FlexStatement");
     const eq = rows(xml, "EquitySummaryByReportDateInBase").map((r) => r.reportDate).filter(Boolean);
-    console.log(`Report structure: ${st.length} statement(s) [${st.join("; ")}], Change in NAV ${nav.length} [${nav.join("; ")}], open positions ${rows(xml, "OpenPosition").length}, daily NAV rows ${eq.length} (${eq[0] ?? "-"} … ${eq[eq.length - 1] ?? "-"}), cash rows ${rows(xml, "CashReportCurrency").length}`);
+    console.log(`Report structure: ${st.length} statement(s)${st.length ? ` (${st[0].fromDate}→${st[0].toDate}${st.length > 1 ? ` … ${st[st.length - 1].fromDate}→${st[st.length - 1].toDate}` : ""}, period ${st[0].period ?? "?"}, generated ${st[st.length - 1].whenGenerated ?? "?"})` : ""}, open positions ${rows(xml, "OpenPosition").length}, daily NAV rows ${eq.length}.`);
   }
   const s = parseStatement(xml);
   // fully automatic: trades, deposits and new or sold positions are taken over; only anomalies stop the update
@@ -267,7 +271,7 @@ async function main() {
   const lines = [];
   // when IBKR publishes: each run records what day the report covers; the first run that shows a new day bounds it
   const lastPublished = pf.asOf ?? "";
-  const fresh = s.toDate > lastPublished ? "new" : "not yet";
+  const fresh = s.toDate > lastPublished ? "new" : s.toDate === lastPublished ? "same day" : "not yet";
   lines.push(`Checked at ${new Date().toISOString().slice(11, 16)} UTC — IBKR report covers up to ${s.toDate} (${fresh}; the site shows ${lastPublished || "—"}).`);
   lines.push(`Statement ${s.fromDate} → ${s.toDate}.`);
   lines.push(...r.notes.map((n) => `- ${n}`));

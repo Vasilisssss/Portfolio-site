@@ -45,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: cinematic-redesign
 
       - uses: actions/setup-node@v4
         with:
@@ -83,7 +83,7 @@ jobs:
           echo "code=$code" >> "$GITHUB_OUTPUT"
 
       - name: Publish
-        if: steps.flex.outputs.code == '0' && github.ref_name == 'cinematic-redesign'
+        if: steps.flex.outputs.code == '0'
         env:
           GH_TOKEN: ${{ github.token }}
           PRIVATE_VIEW_PASSWORD: ${{ secrets.PRIVATE_VIEW_PASSWORD }}
