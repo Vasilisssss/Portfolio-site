@@ -19,10 +19,11 @@ export default function Loader({ line }: { line: string }) {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const done = () => { setShow(false); document.documentElement.dataset.ready = "1"; window.dispatchEvent(new Event("intro:done")); };
     if (seen || reduce) { done(); return; }
-    // The curtain stays up for at least MIN and until the page's warm-up (the journey's first walk frames, fetched,
-    // decoded and drawn once) reports done, but never longer than CAP. The counter and line follow the real
+    // The curtain stays up for at least MIN and until the page's warm-up (the whole journey walk fetched, its first
+    // frames decoded and drawn once) reports done, but never longer than CAP: 8 s covers the walk (9 MB desktop,
+    // 4 MB phones) on a connection of about 10 Mbps; a fast one lifts the curtain after MIN. The counter and line follow the real
     // progress, never running ahead of it, eased so it still reads as one calm count.
-    const MIN = 1600, CAP = 5000;
+    const MIN = 1600, CAP = 8000;
     const t0 = performance.now();
     let shown = 0, raf = 0, finished = false;
     const step = () => {

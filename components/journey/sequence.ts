@@ -2,8 +2,9 @@
  * Frame sequence loader for scroll-scrubbed footage (the headquarters walk).
  *
  * Generalised from the old film player: frames are small WebP files listed by a manifest. Frames nearest the
- * playhead are requested first, four at a time; every compressed frame is kept as a Blob, and only a window of
- * frames around the playhead is decoded into ImageBitmaps (bitmaps leaving the window are closed). The renderer
+ * playhead are requested first, six at a time; every compressed frame is kept as a Blob, and only a window of
+ * frames around the playhead is decoded into ImageBitmaps (bitmaps leaving the window are closed). The window leans
+ * the way the playhead is moving (AHEAD frames in front, BEHIND behind), so a fast scroll finds its frames decoded. The renderer
  * asks for the pair of decoded frames around a fractional playhead and cross-fades them.
  */
 export interface WalkManifest {
@@ -13,7 +14,7 @@ export interface WalkManifest {
   join: number; doors: number;
 }
 
-const WINDOW = 12;
+const AHEAD = 20, BEHIND = 6, KEEP = AHEAD + 4;
 
 export interface Sequence {
   readonly manifest: WalkManifest;
@@ -37,7 +38,7 @@ export async function loadSequence(base: string, low: boolean, signal: AbortSign
   const bitmaps = new Map<number, ImageBitmap>();
   const decoding = new Set<number>();
   const listeners: (() => void)[] = [];
-  let head = 0, stopped = false;
+  let head = 0, dir = 1, stopped = false;
   const changed = () => listeners.forEach((f) => f());
 
   const decode = (i: number) => {
@@ -47,17 +48,18 @@ export async function loadSequence(base: string, low: boolean, signal: AbortSign
     decoding.add(i);
     createImageBitmap(b).then((bmp) => {
       decoding.delete(i);
-      if (stopped || Math.abs(i - head) > WINDOW + 6) { bmp.close(); return; }
+      if (stopped || Math.abs(i - head) > KEEP) { bmp.close(); return; }
       bitmaps.set(i, bmp); changed();
     }, () => decoding.delete(i));
   };
   const manage = () => {
     const c = Math.round(head);
-    for (let d = 0; d <= WINDOW; d++) { decode(c + d); if (d) decode(c - d); }
-    for (const [i, bmp] of bitmaps) if (Math.abs(i - c) > WINDOW + 6) { bmp.close(); bitmaps.delete(i); }
+    // nearest first, alternating, until the short side is covered; then the rest of the side being walked towards
+    for (let d = 0; d <= AHEAD; d++) { decode(c + dir * d); if (d && d <= BEHIND) decode(c - dir * d); }
+    for (const [i, bmp] of bitmaps) { const ahead = (i - c) * dir; if (ahead > KEEP || ahead < -(BEHIND + 4)) { bmp.close(); bitmaps.delete(i); } }
   };
 
-  // fetch: nearest the playhead first, four requests in flight
+  // fetch: nearest the playhead first, six requests in flight
   const pending = new Set(Array.from({ length: m.frames }, (_, i) => i));
   const next = () => {
     if (!pending.size) return -1;
@@ -71,11 +73,12 @@ export async function loadSequence(base: string, low: boolean, signal: AbortSign
         const res = await fetch(url(i), { signal });
         if (!res.ok) throw new Error(String(res.status));
         blobs.set(i, await res.blob());
-        if (Math.abs(i - head) <= WINDOW) decode(i);
+        const ahead = (i - head) * dir;
+        if (ahead <= AHEAD && ahead >= -BEHIND) decode(i);
       } catch (e) { if (stopped || signal.aborted) return; console.warn("walk frame", i, e); }
     }
   };
-  void Promise.all([worker(), worker(), worker(), worker()]);
+  void Promise.all([worker(), worker(), worker(), worker(), worker(), worker()]);
 
   const nearest = (i: number, dir: number) => {
     for (let d = 0; d < 8; d++) { const k = i + dir * d; const b = bitmaps.get(k); if (b) return { b, k }; }
@@ -91,7 +94,11 @@ export async function loadSequence(base: string, low: boolean, signal: AbortSign
       const t = B.k === A.k ? 0 : Math.max(0, Math.min(1, (f - A.k) / (B.k - A.k)));
       return { a: A.b, b: B.b, t, ia: A.k, ib: B.k };
     },
-    seek(f) { head = Math.max(0, Math.min(m.frames - 1, f)); manage(); },
+    seek(f) {
+      const h = Math.max(0, Math.min(m.frames - 1, f));
+      if (Math.abs(h - head) > 0.01) dir = h > head ? 1 : -1;
+      head = h; manage();
+    },
     get loaded() { return blobs.size; },
     get decoded() { return bitmaps.size; },
     onChange(cb) { listeners.push(cb); },

@@ -9,6 +9,8 @@
  *   shared grade, vignette and animated film grain, so walk frames and rooms read as one camera
  * Canvas2D fallback (no WebGL2) — same pushes and cross-fades, no blur, aperture or grain.
  * The caller decides when to draw; nothing renders unless something changed.
+ * Quality (1 … 0.55) is set by the caller from measured frame times: it lowers the render resolution and, below 0.8,
+ * halves the blur taps, so a weak GPU keeps a steady frame rate instead of dropping frames.
  */
 export interface Layer {
   src: TexImageSource & { width: number; height: number };
@@ -33,6 +35,8 @@ export interface Stage {
   readonly kind: "webgl2" | "2d";
   draw(f: StageFrame, time: number): void;
   resize(): void;
+  /** 1 = full; lower = fewer pixels and blur taps (see above) */
+  setQuality(q: number): void;
   dispose(): void;
 }
 
@@ -62,6 +66,7 @@ uniform vec4 uCovA, uCovB;   // scale.xy, offset.xy
 uniform vec3 uZA, uZB;       // zoom, origin.xy
 uniform vec2 uRes, uApC, uBlC, uPar;
 uniform float uHasA, uHasB, uMix, uAp, uBlur, uDim, uTime, uGrade;
+uniform int uTaps;
 
 vec2 mapA(vec2 s){ vec2 u = s * uCovA.xy + uCovA.zw; return uZA.yz + (u - uZA.yz) / uZA.x; }
 vec2 mapB(vec2 s){ vec2 u = s * uCovB.xy + uCovB.zw; return uZB.yz + (u - uZB.yz) / uZB.x; }
@@ -88,12 +93,13 @@ void main(){
   if (uBlur > .002) {
     // zoom blur: average samples pulled toward the blur centre
     for (int i = 0; i < 14; i++) {
-      float k = 1. - uBlur * .16 * float(i) / 13.;
+      if (i >= uTaps) break;
+      float k = 1. - uBlur * .16 * float(i) / float(uTaps - 1);
       vec2 q = uBlC + (s - uBlC) * k;
       if (uHasA > .5) a += texA(q);
       if (wB > .001) b += texB(q);
     }
-    a /= 14.; b /= 14.;
+    a /= float(uTaps); b /= float(uTaps);
   } else {
     if (uHasA > .5) a = softA(s);
     if (wB > .001) b = softB(s);
@@ -127,11 +133,12 @@ export function createStage(canvas: HTMLCanvasElement, opts: { webgl: boolean; p
   // preserve: only for automated screenshots (?qa), which can capture between redraws
   const gl = opts.webgl ? canvas.getContext("webgl2", { alpha: false, antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: !!opts.preserve, powerPreference: "high-performance" }) : null;
   if (gl?.isContextLost()) throw new Error("WebGL2 context lost");
-  // device resolution up to 2×, but never more than ~4.5 MP: the sources are 1920 px wide, so pixels beyond that
-  // only cost fill rate (a 2560 px screen at 2× would be 15 MP of blur taps)
+  // device resolution up to 2×, but never more than ~2.4 MP (a little over 1920×1080): the walk frames are 1280 px
+  // and the rooms 1920 px wide, so pixels beyond that only cost fill rate, not detail. Quality scales it down further.
+  let quality = 1;
   const size = () => {
     const area = Math.max(1, canvas.clientWidth * canvas.clientHeight);
-    const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(4.5e6 / area)));
+    const dpr = Math.max(0.5, Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(2.4e6 / area)) * quality);
     const w = Math.max(1, Math.round(canvas.clientWidth * dpr)), h = Math.max(1, Math.round(canvas.clientHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   };
@@ -162,6 +169,7 @@ export function createStage(canvas: HTMLCanvasElement, opts: { webgl: boolean; p
         ctx.globalAlpha = 1;
       },
       resize: size,
+      setQuality(q) { quality = q; size(); },
       dispose() { /* nothing to release */ },
     };
   }
@@ -181,7 +189,7 @@ export function createStage(canvas: HTMLCanvasElement, opts: { webgl: boolean; p
   const U = (n: string) => gl.getUniformLocation(prog, n);
   const u = {
     tA: U("tA"), tB: U("tB"), covA: U("uCovA"), covB: U("uCovB"), zA: U("uZA"), zB: U("uZB"), res: U("uRes"), apC: U("uApC"), blC: U("uBlC"), par: U("uPar"),
-    hasA: U("uHasA"), hasB: U("uHasB"), mix: U("uMix"), ap: U("uAp"), blur: U("uBlur"), dim: U("uDim"), time: U("uTime"), grade: U("uGrade"),
+    hasA: U("uHasA"), hasB: U("uHasB"), mix: U("uMix"), ap: U("uAp"), blur: U("uBlur"), dim: U("uDim"), time: U("uTime"), grade: U("uGrade"), taps: U("uTaps"),
   };
   gl.uniform1i(u.tA, 0); gl.uniform1i(u.tB, 1);
   const mkTex = () => {
@@ -233,9 +241,11 @@ export function createStage(canvas: HTMLCanvasElement, opts: { webgl: boolean; p
       gl.uniform1f(u.hasA, f.a ? 1 : 0); gl.uniform1f(u.hasB, f.b ? 1 : 0);
       gl.uniform1f(u.mix, f.mix); gl.uniform1f(u.ap, f.aperture); gl.uniform1f(u.blur, f.blur);
       gl.uniform1f(u.dim, f.dim); gl.uniform1f(u.time, time); gl.uniform1f(u.grade, f.grade);
+      gl.uniform1i(u.taps, quality < 0.8 ? 7 : 14);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },
     resize: size,
+    setQuality(q) { quality = q; size(); },
     dispose() {
       slots.forEach((s) => gl.deleteTexture(s.tex));
       gl.deleteBuffer(buf); gl.deleteProgram(prog);
