@@ -281,6 +281,8 @@ async function main() {
   console.log(text);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${text}\n`);
   if (r.review.length) process.exit(2);
+  // the moment this update published a change: shown on the front page as "Updated …"
+  if (r.changed) r.pf.updatedAt = new Date().toISOString().slice(0, 19) + "Z";
   if (r.changed && !flag("--dry-run")) writeFileSync(DATA, `${JSON.stringify(r.pf, null, 2)}\n`);
   // what changed in the portfolio (no amounts), for the workflow's notification
   if (r.changed && r.notes.length && process.env.CHANGES_FILE && !flag("--dry-run"))

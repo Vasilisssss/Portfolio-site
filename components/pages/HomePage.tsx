@@ -82,6 +82,7 @@ export default function HomePage({ view, owner = false }: { view: PublicView; ow
       <div data-scene="0" className="relative">
         <Hero name={profile.name} eyebrow={profile.hero.eyebrow} lines={profile.hero.lines} body={profile.hero.body}
           figure={amounts ? { value: money(s.value!, cur), label: `Portfolio value · ${dateLong(view.asOf)}` } : s.returnPct != null ? { value: pct(s.returnPct, true), label: "Total return" } : undefined}
+          updatedAt={view.updatedAt}
           showInvestments={on.investments && view.holdings.length > 0} />
       </div>
 

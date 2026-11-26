@@ -69,3 +69,5 @@ The amounts stay in the encrypted data file.
 Only `data/portfolio.json`: mark prices, quantities and average cost, the USD→EUR rate, cash, and the latest history
 point (NAV, cumulative net deposits, cumulative time-weighted return from the statement's TWR, chained across years).
 At the start of a month the previous month's last business day stays as that month's point.
+When a run changes anything it also records the time (`updatedAt`, UTC), shown on the front page under the total return as
+"Updated …" in the visitor's own time zone.

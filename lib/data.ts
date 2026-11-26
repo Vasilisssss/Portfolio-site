@@ -40,7 +40,7 @@ function validate(raw: Omit<PortfolioData, "sample">, file: string): PortfolioDa
     if (h.currency !== raw.baseCurrency && raw.fx?.[h.currency] == null) throw new Error(`${file}: no fx rate for ${h.currency}`);
   }
   const hist = [...(raw.history ?? [])].sort((a, b) => a.date.localeCompare(b.date));
-  return { sample: false, source: raw.source, baseCurrency: raw.baseCurrency ?? "EUR", fx: raw.fx ?? {}, asOf: raw.asOf, holdings: raw.holdings ?? [], history: hist };
+  return { sample: false, source: raw.source, baseCurrency: raw.baseCurrency ?? "EUR", fx: raw.fx ?? {}, asOf: raw.asOf, updatedAt: raw.updatedAt, holdings: raw.holdings ?? [], history: hist };
 }
 
 export function loadPortfolio(): PortfolioData {
