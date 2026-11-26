@@ -54,6 +54,8 @@ export interface PortfolioData {
   /** units of base currency per 1 unit of each other currency */
   fx: Record<string, number>;
   asOf: string;
+  /** when the daily IBKR update last published a change (ISO time, UTC); set by tools/ibkr/flex-update.mjs */
+  updatedAt?: string;
   holdings: Holding[];
   /** month-end history; leave empty if you don't have it — performance charts then show an empty state */
   history: HistoryPoint[];

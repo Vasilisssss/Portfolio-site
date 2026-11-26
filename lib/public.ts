@@ -42,6 +42,8 @@ export interface PublicView {
   sample: boolean;
   source?: string;
   asOf: string;
+  /** when the data last changed (ISO, UTC) */
+  updatedAt?: string;
   baseCurrency: string;
   showAmounts: boolean;
   sections: Record<SectionKey, boolean>;
@@ -166,6 +168,7 @@ export function getPublicView({ reveal = false }: { reveal?: boolean } = {}): Pu
     sample: data.sample,
     source: data.source,
     asOf: data.asOf,
+    updatedAt: data.updatedAt,
     baseCurrency: data.baseCurrency,
     showAmounts: amt,
     sections: { ...privacy.sections, investments: privacy.sections.investments && privacy.showHoldings },

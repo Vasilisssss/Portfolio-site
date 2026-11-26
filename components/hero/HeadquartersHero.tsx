@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { gsap, useGSAP, reducedMotion } from "@/components/motion/gsap";
 import Headline from "@/components/motion/Headline";
@@ -13,8 +13,23 @@ type Props = {
   lines: string[];
   body: string;
   figure?: { value: string; label: string };
+  /** when the IBKR data last changed (ISO, UTC): shown under the figure as "Updated …" */
+  updatedAt?: string;
   showInvestments: boolean;
 };
+
+/**
+ * "Updated 25 Nov 2026, 22:17": the time of the last data change. The static page carries it in UTC; once loaded it is
+ * shown in the visitor's own time zone (with the zone's short name).
+ */
+function Updated({ iso }: { iso: string }) {
+  const d = new Date(iso);
+  const fmt = (tz?: string) => new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz, timeZoneName: "short" }).format(d);
+  const [text, setText] = useState(() => fmt("UTC"));
+  useEffect(() => { setText(fmt()); }, [iso]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (Number.isNaN(d.getTime())) return null;
+  return <span className="mt-3 block normal-case tracking-[0.08em] text-white/50"><time dateTime={iso} suppressHydrationWarning>Updated {text}</time></span>;
+}
 
 /**
  * THE HEADQUARTERS WALK — the hero.
@@ -30,7 +45,7 @@ type Props = {
  * The first frame is a server-rendered poster (the LCP image); the canvas takes over once frames are ready.
  * Reduced motion: one viewport, the still poster, no scrubbing.
  */
-export default function HeadquartersHero({ lines, body, figure, showInvestments }: Props) {
+export default function HeadquartersHero({ lines, body, figure, updatedAt, showInvestments }: Props) {
   const root = useRef<HTMLElement>(null);
   const doorsAt = WALK.doors / Math.max(1, WALK.frames - 1);
 
@@ -86,6 +101,7 @@ export default function HeadquartersHero({ lines, body, figure, showInvestments 
                 {figure && (
                   <p data-enter className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">
                     {figure.label}<span className="tnum mt-2 block font-sans text-3xl tracking-tight text-graphite md:text-4xl">{figure.value}</span>
+                    {updatedAt && <Updated iso={updatedAt} />}
                   </p>
                 )}
               </div>
